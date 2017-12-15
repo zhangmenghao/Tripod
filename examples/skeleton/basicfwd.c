@@ -128,6 +128,14 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 	return 0;
 }
 
+static void
+print_ethaddr(const char *name, struct ether_addr *eth_addr)
+{
+	char buf[ETHER_ADDR_FMT_SIZE];
+	ether_format_addr(buf, ETHER_ADDR_FMT_SIZE, eth_addr);
+	printf("%s is %s", name, buf);
+}
+
 /*
  * The lcore main. This is the main thread that does the work, reading from
  * an input port and writing to an output port.
@@ -175,6 +183,12 @@ lcore_main(void)
 					bufs, nb_rx);
 
 			for (i = 0; i < nb_rx; i ++){
+				struct ether_hdr *eth_hdr;
+				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
+				struct ether_addr eth_s_addr;
+				eth_s_addr = eth_hdr->s_addr;
+				print_ethaddr("eth_s_addr", &eth_s_addr);
+
 				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ether_hdr));
 				struct ipv4_hdr *ip_hdr;
 				uint32_t ip_dst;
