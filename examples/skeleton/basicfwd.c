@@ -133,7 +133,7 @@ print_ethaddr(const char *name, struct ether_addr *eth_addr)
 {
 	char buf[ETHER_ADDR_FMT_SIZE];
 	ether_format_addr(buf, ETHER_ADDR_FMT_SIZE, eth_addr);
-	printf("%s is %s", name, buf);
+	printf("%s is %s\n", name, buf);
 }
 
 /*
@@ -187,14 +187,20 @@ lcore_main(void)
 				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
 				struct ether_addr eth_s_addr;
 				eth_s_addr = eth_hdr->s_addr;
+				struct ether_addr eth_d_addr;
+				eth_d_addr = eth_hdr->s_addr;
 				print_ethaddr("eth_s_addr", &eth_s_addr);
+				print_ethaddr("eth_d_addr", &eth_d_addr);
 
 				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ether_hdr));
 				struct ipv4_hdr *ip_hdr;
 				uint32_t ip_dst;
+				uint32_t ip_src;
 				ip_hdr = rte_pktmbuf_mtod(bufs[i], struct ipv4_hdr *);
 				ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
 				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
+				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
+
 			}
 
 			/* Free any unsent packets. */
