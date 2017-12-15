@@ -296,7 +296,7 @@ l3fwd_simple_forward(struct rte_mbuf *m, struct lcore_queue_conf *qconf,
 			/* Build transmission burst for new port */
 			len = qconf->tx_mbufs[port_out].len;
 		}
-		printf("ip_dst and port_out is "IPv4_BYTES_FMT "and %u\n", IPv4_BYTES(ip_dst) , port_out);
+		printf("ip_dst and port_out is "IPv4_BYTES_FMT " and %u\n", IPv4_BYTES(ip_dst) , port_out);
 
 		/* if we don't need to do any fragmentation */
 		if (likely (IPV4_MTU_DEFAULT >= m->pkt_len)) {
