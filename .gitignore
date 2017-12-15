@@ -1,0 +1,27 @@
+x86_64-native-linuxapp-gcc/
+# Object files
+pspgen
+*.o
+*.ko
+*.obj
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Miscellaneous
+neighbors.conf
+*.log
