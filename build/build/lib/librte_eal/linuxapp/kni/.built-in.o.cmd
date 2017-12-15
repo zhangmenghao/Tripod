@@ -1,0 +1,1 @@
+cmd_/home/zhangmenghao/Desktop/dpdk-stable-17.08.1/build/build/lib/librte_eal/linuxapp/kni/built-in.o :=  rm -f /home/zhangmenghao/Desktop/dpdk-stable-17.08.1/build/build/lib/librte_eal/linuxapp/kni/built-in.o; ar rcsD /home/zhangmenghao/Desktop/dpdk-stable-17.08.1/build/build/lib/librte_eal/linuxapp/kni/built-in.o
