@@ -39,12 +39,25 @@
 #include <rte_lcore.h>
 #include <rte_mbuf.h>
 
+#include <rte_byteorder.h>
+#include <rte_ip.h>
+#include <rte_ether.h>
+
 #define RX_RING_SIZE 128
 #define TX_RING_SIZE 512
 
 #define NUM_MBUFS 8191
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
+
+#ifndef IPv4_BYTES
+#define IPv4_BYTES_FMT "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8
+#define IPv4_BYTES(addr) \
+		(uint8_t) (((addr) >> 24) & 0xFF),\
+		(uint8_t) (((addr) >> 16) & 0xFF),\
+		(uint8_t) (((addr) >> 8) & 0xFF),\
+		(uint8_t) ((addr) & 0xFF)
+#endif
 
 static const struct rte_eth_conf port_conf_default = {
 	.rxmode = { .max_rx_pkt_len = ETHER_MAX_LEN }
@@ -124,6 +137,7 @@ lcore_main(void)
 {
 	const uint8_t nb_ports = rte_eth_dev_count();
 	uint8_t port;
+	int i;
 
 	/*
 	 * Check that the port is on the same NUMA node as the polling thread
@@ -159,6 +173,15 @@ lcore_main(void)
 			/* Send burst of TX packets, to second port of pair. */
 			const uint16_t nb_tx = rte_eth_tx_burst(port ^ 1, 0,
 					bufs, nb_rx);
+
+			for (i = 0; i < nb_rx; i ++){
+				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ether_hdr));
+				struct ipv4_hdr *ip_hdr;
+				uint32_t ip_dst;
+				ip_hdr = rte_pktmbuf_mtod(bufs[i], struct ipv4_hdr *);
+				ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
+				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
+			}
 
 			/* Free any unsent packets. */
 			if (unlikely(nb_tx < nb_rx)) {
