@@ -198,6 +198,7 @@ lcore_main(void)
 				uint32_t ip_src;
 				ip_hdr = rte_pktmbuf_mtod(bufs[i], struct ipv4_hdr *);
 				ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
+				ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
 				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
 				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
 
