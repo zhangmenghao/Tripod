@@ -316,6 +316,7 @@ l3fwd_simple_forward(struct rte_mbuf *m, struct lcore_queue_conf *qconf,
 			if (unlikely (len2 < 0))
 				return;
 		}
+		printf("the fragmentation of the packet is %u\n", len2);
 	} else if (RTE_ETH_IS_IPV6_HDR(m->packet_type)) {
 		/* if this is an IPv6 packet */
 		struct ipv6_hdr *ip_hdr;
