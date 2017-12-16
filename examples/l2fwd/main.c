@@ -151,11 +151,11 @@ print_stats(void)
 	total_packets_tx = 0;
 	total_packets_rx = 0;
 
-	const char clr[] = { 27, '[', '2', 'J', '\0' };
-	const char topLeft[] = { 27, '[', '1', ';', '1', 'H','\0' };
+	//const char clr[] = { 27, '[', '2', 'J', '\0' };
+	//const char topLeft[] = { 27, '[', '1', ';', '1', 'H','\0' };
 
 		/* Clear screen and move to top left */
-	printf("%s%s", clr, topLeft);
+	//printf("%s%s", clr, topLeft);
 
 	printf("\nPort statistics ====================================");
 
@@ -187,12 +187,27 @@ print_stats(void)
 }
 
 static void
+print_ethaddr(const char *name, struct ether_addr *eth_addr)
+{
+	char buf[ETHER_ADDR_FMT_SIZE];
+	ether_format_addr(buf, ETHER_ADDR_FMT_SIZE, eth_addr);
+	printf("%s is %s\n", name, buf);
+}
+
+static void
 l2fwd_mac_updating(struct rte_mbuf *m, unsigned dest_portid)
 {
 	struct ether_hdr *eth;
 	void *tmp;
 
 	eth = rte_pktmbuf_mtod(m, struct ether_hdr *);
+
+	struct ether_addr eth_s_addr;
+	eth_s_addr = eth->s_addr;
+	struct ether_addr eth_d_addr;
+	eth_d_addr = eth->s_addr;
+	print_ethaddr("eth_s_addr", &eth_s_addr);
+	print_ethaddr("eth_d_addr", &eth_d_addr);
 
 	/* 02:00:00:00:00:xx */
 	tmp = &eth->d_addr.addr_bytes[0];
@@ -592,7 +607,7 @@ main(int argc, char **argv)
 		rte_exit(EXIT_FAILURE, "No Ethernet ports - bye\n");
 
 	/* reset l2fwd_dst_ports */
-	for (portid = 0; portid < RTE_MAX_ETHPORTS; portid++)
+	for (portid = 0; portid < RTE_MAX_ETHPORTS; portid++)//32
 		l2fwd_dst_ports[portid] = 0;
 	last_port = 0;
 
