@@ -205,7 +205,7 @@ l2fwd_mac_updating(struct rte_mbuf *m, unsigned dest_portid)
 	struct ether_addr eth_s_addr;
 	eth_s_addr = eth->s_addr;
 	struct ether_addr eth_d_addr;
-	eth_d_addr = eth->s_addr;
+	eth_d_addr = eth->d_addr;
 	print_ethaddr("eth_s_addr", &eth_s_addr);
 	print_ethaddr("eth_d_addr", &eth_d_addr);
 
@@ -215,6 +215,11 @@ l2fwd_mac_updating(struct rte_mbuf *m, unsigned dest_portid)
 
 	/* src addr */
 	ether_addr_copy(&l2fwd_ports_eth_addr[dest_portid], &eth->s_addr);
+
+	eth_s_addr = eth->s_addr;
+	eth_d_addr = eth->d_addr;
+	print_ethaddr("eth_s_addr", &eth_s_addr);
+	print_ethaddr("eth_d_addr", &eth_d_addr);
 }
 
 static void
