@@ -350,7 +350,7 @@ reassemble(struct rte_mbuf *m, uint8_t portid, uint32_t queue,
 
 	rxq = &qconf->rx_queue_list[queue];
 
-	eth_hdr = rte_pktmbuf_mtod(m, struct ether_hdr *);
+	eth_hdr = rte_pktmbuf_mtod(m, struct ether_hdr *);//get eth header
 
 	dst_port = portid;
 
@@ -373,7 +373,7 @@ reassemble(struct rte_mbuf *m, uint8_t portid, uint32_t queue,
 			m->l3_len = sizeof(*ip_hdr);
 
 			/* process this fragment. */
-			mo = rte_ipv4_frag_reassemble_packet(tbl, dr, m, tms, ip_hdr);
+			mo = rte_ipv4_frag_reassemble_packet(tbl, dr, m, tms, ip_hdr);//call lib function
 			if (mo == NULL)
 				/* no packet to send out. */
 				return;
@@ -387,6 +387,8 @@ reassemble(struct rte_mbuf *m, uint8_t portid, uint32_t queue,
 			}
 		}
 		ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
+
+		printf("ip_dst and dst_port is "IPv4_BYTES_FMT " and %u\n", IPv4_BYTES(ip_dst) , dst_port);
 
 		/* Find destination port */
 		if (rte_lpm_lookup(rxq->lpm, ip_dst, &next_hop) == 0 &&
