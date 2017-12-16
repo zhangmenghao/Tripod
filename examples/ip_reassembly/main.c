@@ -388,13 +388,14 @@ reassemble(struct rte_mbuf *m, uint8_t portid, uint32_t queue,
 		}
 		ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
 
-		printf("ip_dst and dst_port is "IPv4_BYTES_FMT " and %u\n", IPv4_BYTES(ip_dst) , dst_port);
 
 		/* Find destination port */
 		if (rte_lpm_lookup(rxq->lpm, ip_dst, &next_hop) == 0 &&
 				(enabled_port_mask & 1 << next_hop) != 0) {
 			dst_port = next_hop;
 		}
+
+		printf("ip_dst and dst_port is "IPv4_BYTES_FMT " and %u\n", IPv4_BYTES(ip_dst) , dst_port);
 
 		eth_hdr->ether_type = rte_be_to_cpu_16(ETHER_TYPE_IPv4);
 	} else if (RTE_ETH_IS_IPV6_HDR(m->packet_type)) {
