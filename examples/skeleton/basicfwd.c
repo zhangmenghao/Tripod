@@ -175,8 +175,6 @@ lcore_main(void)
 			const uint16_t nb_rx = rte_eth_rx_burst(port, 0,
 					bufs, BURST_SIZE);
 
-			printf("packet comes from %u\n", port);
-
 			if (unlikely(nb_rx == 0))
 				continue;
 
@@ -185,6 +183,7 @@ lcore_main(void)
 					bufs, nb_rx);
 
 			for (i = 0; i < nb_rx; i ++){
+				printf("packet comes from %u\n", port);
 				struct ether_hdr *eth_hdr;
 				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
 				struct ether_addr eth_s_addr;
