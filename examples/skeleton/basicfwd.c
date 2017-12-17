@@ -202,6 +202,7 @@ lcore_main(void)
 				ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
 				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
 				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
+				printf("\n");
 
 			}
 
