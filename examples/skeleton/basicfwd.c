@@ -175,6 +175,8 @@ lcore_main(void)
 			const uint16_t nb_rx = rte_eth_rx_burst(port, 0,
 					bufs, BURST_SIZE);
 
+			printf("packet comes from %u\n", port);
+
 			if (unlikely(nb_rx == 0))
 				continue;
 
@@ -188,7 +190,7 @@ lcore_main(void)
 				struct ether_addr eth_s_addr;
 				eth_s_addr = eth_hdr->s_addr;
 				struct ether_addr eth_d_addr;
-				eth_d_addr = eth_hdr->s_addr;
+				eth_d_addr = eth_hdr->d_addr;
 				print_ethaddr("eth_s_addr", &eth_s_addr);
 				print_ethaddr("eth_d_addr", &eth_d_addr);
 
