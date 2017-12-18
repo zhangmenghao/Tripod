@@ -1008,6 +1008,7 @@ main(int argc, char **argv)
 
 			qconf = &lcore_queue_conf[lcore_id];
 			qconf->tx_queue_id[portid] = queueid;
+			printf("lcore_queue_conf[%u]->tx_queue_id[%u] is %u\n", lcore_id, portid, queueid);
 			queueid++;
 		}
 
