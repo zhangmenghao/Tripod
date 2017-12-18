@@ -160,7 +160,7 @@ struct rx_queue {
 #define MAX_RX_QUEUE_PER_LCORE 16
 #define MAX_TX_QUEUE_PER_PORT 16
 struct lcore_queue_conf {
-	uint16_t n_rx_queue;
+	uint16_t n_rx_queue;//flag indicates whether this lcore has rx_queue, if has, n_rx_queue refers to the number of rx_queue
 	uint16_t tx_queue_id[RTE_MAX_ETHPORTS];
 	struct rx_queue rx_queue_list[MAX_RX_QUEUE_PER_LCORE];
 	struct mbuf_table tx_mbufs[RTE_MAX_ETHPORTS];
@@ -931,6 +931,8 @@ main(int argc, char **argv)
 
 			qconf = &lcore_queue_conf[rx_lcore_id];
 		}
+
+		printf("rx_lcore_id for lcore_queue_conf[] is %u\n", rx_lcore_id);
 
 		socket = (int) rte_lcore_to_socket_id(rx_lcore_id);
 		if (socket == SOCKET_ID_ANY)
