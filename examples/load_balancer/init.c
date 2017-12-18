@@ -439,6 +439,7 @@ app_init_nics(void)
 			continue;
 		}
 
+		printf("n_rx_queues and n_tx_queues is %u and %u\n", n_rx_queues, n_tx_queues);
 		/* Init port */
 		printf("Initializing NIC port %u ...\n", (unsigned) port);
 		ret = rte_eth_dev_configure(
