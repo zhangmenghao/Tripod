@@ -731,7 +731,7 @@ init_routing_table(void)
 	int socket, ret;
 	unsigned i;
 
-	for (socket = 0; socket < RTE_MAX_NUMA_NODES; socket++) {
+	for (socket = 0; socket < RTE_MAX_NUMA_NODES; socket++) {//8
 		if (socket_lpm[socket]) {
 			lpm = socket_lpm[socket];
 			/* populate the LPM table */
@@ -796,7 +796,7 @@ init_mem(void)
 
 	/* traverse through lcores and initialize structures on each socket */
 
-	for (lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++) {
+	for (lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++) {//128
 
 		if (rte_lcore_is_enabled(lcore_id) == 0)
 			continue;
@@ -951,9 +951,9 @@ main(int argc, char **argv)
 
 		n_tx_queue = nb_lcores;
 		if (n_tx_queue > MAX_TX_QUEUE_PER_PORT)
-			n_tx_queue = MAX_TX_QUEUE_PER_PORT;
+			n_tx_queue = MAX_TX_QUEUE_PER_PORT;//16
 		ret = rte_eth_dev_configure(portid, 1, (uint16_t)n_tx_queue,
-					    &port_conf);
+					    &port_conf);//1 rx queue, n tx queue
 		if (ret < 0) {
 			printf("\n");
 			rte_exit(EXIT_FAILURE, "Cannot configure device: "
