@@ -664,9 +664,11 @@ main(int argc, char **argv)
 			qconf = &lcore_queue_conf[rx_lcore_id];
 
 		qconf->rx_port_list[qconf->n_rx_port] = portid;
+		printf("lcore_queue_conf's n_rx_port and rx_port_list[n_rx_port] is %u and %u\n", qconf->n_rx_port, portid);
 		qconf->n_rx_port++;
 		printf("Lcore %u: RX port %u\n", rx_lcore_id, (unsigned) portid);
 	}
+
 
 	nb_ports_available = nb_ports;
 
