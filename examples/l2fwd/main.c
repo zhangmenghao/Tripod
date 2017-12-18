@@ -308,6 +308,7 @@ l2fwd_main_loop(void)
 
 					/* do this only on master core */
 					if (lcore_id == rte_get_master_lcore()) {
+						printf("master lcore is %u\n", lcore_id);
 						print_stats();
 						/* reset the timer */
 						timer_tsc = 0;
