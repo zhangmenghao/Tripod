@@ -269,6 +269,7 @@ l3fwd_simple_forward(struct rte_mbuf *m, struct lcore_queue_conf *qconf,
 	int32_t len2;
 
 	ipv6 = 0;
+	printf("queueid in l3fwd_simple_forward() is %u\n", queueid);
 	rxq = &qconf->rx_queue_list[queueid];
 
 	/* by default, send everything back to the source port */
