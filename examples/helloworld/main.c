@@ -54,6 +54,15 @@ lcore_hello(__attribute__((unused)) void *arg)
 	return 0;
 }
 
+static int
+lcore_hi(__attribute__((unused)) void *arg)
+{
+	unsigned lcore_id;
+	lcore_id = rte_lcore_id();
+	printf("hi from core %u\n", lcore_id);
+	return 0;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -71,7 +80,7 @@ main(int argc, char **argv)
 	}
 
 	/* call it on master lcore too */
-	lcore_hello(NULL);
+	lcore_hi(NULL);
 
 	//rte_eal_mp_remote_launch(lcore_hello, NULL, CALL_MASTER);
 
