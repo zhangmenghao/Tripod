@@ -659,6 +659,7 @@ main(int argc, char **argv)
 				rte_exit(EXIT_FAILURE, "Not enough cores\n");
 		}
 
+		printf("available rx_lcore_id is %u\n", rx_lcore_id);
 		if (qconf != &lcore_queue_conf[rx_lcore_id])
 			/* Assigned a new logical core in the loop above. */
 			qconf = &lcore_queue_conf[rx_lcore_id];
