@@ -66,12 +66,13 @@ static const struct rte_eth_conf port_conf_default = {
 
 uint32_t dip[DIP_MAX];
 
-static inline void state_set(){
-	
+static inline void state_set(void){
+	dip[0] = 1;
+	//just an example
 }
 
-static inline void state_get(){
-	
+static inline uint32_t state_get(void){
+	return dip[0];
 }
 
 
