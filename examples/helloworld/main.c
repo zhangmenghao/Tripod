@@ -66,11 +66,14 @@ main(int argc, char **argv)
 
 	/* call lcore_hello() on every slave lcore */
 	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
+		printf("lcore_id is %u\n", lcore_id);
 		rte_eal_remote_launch(lcore_hello, NULL, lcore_id);
 	}
 
 	/* call it on master lcore too */
 	lcore_hello(NULL);
+
+	//rte_eal_mp_remote_launch(lcore_hello, NULL, CALL_MASTER);
 
 	rte_eal_mp_wait_lcore();
 	return 0;
