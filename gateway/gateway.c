@@ -49,6 +49,7 @@
 #define NUM_MBUFS 8191
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
+#define DIP_MAX 10000001
 
 #ifndef IPv4_BYTES
 #define IPv4_BYTES_FMT "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8
@@ -63,7 +64,16 @@ static const struct rte_eth_conf port_conf_default = {
 	.rxmode = { .max_rx_pkt_len = ETHER_MAX_LEN }//1518
 };
 
-/* basicfwd.c: Basic DPDK skeleton forwarding example. */
+uint32_t dip[DIP_MAX];
+
+static inline void state_set(){
+	
+}
+
+static inline void state_get(){
+	
+}
+
 
 /*
  * Initializes a given port using global settings and with the RX buffers
@@ -137,7 +147,7 @@ print_ethaddr(const char *name, struct ether_addr *eth_addr)
 }
 
 /*
- * 
+ * gateway network funtions.
  */
 static int
 lcore_nf(__attribute__((unused)) void *arg)
@@ -154,7 +164,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					"polling thread.\n\tPerformance will "
 					"not be optimal.\n", port);
 
-	printf("\nCore %u processing packets. [Ctrl+C to quit]\n",
+	printf("\nCore %u processing packets.\n",
 			rte_lcore_id());
 
 	/* Run until the application is quit or killed. */
@@ -199,6 +209,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
 				printf("\n");
 
+				//parse tcp/udp
+
 			}
 
 			/* Free any unsent packets. */
@@ -213,7 +225,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 }
 
 /*
- * 
+ * gateway manager.
  */
 static int
 lcore_manager(__attribute__((unused)) void *arg)
@@ -258,9 +270,6 @@ main(int argc, char *argv[])
 		if (port_init(portid, mbuf_pool) != 0)//use mbuf_pool to cache RX/TX
 			rte_exit(EXIT_FAILURE, "Cannot init port %"PRIu8 "\n",
 					portid);
-
-	if (rte_lcore_count() > 1)
-		printf("\nWARNING: Too many lcores enabled. Only 1 used.\n");
 
 	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
 		rte_eal_remote_launch(lcore_nf, NULL, lcore_id);
