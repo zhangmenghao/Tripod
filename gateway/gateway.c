@@ -33,15 +33,17 @@
 
 #include <stdint.h>
 #include <inttypes.h>
+#include <getopt.h>
+
 #include <rte_eal.h>
 #include <rte_ethdev.h>
 #include <rte_cycles.h>
 #include <rte_lcore.h>
 #include <rte_mbuf.h>
-
 #include <rte_byteorder.h>
 #include <rte_ip.h>
 #include <rte_ether.h>
+#include <rte_common.h>
 
 #define RX_RING_SIZE 128
 #define TX_RING_SIZE 512
@@ -49,6 +51,7 @@
 #define NUM_MBUFS 8191
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
+#define MAX_RX_QUEUE_PER_LCORE 16
 #define DIP_MAX 10000001
 
 #ifndef IPv4_BYTES
@@ -64,6 +67,18 @@ static const struct rte_eth_conf port_conf_default = {
 	.rxmode = { .max_rx_pkt_len = ETHER_MAX_LEN }//1518
 };
 
+static int enabled_port_mask = 0;
+
+struct ipv4_5tuple {
+	uint32_t ip_dst;
+	uint32_t ip_src;
+	uint16_t port_dst;
+	uint16_t port_src;
+	uint8_t  proto;
+} __rte_cache_aligned;
+struct ipv4_5tuple ipv4_5tuples;
+
+//share variables
 uint32_t dip[DIP_MAX];
 
 static inline void state_set(void){
@@ -145,6 +160,86 @@ print_ethaddr(const char *name, struct ether_addr *eth_addr)
 	char buf[ETHER_ADDR_FMT_SIZE];
 	ether_format_addr(buf, ETHER_ADDR_FMT_SIZE, eth_addr);
 	printf("%s is %s\n", name, buf);
+}
+
+/* display usage */
+static void
+print_usage(const char *prgname)
+{
+	printf("%s [EAL options] -- -p PORTMASK [-q NQ]\n"
+	       "  -p PORTMASK: hexadecimal bitmask of ports to configure\n"
+	       "  -q NQ: number of queue (=ports) per lcore (default is 1)\n",
+	       prgname);
+}
+
+static int
+parse_portmask(const char *portmask)
+{
+	char *end = NULL;
+	unsigned long pm;
+
+	/* parse hexadecimal string */
+	pm = strtoul(portmask, &end, 16);
+	if ((portmask[0] == '\0') || (end == NULL) || (*end != '\0'))
+		return -1;
+
+	if (pm == 0)
+		return -1;
+
+	return pm;
+}
+
+/* Parse the argument given in the command line of the application */
+static int
+parse_args(int argc, char **argv)
+{
+	int opt, ret;
+	char **argvopt;
+	int option_index;
+	char *prgname = argv[0];
+	static struct option lgopts[] = {
+		{NULL, 0, 0, 0}
+	};
+
+	argvopt = argv;
+
+	while ((opt = getopt_long(argc, argvopt, "p:",
+				  lgopts, &option_index)) != EOF) {
+
+		switch (opt) {
+		/* portmask */
+		case 'p':
+			enabled_port_mask = parse_portmask(optarg);
+			if (enabled_port_mask < 0) {
+				printf("invalid portmask\n");
+				print_usage(prgname);
+				return -1;
+			}
+			break;
+
+		/* long options */
+		case 0:
+			print_usage(prgname);
+			return -1;
+
+		default:
+			print_usage(prgname);
+			return -1;
+		}
+	}
+
+	if (enabled_port_mask == 0) {
+		printf("portmask not specified\n");
+		print_usage(prgname);
+		return -1;
+	}
+
+	if (optind >= 0)
+		argv[optind-1] = prgname;
+
+	ret = optind-1;
+	optind = 1; /* reset getopt lib */
+	return ret;
 }
 
 /*
@@ -254,10 +349,14 @@ main(int argc, char *argv[])
 	argc -= ret;
 	argv += ret;
 
-	/* Check that there is an even number of ports to send/receive on. */
+	/* parse application arguments (after the EAL ones) */
+	ret = parse_args(argc, argv);
+	if (ret < 0)
+		rte_exit(EXIT_FAILURE, "Invalid arguments\n");
+
 	nb_ports = rte_eth_dev_count();
-	if (nb_ports < 2 || (nb_ports & 1))
-		rte_exit(EXIT_FAILURE, "Error: number of ports must be even\n");
+	if (nb_ports == 0)
+		rte_exit(EXIT_FAILURE, "Error: no ports found\n");
 
 	/* Creates a new mempool in memory to hold the mbufs. */
 	mbuf_pool = rte_pktmbuf_pool_create("MBUF_POOL", NUM_MBUFS * nb_ports,
@@ -265,6 +364,10 @@ main(int argc, char *argv[])
 
 	if (mbuf_pool == NULL)
 		rte_exit(EXIT_FAILURE, "Cannot create mbuf pool\n");
+
+	/* check if portmask has non-existent ports */
+	if (enabled_port_mask & ~(RTE_LEN2MASK(nb_ports, unsigned)))
+		rte_exit(EXIT_FAILURE, "Non-existent ports in portmask!\n");
 
 	/* Initialize all ports. */
 	for (portid = 0; portid < nb_ports; portid++)
