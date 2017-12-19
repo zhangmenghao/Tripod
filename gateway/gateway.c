@@ -372,15 +372,25 @@ lcore_nf(__attribute__((unused)) void *arg)
 				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
 				printf("next_proto_id is %u\n", next_proto_id);
 				
-				//if (next_proto_id == 6)
+				uint16_t src_port;
+				uint16_t dst_port; 
 				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ipv4_hdr));
-				struct udp_hdr * upd_hdrs;
-				uint16_t udp_src_port;
-				uint16_t udp_dst_port; 
-				upd_hdrs =  rte_pktmbuf_mtod(bufs[i], struct udp_hdr *);
-				udp_src_port = rte_be_to_cpu_16(upd_hdrs->src_port);
-				udp_dst_port = rte_be_to_cpu_16(upd_hdrs->dst_port);
-				printf("udp_src_port and udp_dst_port is %u and %u\n", udp_src_port, udp_dst_port);
+				if (next_proto_id == 17){
+					struct udp_hdr * upd_hdrs;
+					upd_hdrs =  rte_pktmbuf_mtod(bufs[i], struct udp_hdr *);
+					src_port = rte_be_to_cpu_16(upd_hdrs->src_port);
+					dst_port = rte_be_to_cpu_16(upd_hdrs->dst_port);
+				}
+				else if (next_proto_id == 6){
+					struct tcp_hdr * tcp_hdrs;
+					tcp_hdrs =  rte_pktmbuf_mtod(bufs[i], struct tcp_hdr *);
+					src_port = rte_be_to_cpu_16(tcp_hdrs->src_port);
+					dst_port = rte_be_to_cpu_16(tcp_hdrs->dst_port);
+				}
+				else{
+					rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
+				}
+				printf("src_port and dst_port is %u and %u\n", src_port, dst_port);
 
 				
 				//parse tcp/udp
