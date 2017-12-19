@@ -172,8 +172,7 @@ static void
 print_usage(const char *prgname)
 {
 	printf("%s [EAL options] -- -p PORTMASK [-q NQ]\n"
-	       "  -p PORTMASK: hexadecimal bitmask of ports to configure\n"
-	       "  -q NQ: number of queue (=ports) per lcore (default is 1)\n",
+	       "  -p PORTMASK: hexadecimal bitmask of ports to configure\n",
 	       prgname);
 }
 
@@ -331,7 +330,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 static int
 lcore_manager(__attribute__((unused)) void *arg)
 {
-	printf("I am the gateway manager\n");
+	printf("\nCore %u manage states in gateway.\n",
+			rte_lcore_id());
 	return 0;
 }
 
