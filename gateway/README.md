@@ -8,7 +8,7 @@ Runing Gateway
 --
 ```
 make
-./build/app/gateway -l 0-1
+sudo ./build/app/gateway -l 0-1 -- -p 1
 ```
 
 
