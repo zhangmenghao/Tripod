@@ -275,6 +275,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 		 */
 		for (port = 0; port < nb_ports; port++) {
 			if ((enabled_port_mask & (1 << port)) == 0) {
+				printf("Skipping %u\n", port);
 				continue;
 			}
 
