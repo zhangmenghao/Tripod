@@ -269,17 +269,12 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 	/* Run until the application is quit or killed. */
 	for (;;) {
-		/*
-		 * Receive packets on a port and forward them on the paired
-		 * port. The mapping is 0 -> 1, 1 -> 0, 2 -> 3, 3 -> 2, etc.
-		 */
 		for (port = 0; port < nb_ports; port++) {
 			if ((enabled_port_mask & (1 << port)) == 0) {
-				printf("Skipping %u\n", port);
+				//printf("Skipping %u\n", port);
 				continue;
 			}
 
-			/* Get burst of RX packets, from first port of pair. */
 			struct rte_mbuf *bufs[BURST_SIZE];
 			const uint16_t nb_rx = rte_eth_rx_burst(port, 0,
 					bufs, BURST_SIZE);
@@ -287,9 +282,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 			if (unlikely(nb_rx == 0))
 				continue;
 
-			/* Send burst of TX packets, to second port of pair. */
-			const uint16_t nb_tx = rte_eth_tx_burst(port ^ 1, 0,
-					bufs, nb_rx);
+			
+			//const uint16_t nb_tx = rte_eth_tx_burst(port ^ 1, 0, bufs, nb_rx);
 
 			for (i = 0; i < nb_rx; i ++){
 				printf("packet comes from %u\n", port);
@@ -318,11 +312,11 @@ lcore_nf(__attribute__((unused)) void *arg)
 			}
 
 			/* Free any unsent packets. */
-			if (unlikely(nb_tx < nb_rx)) {
+			/*if (unlikely(nb_tx < nb_rx)) {
 				uint16_t buf;
 				for (buf = nb_tx; buf < nb_rx; buf++)
 					rte_pktmbuf_free(bufs[buf]);
-			}
+			}*/
 		}
 	}
 	return 0;
