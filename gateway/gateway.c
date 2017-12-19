@@ -67,6 +67,12 @@ static const struct rte_eth_conf port_conf_default = {
 	.rxmode = {
         .max_rx_pkt_len = ETHER_MAX_LEN
     }, //1518
+    .rx_adv_conf = {
+        .rss_conf = {
+            .rss_key = NULL,
+            .rss_hf = ETH_RSS_IP | ETH_RSS_UDP | ETH_RSS_TCP | ETH_RSS_SCTP,
+        }
+    },
     .fdir_conf = {
         .mode = RTE_FDIR_MODE_PERFECT,
         .pballoc = RTE_FDIR_PBALLOC_64K,
@@ -91,12 +97,30 @@ static const struct rte_eth_conf port_conf_default = {
     },
 };
 
-static const struct rte_eth_fdir_filter arg = {
+static const struct rte_eth_fdir_filter fdir_filter_arg = {
     .soft_id = 1,
     .input = {
         .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_UDP,
+        .flow = {
+            .udp4_flow = {
+                .ip = {
+                    .src_ip = 0x03020202,
+                    .dst_ip = 0x05020202,
+                }
+                .src_port = rte_cpu_to_be_16(1024),
+                .dst_port = rte_cpu_to_be_16(1024),
+            }
+        }
     }
+    .action = {
+        .rx_queue = 1,
+        .behavior = RTE_ETH_FDIR_ACCEPT,
+        .report_status = RTE_ETH_FDIR_REPORT_ID,
+    }
+
 };
+
+static rte_eth_rss_reta_entry64 reta_conf[2];
 
 static int enabled_port_mask = 0;
 
@@ -121,6 +145,20 @@ static inline uint32_t state_get(void){
 	return dip[0];
 }
 
+static inline int
+rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
+{
+    int idx, i, j = 0;
+    for (idx = 0; i < 2; idx++) {
+        reta_conf[idx].mask = ~0ULL;
+        for (i = 0; i < RTE_RETA_GROUP_SIZE; i++, j++) {
+            if (j == nb_nf_lcore)
+                j = 0;
+            reta_conf[i] = j;
+        }
+    }
+    rte_eth_dev_rss_reta_query(port, reta_conf, 128);
+}
 
 /*
  * Initializes a given port using global settings and with the RX buffers
@@ -173,6 +211,13 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 	retval = rte_eth_dev_start(port);
 	if (retval < 0)
 		return retval;
+
+    /* Set FlowDirector flow filter on port */
+    rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+                            RTE_ETH_FILTER_ADD, &fdir_filter_arg);
+
+    /* Set hash array of RSS */
+    rss_hash_set(uint32_t nb_nf_lcore, uint8_t port);
 
 	/* Display the port MAC address. */
 	struct ether_addr addr;
