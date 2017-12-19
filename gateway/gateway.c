@@ -44,6 +44,8 @@
 #include <rte_ip.h>
 #include <rte_ether.h>
 #include <rte_common.h>
+#include <rte_tcp.h>
+#include <rte_udp.h>
 
 #define RX_RING_SIZE 128
 #define TX_RING_SIZE 512
@@ -80,6 +82,14 @@ struct ipv4_5tuple ipv4_5tuples;
 
 //share variables
 uint32_t dip[DIP_MAX];
+
+uint32_t dip_pool[5]={
+	IPv4(100,10,0,0),
+	IPv4(100,10,0,1),
+	IPv4(100,10,0,2),
+	IPv4(100,10,0,3),
+	IPv4(100,10,0,4),
+};
 
 static inline void state_set(void){
 	dip[0] = 1;
@@ -246,6 +256,60 @@ parse_args(int argc, char **argv)
 	return ret;
 }
 
+static void
+check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
+{
+#define CHECK_INTERVAL 100 /* 100ms */
+#define MAX_CHECK_TIME 90 /* 9s (90 * 100ms) in total */
+	uint8_t portid, count, all_ports_up, print_flag = 0;
+	struct rte_eth_link link;
+
+	printf("\nChecking link status");
+	fflush(stdout);
+	for (count = 0; count <= MAX_CHECK_TIME; count++) {
+		all_ports_up = 1;
+		for (portid = 0; portid < port_num; portid++) {
+			if ((port_mask & (1 << portid)) == 0)
+				continue;
+			memset(&link, 0, sizeof(link));
+			rte_eth_link_get_nowait(portid, &link);
+			/* print link status if flag set */
+			if (print_flag == 1) {
+				if (link.link_status)
+					printf("Port %d Link Up - speed %u "
+						"Mbps - %s\n", (uint8_t)portid,
+						(unsigned)link.link_speed,
+				(link.link_duplex == ETH_LINK_FULL_DUPLEX) ?
+					("full-duplex") : ("half-duplex\n"));
+				else
+					printf("Port %d Link Down\n",
+							(uint8_t)portid);
+				continue;
+			}
+			/* clear all_ports_up flag if any link down */
+			if (link.link_status == ETH_LINK_DOWN) {
+				all_ports_up = 0;
+				break;
+			}
+		}
+		/* after finally printing all link status, get out */
+		if (print_flag == 1)
+			break;
+
+		if (all_ports_up == 0) {
+			printf(".");
+			fflush(stdout);
+			rte_delay_ms(CHECK_INTERVAL);
+		}
+
+		/* set the print_flag if all ports up or timeout */
+		if (all_ports_up == 1 || count == (MAX_CHECK_TIME - 1)) {
+			print_flag = 1;
+			printf("\ndone\n");
+		}
+	}
+}
+
 /*
  * gateway network funtions.
  */
@@ -282,7 +346,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 			if (unlikely(nb_rx == 0))
 				continue;
 
-			
 			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 
 			for (i = 0; i < nb_rx; i ++){
@@ -305,9 +368,20 @@ lcore_nf(__attribute__((unused)) void *arg)
 				ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
 				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
 				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
-				printf("\n");
+				
 
+				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ipv4_hdr));
+				struct udp_hdr * upd_hdrs;
+				uint16_t udp_src_port;
+				uint16_t udp_dst_port; 
+				upd_hdrs =  rte_pktmbuf_mtod(bufs[i], struct udp_hdr *);
+				udp_src_port = rte_be_to_cpu_16(upd_hdrs->src_port);
+				udp_dst_port = rte_be_to_cpu_16(upd_hdrs->dst_port);
+				printf("udp_src_port and udp_dst_port is %u and %u\n", udp_src_port, udp_dst_port);
+
+				
 				//parse tcp/udp
+				printf("\n");
 
 			}
 
@@ -376,6 +450,8 @@ main(int argc, char *argv[])
 	for (portid = 0; portid < nb_ports; portid++)
 		if (port_init(portid, mbuf_pool) == 0)//use mbuf_pool to cache RX/TX
 			printf("Initialize port %u, finshed!\n", portid);
+
+	check_all_ports_link_status((uint8_t)nb_ports, enabled_port_mask);
 
 	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
 		rte_eal_remote_launch(lcore_nf, NULL, lcore_id);
