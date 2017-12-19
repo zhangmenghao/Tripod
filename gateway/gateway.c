@@ -64,7 +64,38 @@
 #endif
 
 static const struct rte_eth_conf port_conf_default = {
-	.rxmode = { .max_rx_pkt_len = ETHER_MAX_LEN }//1518
+	.rxmode = {
+        .max_rx_pkt_len = ETHER_MAX_LEN
+    }, //1518
+    .fdir_conf = {
+        .mode = RTE_FDIR_MODE_PERFECT,
+        .pballoc = RTE_FDIR_PBALLOC_64K,
+        .status = RTE_FDIR_REPORT_STATUS,
+        .drop_queue = 127,
+        .mask = {
+            .vlan_tci_mask = 0x0,
+            .ipv4_mask = {
+                .src_ip = 0xFFFFFFFF,
+                .dst_ip = 0xFFFFFFFF,
+            },
+            .ipv6_mask = {
+                .src_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
+                .dst_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
+            },
+            .src_port_mask = 0xFFFF,
+            .dst_port_mask = 0xFFFF,
+            .mac_addr_byte_mask = 0xFF,
+            .tunnel_type_mask = 1,
+            .tunnel_id_mask = 0xFFFFFFFF,
+        },
+    },
+};
+
+static const struct rte_eth_fdir_filter arg = {
+    .soft_id = 1,
+    .input = {
+        .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_UDP,
+    }
 };
 
 static int enabled_port_mask = 0;
@@ -104,7 +135,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 	}
 
 	struct rte_eth_conf port_conf = port_conf_default;
-	const uint16_t rx_rings = 1, tx_rings = 1;
+	const uint16_t rx_rings = 2, tx_rings = 1;
 	uint16_t nb_rxd = RX_RING_SIZE;
 	uint16_t nb_txd = TX_RING_SIZE;//64k
 	int retval;
