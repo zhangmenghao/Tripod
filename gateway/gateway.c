@@ -363,13 +363,16 @@ lcore_nf(__attribute__((unused)) void *arg)
 				struct ipv4_hdr *ip_hdr;
 				uint32_t ip_dst;
 				uint32_t ip_src;
+				uint8_t  next_proto_id;
 				ip_hdr = rte_pktmbuf_mtod(bufs[i], struct ipv4_hdr *);
 				ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
 				ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
+				next_proto_id = rte_be_to_cpu_32(ip_hdr->next_proto_id);
 				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
 				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
+				printf("next_proto_id is %u\n", next_proto_id);
 				
-
+				//if (next_proto_id == 6)
 				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ipv4_hdr));
 				struct udp_hdr * upd_hdrs;
 				uint16_t udp_src_port;
