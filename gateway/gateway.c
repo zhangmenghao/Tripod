@@ -102,7 +102,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 		printf("Skipping disabled port %d\n", port);
 		return 1;
 	}
-	
+
 	struct rte_eth_conf port_conf = port_conf_default;
 	const uint16_t rx_rings = 1, tx_rings = 1;
 	uint16_t nb_rxd = RX_RING_SIZE;
@@ -376,9 +376,8 @@ main(int argc, char *argv[])
 
 	/* Initialize all ports. */
 	for (portid = 0; portid < nb_ports; portid++)
-		if (port_init(portid, mbuf_pool) != 0)//use mbuf_pool to cache RX/TX
-			rte_exit(EXIT_FAILURE, "Cannot init port %"PRIu8 "\n",
-					portid);
+		if (port_init(portid, mbuf_pool) == 0)//use mbuf_pool to cache RX/TX
+			printf("Initialize port %u, finshed!\n", portid);
 
 	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
 		rte_eal_remote_launch(lcore_nf, NULL, lcore_id);
