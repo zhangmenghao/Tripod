@@ -367,7 +367,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 				ip_hdr = rte_pktmbuf_mtod(bufs[i], struct ipv4_hdr *);
 				ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
 				ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
-				next_proto_id = rte_be_to_cpu_32(ip_hdr->next_proto_id);
+				next_proto_id = ip_hdr->next_proto_id;
 				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
 				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
 				printf("next_proto_id is %u\n", next_proto_id);
