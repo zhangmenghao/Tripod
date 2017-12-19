@@ -274,6 +274,9 @@ lcore_nf(__attribute__((unused)) void *arg)
 		 * port. The mapping is 0 -> 1, 1 -> 0, 2 -> 3, 3 -> 2, etc.
 		 */
 		for (port = 0; port < nb_ports; port++) {
+			if ((enabled_port_mask & (1 << port)) == 0) {
+				continue;
+			}
 
 			/* Get burst of RX packets, from first port of pair. */
 			struct rte_mbuf *bufs[BURST_SIZE];
