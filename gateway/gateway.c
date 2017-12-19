@@ -98,6 +98,11 @@ static inline uint32_t state_get(void){
 static inline int
 port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 {
+	if ((enabled_port_mask & (1 << port)) == 0) {
+		printf("Skipping disabled port %d\n", port);
+		return 1;
+	}
+	
 	struct rte_eth_conf port_conf = port_conf_default;
 	const uint16_t rx_rings = 1, tx_rings = 1;
 	uint16_t nb_rxd = RX_RING_SIZE;
