@@ -394,6 +394,8 @@ populate_ipv4_few_flow_into_table(const struct rte_hash *h)
 				" to the l3fwd hash.\n", i);
 		}
 		ipv4_l3fwd_out_if[ret] = entry.if_out;
+		printf("populate_ipv4_few_flow_into_table entry.key.ip_dst, ip_src, port_dst, port_src, proto is %u, %u, %u, %u, %u\n",  
+			entry.key.ip_dst, entry.key.ip_src, entry.key.port_dst, entry.key.port_src, entry.key.proto);
 	}
 	printf("Hash: Adding 0x%" PRIx64 " keys\n",
 		(uint64_t)IPV4_L3FWD_EM_NUM_ROUTES);
@@ -470,7 +472,7 @@ populate_ipv4_many_flow_into_table(const struct rte_hash *h,
 			break;
 		};
 		convert_ipv4_5tuple(&entry.key, &newkey);
-		printf("entry.key.ip_dst, ip_src, port_dst, port_src, proto is %u, %u, %u, %u, %u\n",  
+		printf("populate_ipv4_many_flow_into_table entry.key.ip_dst, ip_src, port_dst, port_src, proto is %u, %u, %u, %u, %u\n",  
 			entry.key.ip_dst, entry.key.ip_src, entry.key.port_dst, entry.key.port_src, entry.key.proto);
 		int32_t ret = rte_hash_add_key(h, (void *) &newkey);
 
