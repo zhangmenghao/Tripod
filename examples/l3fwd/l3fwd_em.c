@@ -61,6 +61,15 @@
 #define EM_HASH_CRC 1
 #endif
 
+#ifndef IPv4_BYTES
+#define IPv4_BYTES_FMT "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8
+#define IPv4_BYTES(addr) \
+		(uint8_t) (((addr) >> 24) & 0xFF),\
+		(uint8_t) (((addr) >> 16) & 0xFF),\
+		(uint8_t) (((addr) >> 8) & 0xFF),\
+		(uint8_t) ((addr) & 0xFF)
+#endif
+
 #ifdef EM_HASH_CRC
 #include <rte_hash_crc.h>
 #define DEFAULT_HASH_FUNC       rte_hash_crc
@@ -394,8 +403,8 @@ populate_ipv4_few_flow_into_table(const struct rte_hash *h)
 				" to the l3fwd hash.\n", i);
 		}
 		ipv4_l3fwd_out_if[ret] = entry.if_out;
-		printf("populate_ipv4_few_flow_into_table entry.key.ip_dst, ip_src, port_dst, port_src, proto is %u, %u, %u, %u, %u\n",  
-			entry.key.ip_dst, entry.key.ip_src, entry.key.port_dst, entry.key.port_src, entry.key.proto);
+		printf("populate_ipv4_few_flow_into_table entry.key.ip_dst, ip_src, port_dst, port_src, proto is "IPv4_BYTES_FMT", "IPv4_BYTES_FMT", %u, %u, %u\n",  
+			IPv4_BYTES(entry.key.ip_dst), IPv4_BYTES(entry.key.ip_src), entry.key.port_dst, entry.key.port_src, entry.key.proto);
 	}
 	printf("Hash: Adding 0x%" PRIx64 " keys\n",
 		(uint64_t)IPV4_L3FWD_EM_NUM_ROUTES);
