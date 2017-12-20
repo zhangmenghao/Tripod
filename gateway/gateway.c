@@ -156,8 +156,8 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 	/* Display the port MAC address. */
 	struct ether_addr addr;
 	rte_eth_macaddr_get(port, &addr);
-	printf("Port %u MAC: %02" PRIx8 " %02" PRIx8 " %02" PRIx8
-			   " %02" PRIx8 " %02" PRIx8 " %02" PRIx8 "\n",
+	printf("Port %u MAC: %02" PRIx8 ":%02" PRIx8 ":%02" PRIx8
+			   ":%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8 "\n",
 			(unsigned)port,
 			addr.addr_bytes[0], addr.addr_bytes[1],
 			addr.addr_bytes[2], addr.addr_bytes[3],
