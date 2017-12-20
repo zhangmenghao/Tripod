@@ -470,6 +470,8 @@ populate_ipv4_many_flow_into_table(const struct rte_hash *h,
 			break;
 		};
 		convert_ipv4_5tuple(&entry.key, &newkey);
+		printf("entry.key.ip_dst, ip_src, port_dst, port_src, proto is %u, %u, %u, %u, %u\n",  
+			entry.key.ip_dst, entry.key.ip_src, entry.key.port_dst, entry.key.port_src, entry.key.proto);
 		int32_t ret = rte_hash_add_key(h, (void *) &newkey);
 
 		if (ret < 0)
