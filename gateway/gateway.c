@@ -437,7 +437,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 			}
 
 			struct rte_mbuf *bufs[BURST_SIZE];
-			struct rte_mbuf * p;
 			const uint16_t nb_rx = rte_eth_rx_burst(port, 0,
 					bufs, BURST_SIZE);
 
@@ -445,7 +444,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 				continue;	
 			
 			for (i = 0; i < nb_rx; i ++){
-				p = bufs[i];
+				struct rte_mbuf *p = bufs[i];
 				printf("packet comes from %u\n", port);
 				struct ether_hdr *eth_hdr;
 				eth_hdr = rte_pktmbuf_mtod(p, struct ether_hdr *);
@@ -493,7 +492,33 @@ lcore_nf(__attribute__((unused)) void *arg)
 				uint32_t dip = dip_pool[ret % DIP_POOL_SIZE];
 				ip_hdr->dst_addr = rte_cpu_to_be_32(dip);
 
+				p = bufs[i];
+				rte_pktmbuf_adj(p, (uint16_t)sizeof(struct ether_hdr));
+				ip_hdr = rte_pktmbuf_mtod(p, struct ipv4_hdr *);
 				printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+				printf("new_ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->src_addr)));
+				printf("new_next_proto_id is %u\n", ip_hdr->next_proto_id);
+
+				rte_pktmbuf_adj(p, (uint16_t)sizeof(struct ipv4_hdr));
+				if (ip_hdr->next_proto_id == 17){
+					struct udp_hdr * upd_hdrs;
+					upd_hdrs =  rte_pktmbuf_mtod(p, struct udp_hdr *);
+					printf("src_port and dst_port is %u and %u\n", rte_be_to_cpu_16(upd_hdrs->src_port),
+					 rte_be_to_cpu_16(upd_hdrs->dst_port));
+				}
+				else if (ip_hdr->next_proto_id == 6){
+					struct tcp_hdr * tcp_hdrs;
+					tcp_hdrs =  rte_pktmbuf_mtod(p, struct tcp_hdr *);
+					printf("src_port and dst_port is %u and %u\n", rte_be_to_cpu_16(tcp_hdrs->src_port),
+					 rte_be_to_cpu_16(tcp_hdrs->dst_port));
+				}
+				else{
+					rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
+				}
+				
+
+
+				
 
 				printf("\n");
 
