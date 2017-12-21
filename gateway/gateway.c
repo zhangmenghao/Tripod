@@ -513,12 +513,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 					 rte_be_to_cpu_16(tcp_hdrs->dst_port));
 				}
 				else{
-					rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
-				}
-				
-
-
-				
+					printf("do nothing!\n");
+				}	
 
 				printf("\n");
 
