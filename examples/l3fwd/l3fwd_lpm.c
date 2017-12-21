@@ -218,7 +218,7 @@ lpm_main_loop(__attribute__((unused)) void *dummy)
 		return 0;
 	}
 
-	RTE_LOG(INFO, L3FWD, "entering main loop on lcore %u\n", lcore_id);
+	RTE_LOG(INFO, L3FWD, "entering lpm main loop on lcore %u\n", lcore_id);
 
 	for (i = 0; i < qconf->n_rx_queue; i++) {
 

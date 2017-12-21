@@ -677,7 +677,7 @@ em_main_loop(__attribute__((unused)) void *dummy)
 		return 0;
 	}
 
-	RTE_LOG(INFO, L3FWD, "entering main loop on lcore %u\n", lcore_id);
+	RTE_LOG(INFO, L3FWD, "entering em main loop on lcore %u\n", lcore_id);
 
 	for (i = 0; i < qconf->n_rx_queue; i++) {
 
@@ -723,7 +723,7 @@ em_main_loop(__attribute__((unused)) void *dummy)
 			if (nb_rx == 0)
 				continue;
 			printf("nb_rx is %u\n", nb_rx);
-			
+
 #if defined RTE_ARCH_X86 || defined RTE_MACHINE_CPUFLAG_NEON
 			l3fwd_em_send_packets(nb_rx, pkts_burst,
 							portid, qconf);
