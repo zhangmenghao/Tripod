@@ -55,7 +55,16 @@
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
 #define MAX_RX_QUEUE_PER_LCORE 16
-#define DIP_MAX 10000001
+#define NB_SOCKETS 8
+/* Hash parameters. */
+#ifdef RTE_ARCH_64
+/* default to 4 million hash entries (approx) */
+#define HASH_ENTRIES		(1024*1024*4)
+#else
+/* 32-bit has less address-space for hugepage memory, limit to 1M entries */
+#define HASH_ENTRIES		(1024*1024*1)
+#endif
+#define HASH_ENTRY_NUMBER_DEFAULT	4
 
 #ifndef IPv4_BYTES
 #define IPv4_BYTES_FMT "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8
@@ -64,6 +73,14 @@
 		(uint8_t) (((addr) >> 16) & 0xFF),\
 		(uint8_t) (((addr) >> 8) & 0xFF),\
 		(uint8_t) ((addr) & 0xFF)
+#endif
+
+#ifdef EM_HASH_CRC
+#include <rte_hash_crc.h>
+#define DEFAULT_HASH_FUNC       rte_hash_crc
+#else
+#include <rte_jhash.h>
+#define DEFAULT_HASH_FUNC       rte_jhash
 #endif
 
 static const struct rte_eth_conf port_conf_default = {
@@ -94,7 +111,7 @@ union ipv4_5tuple_host {
 };
 
 //share variables
-struct rte_hash *hash_table;
+struct rte_hash *hash_table[NB_SOCKETS];
 
 //configurations
 uint32_t dip_pool[5]={
@@ -337,6 +354,55 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 	}
 }
 
+static inline uint32_t
+ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,
+		uint32_t init_val)
+{
+	const union ipv4_5tuple_host *k;
+	uint32_t t;
+	const uint32_t *p;
+
+	k = data;
+	t = k->proto;
+	p = (const uint32_t *)&k->port_src;
+
+#ifdef EM_HASH_CRC
+	init_val = rte_hash_crc_4byte(t, init_val);
+	init_val = rte_hash_crc_4byte(k->ip_src, init_val);
+	init_val = rte_hash_crc_4byte(k->ip_dst, init_val);
+	init_val = rte_hash_crc_4byte(*p, init_val);
+#else
+	init_val = rte_jhash_1word(t, init_val);
+	init_val = rte_jhash_1word(k->ip_src, init_val);
+	init_val = rte_jhash_1word(k->ip_dst, init_val);
+	init_val = rte_jhash_1word(*p, init_val);
+#endif
+
+	return init_val;
+}
+
+static void
+setup_hash(const int socketid)
+{
+	struct rte_hash_parameters hash_params = {
+		.name = NULL,
+		.entries = HASH_ENTRIES,
+		.key_len = sizeof(union ipv4_5tuple_host),
+		.hash_func = ipv4_hash_crc,
+		.hash_func_init_val = 0,
+	};
+	char s[64];
+	snprintf(s, sizeof(s), "ipv4_l3fwd_hash_%d", socketid);
+	hash_params.name = s;
+	hash_params.socket_id = socketid;
+	hash_table[socketid] =
+		rte_hash_create(&hash_params);
+	if (hash_table[socketid] == NULL)
+		rte_exit(EXIT_FAILURE,
+			"Unable to create the l3fwd hash on socket %d\n",
+			socketid);
+}
+
 /*
  * gateway network funtions.
  */
@@ -373,7 +439,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 			if (unlikely(nb_rx == 0))
 				continue;
-			
+			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 			
 			for (i = 0; i < nb_rx; i ++){
 				printf("packet comes from %u\n", port);
@@ -385,7 +451,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 				eth_d_addr = eth_hdr->d_addr;
 				print_ethaddr("eth_s_addr", &eth_s_addr);
 				print_ethaddr("eth_d_addr", &eth_d_addr);
-				
+
 				struct ipv4_5tuple ip_5tuple;
 				union ipv4_5tuple_host newkey;
 				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ether_hdr));
@@ -417,15 +483,13 @@ lcore_nf(__attribute__((unused)) void *arg)
 				printf("src_port and dst_port is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
 
 				convert_ipv4_5tuple(&ip_5tuple, &newkey);
-				ret = rte_hash_add_key(hash_table, (void *) &newkey);
+				ret = rte_hash_add_key(hash_table[(int)rte_socket_id()], (void *) &newkey);
 				printf("value of rte is %u\n", ret);
 
 				//parse tcp/udp
 				printf("\n");
 
 			}
-
-			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 
 
 			/* Free any unsent packets. */
@@ -485,6 +549,8 @@ main(int argc, char *argv[])
 	if (mbuf_pool == NULL)
 		rte_exit(EXIT_FAILURE, "Cannot create mbuf pool\n");
 
+	setup_hash((int)rte_socket_id());//now is a single socket version
+
 	/* check if portmask has non-existent ports */
 	if (enabled_port_mask & ~(RTE_LEN2MASK(nb_ports, unsigned)))
 		rte_exit(EXIT_FAILURE, "Non-existent ports in portmask!\n");
@@ -495,6 +561,8 @@ main(int argc, char *argv[])
 			printf("Initialize port %u, finshed!\n", portid);
 
 	check_all_ports_link_status((uint8_t)nb_ports, enabled_port_mask);
+
+
 
 	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
 		rte_eal_remote_launch(lcore_nf, NULL, lcore_id);
