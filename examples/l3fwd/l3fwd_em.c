@@ -402,6 +402,7 @@ populate_ipv4_few_flow_into_table(const struct rte_hash *h)
 			rte_exit(EXIT_FAILURE, "Unable to add entry %" PRIu32
 				" to the l3fwd hash.\n", i);
 		}
+		printf("the value of ret is %u\n", ret);
 		ipv4_l3fwd_out_if[ret] = entry.if_out;
 		printf("populate_ipv4_few_flow_into_table entry.key.ip_dst, ip_src, port_dst, port_src, proto is "IPv4_BYTES_FMT", "IPv4_BYTES_FMT", %u, %u, %u\n",  
 			IPv4_BYTES(entry.key.ip_dst), IPv4_BYTES(entry.key.ip_src), entry.key.port_dst, entry.key.port_src, entry.key.proto);
