@@ -46,6 +46,7 @@
 #include <rte_common.h>
 #include <rte_tcp.h>
 #include <rte_udp.h>
+#include <rte_hash.h>
 
 #define RX_RING_SIZE 128
 #define TX_RING_SIZE 512
@@ -78,11 +79,24 @@ struct ipv4_5tuple {
 	uint16_t port_src;
 	uint8_t  proto;
 } __rte_cache_aligned;
-struct ipv4_5tuple ipv4_5tuples;
+
+union ipv4_5tuple_host {
+	struct {
+		uint8_t  pad0;
+		uint8_t  proto;
+		uint16_t pad1;
+		uint32_t ip_src;
+		uint32_t ip_dst;
+		uint16_t port_src;
+		uint16_t port_dst;
+	};
+	xmm_t xmm;
+};
 
 //share variables
-uint32_t dip[DIP_MAX];
+struct rte_hash *hash_table;
 
+//configurations
 uint32_t dip_pool[5]={
 	IPv4(100,10,0,0),
 	IPv4(100,10,0,1),
@@ -92,12 +106,25 @@ uint32_t dip_pool[5]={
 };
 
 static inline void state_set(void){
-	dip[0] = 1;
+	
 	//just an example
 }
 
 static inline uint32_t state_get(void){
-	return dip[0];
+	return 1;
+}
+
+static void
+convert_ipv4_5tuple(struct ipv4_5tuple *key1,
+		union ipv4_5tuple_host *key2)
+{
+	key2->ip_dst = rte_cpu_to_be_32(key1->ip_dst);
+	key2->ip_src = rte_cpu_to_be_32(key1->ip_src);
+	key2->port_dst = rte_cpu_to_be_16(key1->port_dst);
+	key2->port_src = rte_cpu_to_be_16(key1->port_src);
+	key2->proto = key1->proto;
+	key2->pad0 = 0;
+	key2->pad1 = 0;
 }
 
 
@@ -319,6 +346,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 	const uint8_t nb_ports = rte_eth_dev_count();
 	uint8_t port;
 	int i;
+	int32_t ret;
 
 	for (port = 0; port < nb_ports; port++)
 		if (rte_eth_dev_socket_id(port) > 0 &&
@@ -345,9 +373,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 			if (unlikely(nb_rx == 0))
 				continue;
-
-			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
-
+			
+			
 			for (i = 0; i < nb_rx; i ++){
 				printf("packet comes from %u\n", port);
 				struct ether_hdr *eth_hdr;
@@ -358,45 +385,48 @@ lcore_nf(__attribute__((unused)) void *arg)
 				eth_d_addr = eth_hdr->d_addr;
 				print_ethaddr("eth_s_addr", &eth_s_addr);
 				print_ethaddr("eth_d_addr", &eth_d_addr);
-
+				
+				struct ipv4_5tuple ip_5tuple;
+				union ipv4_5tuple_host newkey;
 				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ether_hdr));
 				struct ipv4_hdr *ip_hdr;
-				uint32_t ip_dst;
-				uint32_t ip_src;
-				uint8_t  next_proto_id;
 				ip_hdr = rte_pktmbuf_mtod(bufs[i], struct ipv4_hdr *);
-				ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
-				ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
-				next_proto_id = ip_hdr->next_proto_id;
-				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
-				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
-				printf("next_proto_id is %u\n", next_proto_id);
+				ip_5tuple.ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
+				ip_5tuple.ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
+				ip_5tuple.proto = ip_hdr->next_proto_id;
+				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple.ip_dst));
+				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple.ip_src));
+				printf("next_proto_id is %u\n", ip_5tuple.proto);
 				
-				uint16_t src_port;
-				uint16_t dst_port; 
 				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ipv4_hdr));
-				if (next_proto_id == 17){
+				if (ip_5tuple.proto == 17){
 					struct udp_hdr * upd_hdrs;
 					upd_hdrs =  rte_pktmbuf_mtod(bufs[i], struct udp_hdr *);
-					src_port = rte_be_to_cpu_16(upd_hdrs->src_port);
-					dst_port = rte_be_to_cpu_16(upd_hdrs->dst_port);
+					ip_5tuple.port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
+					ip_5tuple.port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
 				}
-				else if (next_proto_id == 6){
+				else if (ip_5tuple.proto == 6){
 					struct tcp_hdr * tcp_hdrs;
 					tcp_hdrs =  rte_pktmbuf_mtod(bufs[i], struct tcp_hdr *);
-					src_port = rte_be_to_cpu_16(tcp_hdrs->src_port);
-					dst_port = rte_be_to_cpu_16(tcp_hdrs->dst_port);
+					ip_5tuple.port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
+					ip_5tuple.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
 				}
 				else{
 					rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
 				}
-				printf("src_port and dst_port is %u and %u\n", src_port, dst_port);
+				printf("src_port and dst_port is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
 
-				
+				convert_ipv4_5tuple(&ip_5tuple, &newkey);
+				ret = rte_hash_add_key(hash_table, (void *) &newkey);
+				printf("value of rte is %u\n", ret);
+
 				//parse tcp/udp
 				printf("\n");
 
 			}
+
+			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
+
 
 			/* Free any unsent packets. */
 			if (unlikely(nb_tx < nb_rx)) {
