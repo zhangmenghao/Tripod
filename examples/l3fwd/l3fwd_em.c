@@ -719,6 +719,7 @@ em_main_loop(__attribute__((unused)) void *dummy)
 			queueid = qconf->rx_queue_list[i].queue_id;
 			nb_rx = rte_eth_rx_burst(portid, queueid, pkts_burst,
 				MAX_PKT_BURST);
+			printf("nb_rx is %u\n", nb_rx);
 			if (nb_rx == 0)
 				continue;
 
