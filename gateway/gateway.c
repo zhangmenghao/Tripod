@@ -64,7 +64,8 @@
 /* 32-bit has less address-space for hugepage memory, limit to 1M entries */
 #define HASH_ENTRIES		(1024*1024*1)
 #endif
-#define HASH_ENTRY_NUMBER_DEFAULT	4
+
+#define DIP_POOL_SIZE 5
 
 #ifndef IPv4_BYTES
 #define IPv4_BYTES_FMT "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8
@@ -114,7 +115,7 @@ union ipv4_5tuple_host {
 struct rte_hash *hash_table[NB_SOCKETS];
 
 //configurations
-uint32_t dip_pool[5]={
+uint32_t dip_pool[DIP_POOL_SIZE]={
 	IPv4(100,10,0,0),
 	IPv4(100,10,0,1),
 	IPv4(100,10,0,2),
@@ -441,7 +442,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 			if (unlikely(nb_rx == 0))
 				continue;
-			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 			
 			for (i = 0; i < nb_rx; i ++){
 				printf("packet comes from %u\n", port);
@@ -488,11 +488,16 @@ lcore_nf(__attribute__((unused)) void *arg)
 				ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
 				printf("value of rte is %u\n", ret);
 
-				//parse tcp/udp
+				uint32_t dip = dip_pool[ret % DIP_POOL_SIZE];
+				ip_hdr->dst_addr = rte_cpu_to_be_32(dip);
+
+				printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+
 				printf("\n");
 
 			}
 
+			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 
 			/* Free any unsent packets. */
 			if (unlikely(nb_tx < nb_rx)) {
