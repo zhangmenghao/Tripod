@@ -392,15 +392,17 @@ setup_hash(const int socketid)
 		.hash_func_init_val = 0,
 	};
 	char s[64];
-	snprintf(s, sizeof(s), "ipv4_l3fwd_hash_%d", socketid);
+	snprintf(s, sizeof(s), "ipv4_hash_%d", socketid);
 	hash_params.name = s;
 	hash_params.socket_id = socketid;
 	hash_table[socketid] =
 		rte_hash_create(&hash_params);
+
 	if (hash_table[socketid] == NULL)
 		rte_exit(EXIT_FAILURE,
 			"Unable to create the l3fwd hash on socket %d\n",
 			socketid);
+	printf("setup hash_table %s\n", s);
 }
 
 /*
