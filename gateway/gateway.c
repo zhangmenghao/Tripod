@@ -445,6 +445,13 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 			
+			/* Free any unsent packets. */
+			if (unlikely(nb_tx < nb_rx)) {
+				uint16_t buf;
+				for (buf = nb_tx; buf < nb_rx; buf++)
+					rte_pktmbuf_free(bufs[buf]);
+			}
+			
 			for (i = 0; i < nb_rx; i ++){
 				struct rte_mbuf *p = bufs[i];
 				printf("packet comes from %u\n", port);
@@ -522,12 +529,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 			}
 
-			/* Free any unsent packets. */
-			if (unlikely(nb_tx < nb_rx)) {
-				uint16_t buf;
-				for (buf = nb_tx; buf < nb_rx; buf++)
-					rte_pktmbuf_free(bufs[buf]);
-			}
+	
 		}
 	}
 	return 0;
