@@ -442,6 +442,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 			if (unlikely(nb_rx == 0))
 				continue;	
+
+			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 			
 			for (i = 0; i < nb_rx; i ++){
 				struct rte_mbuf *p = bufs[i];
@@ -519,8 +521,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 				printf("\n");
 
 			}
-
-			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 
 			/* Free any unsent packets. */
 			if (unlikely(nb_tx < nb_rx)) {
