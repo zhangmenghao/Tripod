@@ -65,8 +65,9 @@
 
 static const struct rte_eth_conf port_conf_default = {
 	.rxmode = {
-        .max_rx_pkt_len = ETHER_MAX_LEN
-    }, //1518
+        .max_rx_pkt_len = ETHER_MAX_LEN, //1518
+        .mq_mode = ETH_MQ_RX_RSS,
+    }, 
     .rx_adv_conf = {
         .rss_conf = {
             .rss_key = NULL,
@@ -77,36 +78,38 @@ static const struct rte_eth_conf port_conf_default = {
         .mode = RTE_FDIR_MODE_PERFECT,
         .pballoc = RTE_FDIR_PBALLOC_64K,
         .status = RTE_FDIR_REPORT_STATUS,
-        .drop_queue = 127,
         .mask = {
             .vlan_tci_mask = 0x0,
             .ipv4_mask = {
-                .src_ip = 0xFFFFFFFF,
+                .src_ip = 0x00FFFFFF,
                 .dst_ip = 0xFFFFFFFF,
             },
-            .ipv6_mask = {
-                .src_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
-                .dst_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
-            },
-            .src_port_mask = 0xFFFF,
-            .dst_port_mask = 0xFFFF,
+            // .ipv6_mask = {
+                // .src_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
+                // .dst_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
+            // },
+            // .src_port_mask = 0xFFFF,
+            // .dst_port_mask = 0xFFFF,
             .mac_addr_byte_mask = 0xFF,
             .tunnel_type_mask = 1,
             .tunnel_id_mask = 0xFFFFFFFF,
         },
+        .drop_queue = 127,
     },
 };
 
 static struct rte_eth_fdir_filter fdir_filter_arg = {
     .soft_id = 1,
     .input = {
-        .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_UDP,
+        // .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_TCP,
+        .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_OTHER,
         .flow = {
-            .udp4_flow = {
-                .ip = {
-                    .src_ip = 0x03020202, 
-                    .dst_ip = 0x05020202,
-                },
+            // .tcp4_flow = {
+            .ip4_flow = {
+                // .ip = {
+                .src_ip = 0x0000000A, 
+                .dst_ip = 0x0200000A,
+                // },
                 // .src_port = rte_cpu_to_be_16(1024),
                 // .dst_port = rte_cpu_to_be_16(1024),
             }
@@ -117,7 +120,6 @@ static struct rte_eth_fdir_filter fdir_filter_arg = {
         .behavior = RTE_ETH_FDIR_ACCEPT,
         .report_status = RTE_ETH_FDIR_REPORT_ID,
     }
-
 };
 
 static struct rte_eth_rss_reta_entry64 reta_conf[2];
@@ -149,7 +151,8 @@ static inline int
 rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
 {
     unsigned int idx, i, j = 0;
-    for (idx = 0; i < 2; idx++) {
+	int retval;
+    for (idx = 0; idx < 2; idx++) {
         reta_conf[idx].mask = ~0ULL;
         for (i = 0; i < RTE_RETA_GROUP_SIZE; i++, j++) {
             if (j == nb_nf_lcore)
@@ -157,8 +160,8 @@ rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
             reta_conf[idx].reta[i] = j;
         }
     }
-    rte_eth_dev_rss_reta_query(port, reta_conf, 128);
-    return 0;
+    retval = rte_eth_dev_rss_reta_update(port, reta_conf, 128);
+    return retval;
 }
 
 /*
@@ -192,12 +195,13 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 	if (retval != 0)
 		return retval;
 
-	/* Allocate and set up 1 RX queue per Ethernet port. */
+	/* Allocate and set up 2 RX queue per Ethernet port. */
 	for (q = 0; q < rx_rings; q++) {
 		retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
 				rte_eth_dev_socket_id(port), NULL, mbuf_pool);
 		if (retval < 0)
 			return retval;
+		printf("Init queue %d for port %d\n", q, port);
 	}
 
 	/* Allocate and set up 1 TX queue per Ethernet port. */
@@ -214,11 +218,17 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 		return retval;
 
     /* Set FlowDirector flow filter on port */
-    rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
-                            RTE_ETH_FILTER_ADD, &fdir_filter_arg);
+    // fdir_filter_arg.input.flow.tcp4_flow.src_port = rte_cpu_to_be_16(1024),
+    // fdir_filter_arg.input.flow.tcp4_flow.dst_port = rte_cpu_to_be_16(1024),
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+                                    RTE_ETH_FILTER_ADD, &fdir_filter_arg);
+    if (retval < 0)
+        return retval;
 
     /* Set hash array of RSS */
-    rss_hash_set(1, port);
+    retval = rss_hash_set(1, port);
+	if (retval < 0)
+		return retval;
 
 	/* Display the port MAC address. */
 	struct ether_addr addr;
@@ -363,7 +373,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 			const uint16_t nb_tx = rte_eth_tx_burst(port , 0, bufs, nb_rx);
 
 			for (i = 0; i < nb_rx; i ++){
-				printf("packet comes from %u\n", port);
+				printf("packet comes from port %u queue 0\n", port);
 				struct ether_hdr *eth_hdr;
 				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
 				struct ether_addr eth_s_addr;
@@ -405,8 +415,66 @@ lcore_nf(__attribute__((unused)) void *arg)
 static int
 lcore_manager(__attribute__((unused)) void *arg)
 {
+	const uint8_t nb_ports = rte_eth_dev_count();
+	uint8_t port;
+	int i;
+
 	printf("\nCore %u manage states in gateway.\n",
 			rte_lcore_id());
+
+	/* Run until the application is quit or killed. */
+	for (;;) {
+		for (port = 0; port < nb_ports; port++) {
+			if ((enabled_port_mask & (1 << port)) == 0) {
+				//printf("Skipping %u\n", port);
+				continue;
+			}
+
+			struct rte_mbuf *bufs[BURST_SIZE];
+			const uint16_t nb_rx = rte_eth_rx_burst(port, 1,
+					bufs, BURST_SIZE);
+
+			if (unlikely(nb_rx == 0))
+				continue;
+
+			
+			const uint16_t nb_tx = rte_eth_tx_burst(port , 0, bufs, nb_rx);
+
+			for (i = 0; i < nb_rx; i ++){
+				printf("packet comes from port %u queue 1\n", port);
+				struct ether_hdr *eth_hdr;
+				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
+				struct ether_addr eth_s_addr;
+				eth_s_addr = eth_hdr->s_addr;
+				struct ether_addr eth_d_addr;
+				eth_d_addr = eth_hdr->d_addr;
+				print_ethaddr("eth_s_addr", &eth_s_addr);
+				print_ethaddr("eth_d_addr", &eth_d_addr);
+
+				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ether_hdr));
+				struct ipv4_hdr *ip_hdr;
+				uint32_t ip_dst;
+				uint32_t ip_src;
+				ip_hdr = rte_pktmbuf_mtod(bufs[i], struct ipv4_hdr *);
+				ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
+				ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
+				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
+				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
+				printf("\n");
+
+				//parse tcp/udp
+
+			}
+
+			/* Free any unsent packets. */
+			if (unlikely(nb_tx < nb_rx)) {
+				uint16_t buf;
+				for (buf = nb_tx; buf < nb_rx; buf++)
+					rte_pktmbuf_free(bufs[buf]);
+			}
+		}
+	}
+	return 0;
 	return 0;
 }
 
@@ -453,6 +521,8 @@ main(int argc, char *argv[])
 	for (portid = 0; portid < nb_ports; portid++)
 		if (port_init(portid, mbuf_pool) == 0)//use mbuf_pool to cache RX/TX
 			printf("Initialize port %u, finshed!\n", portid);
+		else 
+			printf("Initialize port %u, failed!\n", portid);
 
 	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
 		rte_eal_remote_launch(lcore_nf, NULL, lcore_id);
