@@ -485,7 +485,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 				printf("src_port and dst_port is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
 
 				convert_ipv4_5tuple(&ip_5tuple, &newkey);
-				ret = rte_hash_add_key(hash_table[(int)rte_socket_id()], (void *) &newkey);
+				ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
 				printf("value of rte is %u\n", ret);
 
 				//parse tcp/udp
