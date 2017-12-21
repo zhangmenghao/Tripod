@@ -158,8 +158,9 @@ em_get_dst_port(const struct lcore_conf *qconf, struct rte_mbuf *pkt,
  */
 static inline void
 l3fwd_em_send_packets(int nb_rx, struct rte_mbuf **pkts_burst,
-		uint8_t portid, struct lcore_conf *qconf)
+			uint8_t portid, struct lcore_conf *qconf)
 {
+	printf("enter l3fwd_em_send_packets() in hlm.h\n");
 	int32_t i, j, pos;
 	uint16_t dst_port[MAX_PKT_BURST];
 
