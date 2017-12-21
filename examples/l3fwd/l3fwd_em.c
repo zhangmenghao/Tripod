@@ -717,9 +717,6 @@ em_main_loop(__attribute__((unused)) void *dummy)
 		for (i = 0; i < qconf->n_rx_queue; ++i) {
 			portid = qconf->rx_queue_list[i].port_id;
 			queueid = qconf->rx_queue_list[i].queue_id;
-			RTE_LOG(INFO, L3FWD,
-			"  portid=%hhu rxqueueid=%hhu\n",
-			portid, queueid);
 			nb_rx = rte_eth_rx_burst(portid, queueid, pkts_burst,
 				3);
 
