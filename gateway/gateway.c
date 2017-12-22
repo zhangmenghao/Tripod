@@ -501,7 +501,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 				ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
 				printf("value of rte is %u\n", ret);
 
-				uint32_t dip = dip_pool[ret % DIP_POOL_SIZE];
+				//uint32_t dip = dip_pool[ret % DIP_POOL_SIZE];
 				
 
 				printf("p and bufs[i] is %p and %p\n", p, bufs[i]);
