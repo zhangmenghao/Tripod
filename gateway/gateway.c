@@ -459,12 +459,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 				print_ethaddr("eth_s_addr", &eth_s_addr);
 				print_ethaddr("eth_d_addr", &eth_d_addr);
 
-				printf("p, bufs[i], and p->pkt_len is %p, %p and %u\n", p, bufs[i], p->pkt_len);
 				struct ipv4_5tuple ip_5tuple;
 				union ipv4_5tuple_host newkey;
 				//rte_pktmbuf_adj(p, (uint16_t)sizeof(struct ether_hdr));
 				struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
-				printf("p, bufs[i], and p->pkt_len is %p, %p and %u\n", p, bufs[i], p->pkt_len);
 
 				ip_5tuple.ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
 				ip_5tuple.ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
@@ -493,6 +491,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 				printf("value of rte is %u\n", ret);
 
 				ip_hdr->dst_addr = rte_cpu_to_be_32(dip_pool[ret]);
+				printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_hdr->dst_addr));
 
 				printf("\n");
 			}
