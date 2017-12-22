@@ -490,8 +490,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 				ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
 				printf("value of rte is %u\n", ret);
 
-				ip_hdr->dst_addr = dip_pool[ret % DIP_POOL_SIZE];
-				printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_hdr->dst_addr));
+				ip_hdr->dst_addr = rte_cpu_to_be_32(dip_pool[ret % DIP_POOL_SIZE]);
+				printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(dip_pool[ret % DIP_POOL_SIZE]));
 
 				printf("\n");
 			}
