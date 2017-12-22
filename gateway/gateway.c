@@ -447,7 +447,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 			for (i = 0; i < nb_rx; i ++){
 				struct rte_mbuf *p;
 				p = bufs[i];
-				printf("p, bufs[i], and p->pkt_len is %p, %p and %u\n", p, bufs[i], p->pkt_len);
 				printf("packet comes from %u\n", port);
 
 				struct ether_hdr *eth_hdr;
@@ -475,8 +474,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple.ip_src));
 				printf("next_proto_id is %u\n", ip_5tuple.proto);
 				
-				printf("p, bufs[i], and p->pkt_len is %p, %p and %u\n", p, bufs[i], p->pkt_len);
-
 				if (ip_5tuple.proto == 17){
 					struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
 					ip_5tuple.port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
@@ -490,20 +487,14 @@ lcore_nf(__attribute__((unused)) void *arg)
 				else{
 					rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
 				}
-				printf("src_port and dst_port is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
 
 				convert_ipv4_5tuple(&ip_5tuple, &newkey);
 				ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
 				printf("value of rte is %u\n", ret);
 
 				ip_hdr->dst_addr = rte_cpu_to_be_32(dip_pool[ret]);
-				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_cpu_to_be_32(ip_hdr->dst_addr)));
-				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_cpu_to_be_32(ip_hdr->src_addr)));
-
-				printf("p, bufs[i], and p->pkt_len is %p, %p and %u\n", p, bufs[i], p->pkt_len);
 
 				printf("\n");
-
 			}
 
 			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
