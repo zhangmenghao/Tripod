@@ -496,34 +496,11 @@ lcore_nf(__attribute__((unused)) void *arg)
 				ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
 				printf("value of rte is %u\n", ret);
 
-				ip_hdr->dst_addr = rte_be_to_cpu_32(dip_pool[ret]);
+				ip_hdr->dst_addr = rte_cpu_to_be_32(dip_pool[ret]);
+				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_cpu_to_be_32(ip_hdr->dst_addr)));
+				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_cpu_to_be_32(ip_hdr->src_addr)));
 
 				printf("p, bufs[i], and p->pkt_len is %p, %p and %u\n", p, bufs[i], p->pkt_len);
-				/*p = bufs[i];
-				rte_pktmbuf_adj(p, (uint16_t)sizeof(struct ether_hdr));
-				ip_hdr = rte_pktmbuf_mtod(p, struct ipv4_hdr *);
-				printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
-				printf("new_ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->src_addr)));
-				printf("new_next_proto_id is %u\n", ip_hdr->next_proto_id);
-
-				printf("p, bufs[i], and p->pkt_len is %p, %p and %u\n", p, bufs[i], p->pkt_len);
-				rte_pktmbuf_adj(p, (uint16_t)sizeof(struct ipv4_hdr));
-				printf("p, bufs[i], and p->pkt_len is %p, %p and %u\n", p, bufs[i], p->pkt_len);
-				if (ip_hdr->next_proto_id == 17){
-					struct udp_hdr * upd_hdrs;
-					upd_hdrs =  rte_pktmbuf_mtod(p, struct udp_hdr *);
-					printf("src_port and dst_port is %u and %u\n", rte_be_to_cpu_16(upd_hdrs->src_port),
-					 rte_be_to_cpu_16(upd_hdrs->dst_port));
-				}
-				else if (ip_hdr->next_proto_id == 6){
-					struct tcp_hdr * tcp_hdrs;
-					tcp_hdrs =  rte_pktmbuf_mtod(p, struct tcp_hdr *);
-					printf("src_port and dst_port is %u and %u\n", rte_be_to_cpu_16(tcp_hdrs->src_port),
-					 rte_be_to_cpu_16(tcp_hdrs->dst_port));
-				}
-				else{
-					printf("do nothing!\n");
-				}	*/
 
 				printf("\n");
 
