@@ -81,8 +81,8 @@ static const struct rte_eth_conf port_conf_default = {
         .mask = {
             .vlan_tci_mask = 0x0,
             .ipv4_mask = {
-                .src_ip = 0x00FFFFFF,
-                .dst_ip = 0xFFFFFFFF,
+                // .src_ip = 0x0000FFFF,
+                .dst_ip = 0x0000FFFF,
             },
             // .ipv6_mask = {
                 // .src_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
@@ -98,18 +98,56 @@ static const struct rte_eth_conf port_conf_default = {
     },
 };
 
-static struct rte_eth_fdir_filter fdir_filter_arg = {
+static struct rte_eth_fdir_filter fdir_filter_state = {
     .soft_id = 1,
     .input = {
-        // .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_TCP,
         .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_OTHER,
         .flow = {
-            // .tcp4_flow = {
             .ip4_flow = {
-                // .ip = {
-                .src_ip = 0x0000000A, 
-                .dst_ip = 0x0200000A,
-                // },
+                // .dst_ip = 0x000010AC,
+                .dst_ip = IPv4(0, 0, 16, 172),
+            }
+        }
+    },
+    .action = {
+        .rx_queue = 1,
+        .behavior = RTE_ETH_FDIR_ACCEPT,
+        .report_status = RTE_ETH_FDIR_REPORT_ID,
+    }
+};
+
+static struct rte_eth_fdir_filter fdir_filter_ecmp_tcp = {
+    .soft_id = 2,
+    .input = {
+        .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_TCP,
+        .flow = {
+            .tcp4_flow = {
+                .ip = {
+                    // .src_ip = 0x0000000A, 
+                    .dst_ip = IPv4(0, 0, 16, 172),
+                },
+                // .src_port = rte_cpu_to_be_16(1024),
+                // .dst_port = rte_cpu_to_be_16(1024),
+            }
+        }
+    },
+    .action = {
+        .rx_queue = 1,
+        .behavior = RTE_ETH_FDIR_ACCEPT,
+        .report_status = RTE_ETH_FDIR_REPORT_ID,
+    }
+};
+
+static struct rte_eth_fdir_filter fdir_filter_ecmp_udp = {
+    .soft_id = 3,
+    .input = {
+        .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_UDP,
+        .flow = {
+            .udp4_flow = {
+                .ip = {
+                    // .src_ip = 0x0000000A, 
+                    .dst_ip = IPv4(0, 0, 16, 172),
+                },
                 // .src_port = rte_cpu_to_be_16(1024),
                 // .dst_port = rte_cpu_to_be_16(1024),
             }
@@ -218,10 +256,18 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 		return retval;
 
     /* Set FlowDirector flow filter on port */
-    // fdir_filter_arg.input.flow.tcp4_flow.src_port = rte_cpu_to_be_16(1024),
-    // fdir_filter_arg.input.flow.tcp4_flow.dst_port = rte_cpu_to_be_16(1024),
     retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
-                                    RTE_ETH_FILTER_ADD, &fdir_filter_arg);
+ 					 				 RTE_ETH_FILTER_ADD, &fdir_filter_state);
+    if (retval < 0)
+        return retval;
+    // fdir_filter_ecmp.input.flow.tcp4_flow.src_port = rte_cpu_to_be_16(0),
+    // fdir_filter_ecmp.input.flow.tcp4_flow.dst_port = rte_cpu_to_be_16(0),
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+  					 				 RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_tcp);
+    if (retval < 0)
+        return retval;
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+  					 				 RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_udp);
     if (retval < 0)
         return retval;
 
@@ -369,9 +415,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 			if (unlikely(nb_rx == 0))
 				continue;
 
-			
-			const uint16_t nb_tx = rte_eth_tx_burst(port , 0, bufs, nb_rx);
-
 			for (i = 0; i < nb_rx; i ++){
 				printf("packet comes from port %u queue 0\n", port);
 				struct ether_hdr *eth_hdr;
@@ -398,6 +441,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 			}
 
+			const uint16_t nb_tx = rte_eth_tx_burst(port , 0, bufs, nb_rx);
+
 			/* Free any unsent packets. */
 			if (unlikely(nb_tx < nb_rx)) {
 				uint16_t buf;
@@ -418,6 +463,10 @@ lcore_manager(__attribute__((unused)) void *arg)
 	const uint8_t nb_ports = rte_eth_dev_count();
 	uint8_t port;
 	int i;
+    struct ether_hdr* eth_hdr;
+    struct ipv4_hdr* ip_hdr;
+	uint8_t proto;
+    u_char* payload;
 
 	printf("\nCore %u manage states in gateway.\n",
 			rte_lcore_id());
@@ -437,34 +486,47 @@ lcore_manager(__attribute__((unused)) void *arg)
 			if (unlikely(nb_rx == 0))
 				continue;
 
-			
-			const uint16_t nb_tx = rte_eth_tx_burst(port , 0, bufs, nb_rx);
-
 			for (i = 0; i < nb_rx; i ++){
 				printf("packet comes from port %u queue 1\n", port);
-				struct ether_hdr *eth_hdr;
 				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
-				struct ether_addr eth_s_addr;
-				eth_s_addr = eth_hdr->s_addr;
-				struct ether_addr eth_d_addr;
-				eth_d_addr = eth_hdr->d_addr;
-				print_ethaddr("eth_s_addr", &eth_s_addr);
-				print_ethaddr("eth_d_addr", &eth_d_addr);
+				ip_hdr = (struct ipv4_hdr*)
+  				  		((u_char*)eth_hdr + sizeof(struct ether_hdr));
+				proto = ip_hdr->next_proto_id;
 
-				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ether_hdr));
-				struct ipv4_hdr *ip_hdr;
-				uint32_t ip_dst;
-				uint32_t ip_src;
-				ip_hdr = rte_pktmbuf_mtod(bufs[i], struct ipv4_hdr *);
-				ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
-				ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
-				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
-				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
+ 				if (proto == 6 || proto == 17) {
+  				    /* Control message about ECMP */
+  				    if ((ip_hdr->dst_addr & 0x00FF0000) == (0xFE << 16)) {
+  				        /* Destination ip is 172.16.254.X */
+  				        /* This is ECMP predict request message */
+  				        // ecmp_predict_reply(bufs[i]);
+  				        printf("This is ECMP predict request message\n");
+   				    }
+  				    else if ((ip_hdr->dst_addr & 0x00FF0000) == 0) {
+  				        /* Destination ip is 172.16.0.X */
+  				        /* This is ECMP predict reply message */
+  				        // ecmp_receive_reply(bufs[i]);
+  				        printf("This is ECMP predict reply message\n");
+   				    }
+  				}
+ 				else if (ip_hdr->next_proto_id == 0) {
+  				    /* Control message about state */
+   				    if ((ip_hdr->dst_addr & 0xFF000000) == (255U << 24)) {
+   				        /* Destination ip is 172.16.0.255 */
+   				        /* This is flow broadcast message */
+    			        printf("This is flow broadcast message\n");
+   				    }
+  				    else if ((ip_hdr->dst_addr & 0x00FF0000) == 0) {
+  				        /* Destination ip is 172.16.0.X */
+  				        /* This is state backup message */
+  				        printf("This is state backup message\n");
+   				        payload = (u_char*)ip_hdr + ((ip_hdr->version_ihl) & 0x0F) * 4;
+   				        printf("payload is %s\n", payload);
+   				    }
+  				}
 				printf("\n");
-
-				//parse tcp/udp
-
 			}
+
+			const uint16_t nb_tx = rte_eth_tx_burst(port , 0, bufs, nb_rx);
 
 			/* Free any unsent packets. */
 			if (unlikely(nb_tx < nb_rx)) {
