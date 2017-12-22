@@ -442,8 +442,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 			if (unlikely(nb_rx == 0))
 				continue;	
-
-			//const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 			
 						
 			for (i = 0; i < nb_rx; i ++){
@@ -451,12 +449,14 @@ lcore_nf(__attribute__((unused)) void *arg)
 				p = bufs[i];
 				printf("p and bufs[i] is %p and %p\n", p, bufs[i]);
 				printf("packet comes from %u\n", port);
+
 				struct ether_hdr *eth_hdr;
 				eth_hdr = rte_pktmbuf_mtod(p, struct ether_hdr *);
 				struct ether_addr eth_s_addr;
 				eth_s_addr = eth_hdr->s_addr;
 				struct ether_addr eth_d_addr;
 				eth_d_addr = eth_hdr->d_addr;
+
 				print_ethaddr("eth_s_addr", &eth_s_addr);
 				print_ethaddr("eth_d_addr", &eth_d_addr);
 
@@ -465,11 +465,13 @@ lcore_nf(__attribute__((unused)) void *arg)
 				union ipv4_5tuple_host newkey;
 				rte_pktmbuf_adj(p, (uint16_t)sizeof(struct ether_hdr));
 				printf("p and bufs[i] is %p and %p\n", p, bufs[i]);
+
 				struct ipv4_hdr *ip_hdr;
 				ip_hdr = rte_pktmbuf_mtod(p, struct ipv4_hdr *);
 				ip_5tuple.ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
 				ip_5tuple.ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
 				ip_5tuple.proto = ip_hdr->next_proto_id;
+
 				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple.ip_dst));
 				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple.ip_src));
 				printf("next_proto_id is %u\n", ip_5tuple.proto);
@@ -477,6 +479,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 				printf("p and bufs[i] is %p and %p\n", p, bufs[i]);
 				rte_pktmbuf_adj(p, (uint16_t)sizeof(struct ipv4_hdr));
 				printf("p and bufs[i] is %p and %p\n", p, bufs[i]);
+
 				if (ip_5tuple.proto == 17){
 					struct udp_hdr * upd_hdrs;
 					upd_hdrs =  rte_pktmbuf_mtod(p, struct udp_hdr *);
@@ -499,7 +502,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 				printf("value of rte is %u\n", ret);
 
 				uint32_t dip = dip_pool[ret % DIP_POOL_SIZE];
-				ip_hdr->dst_addr = dip;
+				
 
 				printf("p and bufs[i] is %p and %p\n", p, bufs[i]);
 				p = bufs[i];
