@@ -153,7 +153,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	uint32_t ip_dsts = dip_pool[0];
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ip_dsts);
 	//int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, states);
 	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, (void *) &ip_dsts);
 	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
