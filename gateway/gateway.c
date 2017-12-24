@@ -98,6 +98,7 @@ struct nf_states{
 
 }__rte_cache_aligned;
 
+
 struct ipv4_5tuple {
 	uint32_t ip_dst;
 	uint32_t ip_src;
@@ -105,6 +106,7 @@ struct ipv4_5tuple {
 	uint16_t port_src;
 	uint8_t  proto;
 } __rte_cache_aligned;
+
 
 union ipv4_5tuple_host {
 	struct {
@@ -132,8 +134,7 @@ uint32_t dip_pool[DIP_POOL_SIZE]={
 };
 
 static void
-convert_ipv4_5tuple(struct ipv4_5tuple *key1,
-		union ipv4_5tuple_host *key2)
+convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
 {
 	key2->ip_dst = rte_cpu_to_be_32(key1->ip_dst);
 	key2->ip_src = rte_cpu_to_be_32(key1->ip_src);
@@ -156,6 +157,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	//just an example
 }
 
+/*
 static void 
 getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	union ipv4_5tuple_host newkey;
@@ -166,7 +168,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	states->ipserver = rte_cpu_to_be_32(dip_pool[ret % DIP_POOL_SIZE]);
 	printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(dip_pool[ret % DIP_POOL_SIZE]));
 	//just an example
-}
+}*/
 
 /*
  * Initializes a given port using global settings and with the RX buffers
