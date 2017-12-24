@@ -511,7 +511,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						setStates(&ip_5tuple, &states);
 						counts ++;
 						ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
-						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->src_addr)));
+						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						//communicate with Manager
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 						if (unlikely(nb_tx < nb_rx)) {
@@ -529,7 +529,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 						else{
 							ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
-							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->src_addr)));
+							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 							if (unlikely(nb_tx < nb_rx)) {
 								uint16_t buf;
