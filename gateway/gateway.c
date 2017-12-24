@@ -166,6 +166,12 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	{
 		printf("get success!\n");
 	}
+	if (ret == EINVAL){
+		printf("parameter invalid\n");
+	}
+	if (ret == ENOENT){
+		printf("key not found!\n");
+	}
 	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 }
 
