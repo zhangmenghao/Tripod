@@ -155,7 +155,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	int ret =  rte_hash_add_key_data(state_hash_table[0], (void *) &newkey, (void *) states);
 	if (ret == 0)
 	{
-		printf("success!\n");
+		printf("set success!\n");
 	}
 }
 
@@ -166,7 +166,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	int ret = rte_hash_lookup_data(state_hash_table[0], (void *) &newkey, (void *) states);
 	if (ret == 0){
-		printf("success!\n");
+		printf("get success!\n");
 	}
 	return ret;
 }
@@ -510,8 +510,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 						states.ipserver = dip_pool[counts % DIP_POOL_SIZE];
 						setStates(&ip_5tuple, &states);
 						counts ++;
-						ip_hdr->dst_addr = states.ipserver;
-						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_hdr->dst_addr));
+						ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
+						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->src_addr)));
 						//communicate with Manager
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 						if (unlikely(nb_tx < nb_rx)) {
@@ -528,8 +528,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 							//if else
 						}
 						else{
-							ip_hdr->dst_addr = states.ipserver;
-							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_hdr->dst_addr));
+							ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
+							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->src_addr)));
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 							if (unlikely(nb_tx < nb_rx)) {
 								uint16_t buf;
