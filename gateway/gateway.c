@@ -122,7 +122,7 @@ union ipv4_5tuple_host {
 };
 
 //share variables
-struct rte_hash *hash_table[NB_SOCKETS];
+struct rte_hash *state_hash_table[NB_SOCKETS];
 
 //configurations
 uint32_t dip_pool[DIP_POOL_SIZE]={
@@ -132,6 +132,8 @@ uint32_t dip_pool[DIP_POOL_SIZE]={
 	IPv4(100,10,0,3),
 	IPv4(100,10,0,4),
 };
+
+static int counts = 0;
 
 static void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
@@ -145,31 +147,29 @@ convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
 	key2->pad1 = 0;
 }
 
-/*
+
 static void 
 setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	//int ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
-	//printf("value of rte is %u\n", ret);
+	int ret =  rte_hash_add_key_data(state_hash_table[0], (void *) &newkey, (void *) states);
+	if (ret == 0)
+	{
+		printf("success!\n");
+	}
+}
 
-	states->ipserver = rte_cpu_to_be_32(dip_pool[ret % DIP_POOL_SIZE]);
-	printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(dip_pool[ret % DIP_POOL_SIZE]));
-	//just an example
-}*/
 
-/*
-static void 
+static int
 getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	int ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
-	printf("value of rte is %u\n", ret);
-
-	states->ipserver = rte_cpu_to_be_32(dip_pool[ret % DIP_POOL_SIZE]);
-	printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(dip_pool[ret % DIP_POOL_SIZE]));
-	//just an example
-}*/
+	int ret = rte_hash_lookup_data(state_hash_table[0], (void *) &newkey, (void *) states);
+	if (ret == 0){
+		printf("success!\n");
+	}
+	return ret;
+}
 
 /*
  * Initializes a given port using global settings and with the RX buffers
@@ -421,10 +421,10 @@ setup_hash(const int socketid)
 	snprintf(s, sizeof(s), "ipv4_hash_%d", socketid);
 	hash_params.name = s;
 	hash_params.socket_id = socketid;
-	hash_table[socketid] =
+	state_hash_table[socketid] =
 		rte_hash_create(&hash_params);
 
-	if (hash_table[socketid] == NULL)
+	if (state_hash_table[socketid] == NULL)
 		rte_exit(EXIT_FAILURE,
 			"Unable to create the l3fwd hash on socket %d\n",
 			socketid);
@@ -440,7 +440,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 	const uint8_t nb_ports = rte_eth_dev_count();
 	uint8_t port;
 	int i;
-	int32_t ret;
 
 	for (port = 0; port < nb_ports; port++)
 		if (rte_eth_dev_socket_id(port) > 0 &&
@@ -485,7 +484,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 				print_ethaddr("eth_d_addr", &eth_d_addr);
 
 				struct ipv4_5tuple ip_5tuple;
-				union ipv4_5tuple_host newkey;
 				//rte_pktmbuf_adj(p, (uint16_t)sizeof(struct ether_hdr));
 				struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
 
@@ -507,32 +505,46 @@ lcore_nf(__attribute__((unused)) void *arg)
 					ip_5tuple.port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
 					ip_5tuple.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
 					printf("tcp_flags is %u\n", tcp_hdrs->tcp_flags);
+					if (tcp_hdrs->tcp_flags == 2){
+						struct nf_states states;
+						states.ipserver = dip_pool[counts % DIP_POOL_SIZE];
+						setStates(&ip_5tuple, &states);
+						counts ++;
+						ip_hdr->dst_addr = states.ipserver;
+						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_hdr->dst_addr));
+						//communicate with Manager
+						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
+						if (unlikely(nb_tx < nb_rx)) {
+							uint16_t buf;
+							for (buf = nb_tx; buf < nb_rx; buf++)
+								rte_pktmbuf_free(bufs[buf]);
+						}
+					}
+					else{
+						struct nf_states states;
+						int ret = getStates(&ip_5tuple, &states);
+						if (ret == ENOENT){
+							//getIndex();
+							//if else
+						}
+						else{
+							ip_hdr->dst_addr = states.ipserver;
+							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_hdr->dst_addr));
+							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
+							if (unlikely(nb_tx < nb_rx)) {
+								uint16_t buf;
+								for (buf = nb_tx; buf < nb_rx; buf++)
+									rte_pktmbuf_free(bufs[buf]);
+							}
+						}
+						
+					}
 				}
 				else{
 					rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
 				}
 				printf("port_src and port_dst is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
-				//struct nf_states states;
-
-				//setStates(&ip_5tuple, &states);
-
-				convert_ipv4_5tuple(&ip_5tuple, &newkey);
-				ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
-				printf("value of rte is %u\n", ret);
-
-				ip_hdr->dst_addr = rte_cpu_to_be_32(dip_pool[ret % DIP_POOL_SIZE]);
-				printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(dip_pool[ret % DIP_POOL_SIZE]));
-
 				printf("\n");
-			}
-
-			const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
-
-			/* Free any unsent packets. */
-			if (unlikely(nb_tx < nb_rx)) {
-				uint16_t buf;
-				for (buf = nb_tx; buf < nb_rx; buf++)
-					rte_pktmbuf_free(bufs[buf]);
 			}
 
 	
