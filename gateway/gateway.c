@@ -90,6 +90,14 @@ static const struct rte_eth_conf port_conf_default = {
 
 static int enabled_port_mask = 0;
 
+struct nf_states{
+	uint32_t ipserver;
+
+	uint32_t dip;
+	uint16_t dport;
+
+}__rte_cache_aligned;
+
 struct ipv4_5tuple {
 	uint32_t ip_dst;
 	uint32_t ip_src;
@@ -123,15 +131,6 @@ uint32_t dip_pool[DIP_POOL_SIZE]={
 	IPv4(100,10,0,4),
 };
 
-static inline void state_set(void){
-	
-	//just an example
-}
-
-static inline uint32_t state_get(void){
-	return 1;
-}
-
 static void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1,
 		union ipv4_5tuple_host *key2)
@@ -145,6 +144,29 @@ convert_ipv4_5tuple(struct ipv4_5tuple *key1,
 	key2->pad1 = 0;
 }
 
+static void 
+setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
+	union ipv4_5tuple_host newkey;
+	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	int ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
+	printf("value of rte is %u\n", ret);
+
+	states->ipserver = rte_cpu_to_be_32(dip_pool[ret % DIP_POOL_SIZE]);
+	printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(dip_pool[ret % DIP_POOL_SIZE]));
+	//just an example
+}
+
+static void 
+getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
+	union ipv4_5tuple_host newkey;
+	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	int ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
+	printf("value of rte is %u\n", ret);
+
+	states->ipserver = rte_cpu_to_be_32(dip_pool[ret % DIP_POOL_SIZE]);
+	printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(dip_pool[ret % DIP_POOL_SIZE]));
+	//just an example
+}
 
 /*
  * Initializes a given port using global settings and with the RX buffers
@@ -481,10 +503,15 @@ lcore_nf(__attribute__((unused)) void *arg)
 					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
 					ip_5tuple.port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
 					ip_5tuple.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
+					printf("tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 				}
 				else{
 					rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
 				}
+				printf("port_src and port_dst is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
+				struct nf_states states;
+
+				setStates(&ip_5tuple, &states);
 
 				convert_ipv4_5tuple(&ip_5tuple, &newkey);
 				ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
@@ -569,8 +596,6 @@ main(int argc, char *argv[])
 			printf("Initialize port %u, finshed!\n", portid);
 
 	check_all_ports_link_status((uint8_t)nb_ports, enabled_port_mask);
-
-
 
 	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
 		rte_eal_remote_launch(lcore_nf, NULL, lcore_id);
