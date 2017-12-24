@@ -145,17 +145,18 @@ convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
 	key2->pad1 = 0;
 }
 
+/*
 static void 
 setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	int ret = 1; //rte_hash_add_key(hash_table[0], (void *) &newkey);
-	printf("value of rte is %u\n", ret);
+	//int ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
+	//printf("value of rte is %u\n", ret);
 
 	states->ipserver = rte_cpu_to_be_32(dip_pool[ret % DIP_POOL_SIZE]);
 	printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(dip_pool[ret % DIP_POOL_SIZE]));
 	//just an example
-}
+}*/
 
 /*
 static void 
@@ -511,9 +512,9 @@ lcore_nf(__attribute__((unused)) void *arg)
 					rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
 				}
 				printf("port_src and port_dst is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
-				struct nf_states states;
+				//struct nf_states states;
 
-				setStates(&ip_5tuple, &states);
+				//setStates(&ip_5tuple, &states);
 
 				convert_ipv4_5tuple(&ip_5tuple, &newkey);
 				ret = rte_hash_add_key(hash_table[0], (void *) &newkey);
