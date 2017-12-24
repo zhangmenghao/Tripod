@@ -162,6 +162,10 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	}
 	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 	ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) states);
+	if (ret == 0)
+	{
+		printf("get success!\n");
+	}
 	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 }
 
