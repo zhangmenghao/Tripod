@@ -167,9 +167,9 @@ static int
 getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) states);
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 	if (ret == 0){
 		printf("get success!\n");
 	}
@@ -513,16 +513,17 @@ lcore_nf(__attribute__((unused)) void *arg)
 					if (tcp_hdrs->tcp_flags == 2){
 						struct nf_states states;
 						states.ipserver = dip_pool[counts % DIP_POOL_SIZE];
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
+						uint32_t ipddd = dip_pool[counts % DIP_POOL_SIZE];
+						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ipddd);
 						union ipv4_5tuple_host newkey;
 						convert_ipv4_5tuple(&ip_5tuple, &newkey);
-						rte_hash_add_key_data(state_hash_table[0], &newkey, (void *) &states);
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
+						rte_hash_add_key_data(state_hash_table[0], &newkey, (void *) &ipddd);
+						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ipddd);
 						//setStates(&ip_5tuple, &states);
-						states.ipserver = dip_pool[(counts + 1) % DIP_POOL_SIZE];
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
-						rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &states);
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
+						ipddd = dip_pool[(counts + 1) % DIP_POOL_SIZE];
+						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ipddd);
+						rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &ipddd);
+						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ipddd);
 						//getStates(&ip_5tuple, &states);
 						counts ++;
 						ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
