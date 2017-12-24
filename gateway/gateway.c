@@ -516,12 +516,12 @@ lcore_nf(__attribute__((unused)) void *arg)
 						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
 						union ipv4_5tuple_host newkey;
 						convert_ipv4_5tuple(&ip_5tuple, &newkey);
-						rte_hash_add_key_data(state_hash_table[0], &newkey, &states);
+						rte_hash_add_key_data(state_hash_table[0], &newkey, (void *) &states);
 						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
 						//setStates(&ip_5tuple, &states);
 						states.ipserver = dip_pool[(counts + 1) % DIP_POOL_SIZE];
 						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
-						rte_hash_lookup_data(state_hash_table[0], &newkey, (void *) &states);
+						rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &states);
 						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
 						//getStates(&ip_5tuple, &states);
 						counts ++;
