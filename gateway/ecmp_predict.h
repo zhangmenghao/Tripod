@@ -1,0 +1,286 @@
+#ifndef _ECMP_PREDICT_H_
+#define _ECMP_PREDICT_H_
+#include <stdlib.h>
+#include <stdint.h>
+#include <rte_ip.h>
+#include <rte_tcp.h>
+#include <rte_udp.h>
+#include <rte_byteorder.h>
+#include <rte_mbuf.h>
+#include <rte_ether.h>
+#include <inttypes.h>
+#include <rte_byteorder.h>
+
+
+
+#define N_MACHINE_MAX 8
+struct machine_IP_pair{
+	uint8_t id;
+	uint32_t ip;
+};
+struct machine_IP_pair topo[N_MACHINE_MAX];
+struct machine_IP_pair* this_machine;
+
+
+struct rte_mbuf* probing_packet;
+struct ether_hdr *eth_hdr;
+struct ipv4_hdr *iph;
+struct tcp_hdr *tcp_h;
+struct udp_hdr *udp_h;
+char* l4_hdr;
+char* payload;
+struct ipv4_hdr *iph;
+struct ether_hdr interface_MAC;
+
+uint32_t probing_ip;
+
+
+/*
+	A tool function for dumping ALL of the ip header fields.
+	The last line being 0xffff indicates that the cksum is correct.
+
+*/
+static inline void dump_ip_hdr(struct ipv4_hdr* iph_h){
+	uint32_t ip_dst;
+	uint32_t ip_src;
+	ip_dst = rte_be_to_cpu_32(iph_h->dst_addr);
+	ip_src = rte_be_to_cpu_32(iph_h->src_addr);
+	uint32_t ipv4_addr = ip_dst;
+	printf("%d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,
+	    (ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,
+	    ipv4_addr & 0xFF);
+
+	ipv4_addr = ip_src;
+	printf("%d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,
+	    (ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,
+	    ipv4_addr & 0xFF);
+
+	printf("%x\n",iph_h->version_ihl);
+	printf("%x\n",iph_h->type_of_service);
+	printf("%x\n",rte_be_to_cpu_16(iph_h->total_length));
+	printf("%x\n",rte_be_to_cpu_16(iph_h->packet_id));
+	printf("%x\n",iph_h->fragment_offset);
+	printf("%x\n",iph_h->time_to_live);
+	printf("%x\n",iph_h->next_proto_id);
+	printf("%x\n",iph_h->hdr_checksum);
+	printf("checksum correct?(should be 0xffff):%x\n",rte_ipv4_cksum(iph_h));
+
+
+}
+
+/*
+	Initialization of ECMP Predict.
+	Should be called in initializtion, for example together with port init
+	NOTE: The rte_mempool should be different from those holding traffic packets.We should build another rte_mempool specifcally for management packets.
+*/
+static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
+
+	probing_packet = rte_pktmbuf_alloc(mbuf_pool);
+	eth_hdr = (struct ether_hdr *) rte_pktmbuf_append(probing_packet, sizeof(struct ether_hdr));
+	iph = (struct ipv4_hdr *)rte_pktmbuf_append(probing_packet, sizeof(struct ipv4_hdr));
+	tcp_h = (struct tcp_hdr *) rte_pktmbuf_append(probing_packet,sizeof(struct tcp_hdr));
+	//a packet has minimum size 64B
+	payload = (char*) rte_pktmbuf_append(probing_packet,6);	
+
+	printf("data len: %d\n",probing_packet->pkt_len);
+
+	printf("%d\n",sizeof(struct tcp_hdr));
+	printf("%x\n",eth_hdr);
+	printf("%x\n",iph);
+	
+	//TODO: need a configuration process when boot
+	topo[0].id = 1;
+	topo[0].ip = IPv4(172,16,0,2);
+
+
+	topo[1].id = 2;
+	topo[1].ip = IPv4(172,16,1,2);
+	
+
+	topo[2].id = 4;
+	topo[2].ip = IPv4(172,16,2,2);
+
+	this_machine = &(topo[0]);
+
+
+	probing_ip = IPv4(172,16,253,2); 
+}
+
+/*
+	An implementation of IP checksum from testpmd.Proved the same as rte_ipv4_cksum()
+*/
+static uint16_t
+ipv4_hdr_cksum(struct ipv4_hdr *ip_h)
+{
+        uint16_t *v16_h;
+        uint32_t ip_cksum;
+
+        /*
+         * Compute the sum of successive 16-bit words of the IPv4 header,
+         * skipping the checksum field of the header.
+         */
+        v16_h = (unaligned_uint16_t *) ip_h;
+        ip_cksum = v16_h[0] + v16_h[1] + v16_h[2] + v16_h[3] +
+                v16_h[4] + v16_h[6] + v16_h[7] + v16_h[8] + v16_h[9];
+
+        /* reduce 32 bit checksum to 16 bits and complement it */
+        ip_cksum = (ip_cksum & 0xffff) + (ip_cksum >> 16);
+        ip_cksum = (ip_cksum & 0xffff) + (ip_cksum >> 16);
+        ip_cksum = (~ip_cksum) & 0x0000FFFF;
+        return (ip_cksum == 0) ? 0xFFFF : (uint16_t) ip_cksum;
+}
+
+
+/*
+	The function called when master receives probe reply.
+	Decapsulate and get the payload.
+	The caller decides when to call this function. In our scenario, when receiving IP packets with dip=172.16.x.2 and proto=6.
+
+	Input: the probe reply mbuf
+	Output: the ID of the probed backup machine
+
+
+*/
+static inline uint32_t master_receive_probe_reply(struct rte_mbuf* mbuf){
+
+
+	struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
+       /*
+	ether_addr_copy(&interface_MAC, &eth_hdr->d_addr);
+        struct ether_addr addr;
+        rte_eth_macaddr_get(0, &addr);
+        ether_addr_copy(&addr, &eth_hdr->s_addr);
+	*/
+
+ 	struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
+
+    char* payload = (char*)ip_hdr
+                      + sizeof(struct ipv4_hdr)
+                      + sizeof(struct tcp_hdr);
+
+	printf("%d\n",*((uint32_t*)payload));
+	return *((uint32_t*)payload);
+
+
+
+}
+
+
+/*
+	The function called when master needs to send probe request.
+	The function modifies a global variable probing_packet.The caller can send this packet after this function is done.
+	TODO: need rework
+	(1) the 5-tuple as input
+	(2) build a new mbuf for every packet
+
+*/
+
+
+static inline void build_probe_packet(){
+	eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
+	//eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_ARP);
+	//eth_hdr->ether_type =  0;
+	printf("%x\n",eth_hdr->ether_type);
+    ether_addr_copy(&interface_MAC, &eth_hdr->d_addr);
+	struct ether_addr addr;
+	rte_eth_macaddr_get(0, &addr);
+    ether_addr_copy(&addr, &eth_hdr->s_addr);
+	/*printf("Port %u MAC: %02" PRIx8 " %02" PRIx8 " %02" PRIx8
+                           " %02" PRIx8 " %02" PRIx8 " %02" PRIx8 "\n",
+                       1,
+                        addr.addr_bytes[0], addr.addr_bytes[1],
+                        addr.addr_bytes[2], addr.addr_bytes[3],
+                        addr.addr_bytes[4], addr.addr_bytes[5]);
+*/
+
+/*
+    ether_addr_copy(&eth_hdr->d_addr, &addr);
+	printf("Port %u MAC: %02" PRIx8 " %02" PRIx8 " %02" PRIx8
+                           " %02" PRIx8 " %02" PRIx8 " %02" PRIx8 "\n",
+                        1,
+                        addr.addr_bytes[0], addr.addr_bytes[1],
+                        addr.addr_bytes[2], addr.addr_bytes[3],
+                        addr.addr_bytes[4], addr.addr_bytes[5]);
+*/	
+	memset((char *)iph, 0, sizeof(struct ipv4_hdr));
+	//static uint32_t ip = 0;
+	iph->src_addr=rte_cpu_to_be_32(IPv4(10,10,10,10));
+	iph->dst_addr=rte_cpu_to_be_32(probing_ip);
+	iph->version_ihl = (4 << 4) | 5;
+	iph->total_length = rte_cpu_to_be_16(46);
+	iph->packet_id= 0xd84c;/* NO USE */
+	iph->time_to_live=4;
+	iph->next_proto_id = 0x6;
+	//iph->total_length= rte_cpu_to_be_16(sizeof(struct ipv4_hdr));
+	iph->hdr_checksum = 0;
+	uint16_t ck1 = rte_ipv4_cksum(iph);  
+	uint16_t ck2 = ipv4_hdr_cksum(iph);
+	//printf("%x\n",ck1);
+	//printf("%x\n",ck2);
+	iph->hdr_checksum = ck1;
+	
+	//dump_ip_hdr(iph);
+
+	tcp_h->src_port = 22222;
+	tcp_h->dst_port = 22222;
+
+
+	*((uint32_t*)payload) = this_machine->ip;
+
+/*
+	udp_h->src_port = 10000;
+	udp_h->dst_port = 10001;
+	udp_h->dgram_len = 26;
+	udp_h->dgram_cksum = 0;
+	rte_ipv4_udptcp_cksum(iph,udp_h);
+
+	rte_pktmbuf_dump(stdout,probing_packet,100);
+*/
+}
+
+
+/*
+	The function called when a certain machine receives a probe packet
+	The machine extracts the source of the probe packet and MODIFIES the mbuf.
+	The caller should resend the SAME mbuf.
+
+*/
+
+static inline  void backup_receive_probe_packet(struct rte_mbuf* mbuf){
+
+
+    struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
+
+/*
+            struct ether_addr addr;
+                    rte_eth_macaddr_get(0, &addr);
+
+                    ether_addr_copy(&interface_MAC, &eth_h->d_addr);
+                    ether_addr_copy(&addr,&eth_h->s_addr);
+*/
+
+    build_probe_packet();
+
+    struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
+    char* payload22 = (char*)ip_hdr
+                  + sizeof(struct ipv4_hdr)
+                  + sizeof(struct tcp_hdr);
+    uint32_t dst_ip = *((uint32_t*)payload22);
+
+    iph->src_addr = rte_be_to_cpu_32(IPv4(13,13,13,13));/*NO USE*/
+    iph->dst_addr = rte_be_to_cpu_32(dst_ip);
+
+
+    *((uint32_t*)payload) = this_machine->id;
+    uint32_t ipv4_addr = dst_ip;
+     printf("in func: %d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,
+        (ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,
+        ipv4_addr & 0xFF);
+
+	rte_pktmbuf_dump(stdout,probing_packet,100);
+
+
+}
+
+#endif /*_ECMP_PREDICT_H_*/
+
