@@ -152,10 +152,9 @@ static void
 setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	uint32_t ip_dsts = dip_pool[0];
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ip_dsts);
+	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 	//int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, states);
-	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, (void *) &ip_dsts);
+	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, (void *) states);
 	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 	if (ret == 0)
 	{
@@ -169,9 +168,8 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
-	uint32_t ip_dst;
-	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &ip_dst);
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ip_dst);
+	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) states);
+	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 	if (ret == 0){
 		printf("get success!\n");
 	}
@@ -517,6 +515,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 						states.ipserver = dip_pool[counts % DIP_POOL_SIZE];
 						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
 						setStates(&ip_5tuple, &states);
+						states.ipserver = dip_pool[(counts + 1) % DIP_POOL_SIZE];
+						getStates(&ip_5tuple, &states);
 						counts ++;
 						ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
 						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
