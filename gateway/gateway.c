@@ -155,33 +155,15 @@ static void
 setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	//printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
-	//printf("in setState %u\n", state);
-	//printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
-	//printf("ret = %u\n", ret);
 	if (ret == 0)
 	{
 		printf("set success!\n");
 	}
-
-	/*printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
-	struct nf_states * temp;
-	ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **)&temp);
-	printf("%x\n",temp);
-	printf("%x\n",state);
-	printf("ret = %u\n", ret);
-	if (ret == 0)
-	{
-		printf("get success!\n");
+	else{
+		printf("error found!\n");
+		return;
 	}
-	if (ret == EINVAL){
-		printf("parameter invalid\n");
-	}
-	if (ret == ENOENT){
-		printf("key not found!\n");
-	}
-	printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n",  temp->ipserver);*/
 }
 
 
@@ -189,13 +171,7 @@ static int
 getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	//struct nf_states *state;
-	//printf("in getState %x\n",state);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
-	//printf("in getState %x\n",state);
-	//printf("in getState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", (*state)->ipserver);
-	//printf("ret in getState is %u\n", ret);
-	//printf("%x\n",state);
 	if (ret == 0){
 		printf("get success!\n");
 	}
@@ -366,7 +342,7 @@ parse_args(int argc, char **argv)
 static void
 check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 {
-#define CHECK_INTERVAL 10 /* 100ms */
+#define CHECK_INTERVAL 100 /* 100ms */
 #define MAX_CHECK_TIME 90 /* 9s (90 * 100ms) in total */
 	uint8_t portid, count, all_ports_up, print_flag = 0;
 	struct rte_eth_link link;
@@ -548,7 +524,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					if (tcp_hdrs->tcp_flags == 2){
 						//struct nf_states states;
 						states[counts].ipserver = dip_pool[counts % DIP_POOL_SIZE];
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states[counts].ipserver);
+						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states[counts].ipserver);
 						setStates(&ip_5tuple, &states[counts]);
 						ip_hdr->dst_addr = rte_cpu_to_be_32(states[counts].ipserver);
 						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
@@ -565,7 +541,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						struct nf_states *state;
 						int ret =  getStates(&ip_5tuple, &state);
 						//printf("%x\n", state);
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
+						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 						if (ret == ENOENT){
 							printf("if\n");
 							//getIndex();
