@@ -164,7 +164,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	{
 		printf("set success!\n");
 	}
-	ipddd = dip_pool[(counts + 1) % DIP_POOL_SIZE];
+	//ipddd = dip_pool[(counts + 1) % DIP_POOL_SIZE];
 
 	printf("newkey->ip_dst and ipddd is %u and %u\n",newkey.ip_dst, ipddd);
 	uint32_t ttt = 100;
