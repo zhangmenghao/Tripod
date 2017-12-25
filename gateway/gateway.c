@@ -197,10 +197,16 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	//printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &states1);
 	printf("%x\n",states1);
-	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states1->ipserver);
 	if (ret == 0){
 		printf("get success!\n");
 	}
+	if (ret == EINVAL){
+		printf("parameter invalid\n");
+	}
+	if (ret == ENOENT){
+		printf("key not found!\n");
+	}
+	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states1->ipserver);
 	return 2;
 }
 
