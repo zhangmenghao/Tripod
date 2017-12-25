@@ -548,7 +548,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					ip_5tuple.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
 					printf("tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					if (tcp_hdrs->tcp_flags == 2){
-						struct nf_states states;
+						//struct nf_states states;
 						states.ipserver = dip_pool[counts % DIP_POOL_SIZE];
 						setStates(&ip_5tuple, &states);
 						counts ++;
@@ -563,8 +563,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 					}
 					else{
-						struct nf_states *states;
-						int ret = getStates(&ip_5tuple, states);
+						struct nf_states *statess;
+						int ret = getStates(&ip_5tuple, statess);
 						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 						if (ret == ENOENT){
 							printf("if\n");
