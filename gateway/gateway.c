@@ -80,6 +80,8 @@
 		(uint8_t) ((addr) & 0xFF)
 #endif
 
+#define MACHINE_IP IPv4(172, 16, 0, 1)
+
 #define EM_HASH_CRC
 
 #ifdef EM_HASH_CRC
@@ -206,7 +208,7 @@ static struct rte_eth_fdir_filter fdir_filter_arp = {
 
 static struct rte_eth_rss_reta_entry64 reta_conf[2];
 
-static manager_rx_queue_mask = 0x2;
+static uint32_t manager_rx_queue_mask = 0x2;
 
 static int enabled_port_mask = 0;
 
@@ -217,6 +219,8 @@ struct nf_states{
 
 	uint32_t dip;
 	uint16_t dport;
+
+    uint32_t bip; // Backup Machine IP
 
 }__rte_cache_aligned;
 
@@ -229,6 +233,10 @@ struct ipv4_5tuple {
 	uint8_t  proto;
 } __rte_cache_aligned;
 
+struct states_5tuple_pair {
+    struct ipv4_5tuple l4_5tuple;
+    struct nf_states states;
+} __rte_cache_aligned;
 
 union ipv4_5tuple_host {
 	struct {
@@ -242,6 +250,11 @@ union ipv4_5tuple_host {
 	};
 	xmm_t xmm;
 };
+
+struct port_param {
+    struct rte_mempool* nf_mempool;
+    struct rte_mempool* manager_mempool;
+} single_port_param;
 
 //share variables
 struct rte_hash *state_hash_table[NB_SOCKETS];
@@ -367,7 +380,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 
 	/* Allocate and set up 2 RX queue per Ethernet port. */
 	for (q = 0; q < rx_rings; q++) {
-		if ((manager_rx_queue_mask >> q) & 1 == 1)
+		if (((manager_rx_queue_mask >> q) & 1) == 1)
 			retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
 					rte_eth_dev_socket_id(port), NULL, mbuf_pool);
 		else
@@ -415,7 +428,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
   					 				 RTE_ETH_FILTER_INFO, &fdir_info);
     if (retval < 0)
         return retval;
-    int j;
+    unsigned int j;
     for (j = 0; j < RTE_FLOW_MASK_ARRAY_SIZE; j++)
         printf("flow_types_mask[%d]: %08x\n", j, fdir_info.flow_types_mask[j]);
 
@@ -744,12 +757,12 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 						
 					}
+					printf("port_src and port_dst is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
 				}
-				else{
-					rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
-				}
-				printf("port_src and port_dst is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
 				printf("\n");
+				// else{
+					// rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
+				// }
 			}
 
 		}
@@ -768,9 +781,11 @@ lcore_manager(__attribute__((unused)) void *arg)
 	int i;
     struct ether_hdr* eth_h;
     struct ipv4_hdr* ip_h;
-	uint16_t eth_type;
+	// uint16_t eth_type;
 	uint8_t ip_proto;
     u_char* payload;
+    struct states_5tuple_pair* backup_pair;
+    struct rte_mbuf* backup_packet;
 
 	printf("\nCore %u manage states in gateway.\n",
 			rte_lcore_id());
@@ -790,34 +805,39 @@ lcore_manager(__attribute__((unused)) void *arg)
 			if (unlikely(nb_rx == 0))
 				continue;
 
+ 			if (rte_ring_dequeue(nf_manager_ring, (void**)&backup_pair) == 0) {
+  			    build_probe_packet();
+			    rte_eth_tx_burst(port, 0, &probing_packet, 1);
+  			}
+
 			for (i = 0; i < nb_rx; i ++){
 				printf("packet comes from port %u queue 1\n", port);
 				eth_h = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
-				eth_type = eth_h->ether_type;
+				// eth_type = eth_h->ether_type;
 
- 				if (eth_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
-  				    /* ARP message to keep live with switch */
-   				    struct arp_hdr* arp_h;
-   				    struct ether_addr self_eth_addr;
-   				    uint32_t ip_addr;
-  				    arp_h = (struct arp_hdr*)
-  				    		((u_char*)eth_h + sizeof(struct ether_hdr));
-  				    rte_eth_macaddr_get(port, &self_eth_addr);
-  				    ether_addr_copy(&(eth_h->s_addr), &(eth_h->d_addr));
-  				    ether_addr_copy(&(eth_h->s_addr), &interface_MAC);
-  				    /* Set source MAC address with MAC of TX Port */
-  				    ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
-  				    arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
-  				    ether_addr_copy(&(arp_h->arp_data.arp_sha)
-   				    			, &(arp_h->arp_data.arp_tha));
-  				    ether_addr_copy(&(eth_h->s_addr)
-   				    			, &(arp_h->arp_data.arp_sha));
-  				    /* Swap IP address in ARP payload */
-  				    ip_addr = arp_h->arp_data.arp_sip;
-  				    arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
-  				    arp_h->arp_data.arp_tip = ip_addr;
-  				    printf("This is ARP message\n");
-  				}
+ 				// if (eth_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
+  				//     /* ARP message to keep live with switch */
+   				//     struct arp_hdr* arp_h;
+   				//     struct ether_addr self_eth_addr;
+   				//     uint32_t ip_addr;
+  				//     arp_h = (struct arp_hdr*)
+  				//     		((u_char*)eth_h + sizeof(struct ether_hdr));
+  				//     rte_eth_macaddr_get(port, &self_eth_addr);
+  				//     ether_addr_copy(&(eth_h->s_addr), &(eth_h->d_addr));
+  				//     ether_addr_copy(&(eth_h->s_addr), &interface_MAC);
+  				//     /* Set source MAC address with MAC of TX Port */
+  				//     ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
+  				//     arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
+  				//     ether_addr_copy(&(arp_h->arp_data.arp_sha)
+   				//     			, &(arp_h->arp_data.arp_tha));
+  				//     ether_addr_copy(&(eth_h->s_addr)
+   				//     			, &(arp_h->arp_data.arp_sha));
+  				//     /* Swap IP address in ARP payload */
+  				//     ip_addr = arp_h->arp_data.arp_sip;
+  				//     arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
+  				//     arp_h->arp_data.arp_tip = ip_addr;
+  				//     printf("This is ARP message\n");
+  				// }
  				// else if (eth_type == rte_be_to_cpu_16(ETHER_TYPE_IPv4)) {
   				// }
 
@@ -831,15 +851,48 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        /* Destination ip is 172.16.253.X */
   				        /* This is ECMP predict request message */
   				        backup_receive_probe_packet(bufs[i]);
-  				        rte_eth_tx_burst(1, 0, &probing_packet, 1);
+  				        rte_eth_tx_burst(port, 0, &probing_packet, 1);
+					// rte_pktmbuf_free(bufs[buf]);
   				        printf("This is ECMP predict request message\n");
    				    }
   				    else if ((ip_h->dst_addr & 0x00FF0000) == 0) {
   				        /* Destination ip is 172.16.0.X */
   				        /* This is ECMP predict reply message */
   				        // ecmp_receive_reply(bufs[i]);
+   				        struct ether_addr self_eth_addr;
   				        uint32_t backup_no = master_receive_probe_reply(bufs[i]);
   				        printf("This is ECMP pedict reply message\n");
+  				        backup_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
+  				        /* Allocate space */
+  				        eth_h = (struct ether_hdr *)rte_pktmbuf_append(backup_packet, sizeof(struct ether_hdr));
+  				        ip_h = (struct ipv4_hdr *)rte_pktmbuf_append(backup_packet, sizeof(struct ipv4_hdr));
+  				        payload = (u_char*)rte_pktmbuf_append(backup_packet, sizeof(struct states_5tuple_pair));
+  				        /* Set the packet */
+  				        eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
+  				        ether_addr_copy(&interface_MAC, &(eth_h->d_addr));
+  				        rte_eth_macaddr_get(port, &self_eth_addr);
+  				        ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
+  				        memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
+  				        ip_h->src_addr=rte_cpu_to_be_32(MACHINE_IP);
+  				        ip_h->dst_addr=rte_cpu_to_be_32(IPv4(172, 16, 0, 2));
+  				        ip_h->version_ihl = (4 << 4) | 5;
+  				        ip_h->total_length = rte_cpu_to_be_16(20 + sizeof(struct states_5tuple_pair));
+  				        ip_h->packet_id= 0x36;/* NO USE */
+  				        ip_h->time_to_live=4;
+  				        ip_h->next_proto_id = 0x0;
+  				        printf("Debug backup no %d\n", backup_no);
+  				        ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
+   				        backup_pair = (struct states_5tuple_pair*)payload;
+   				        backup_pair->l4_5tuple.ip_src = IPv4(10, 0 , 0, 1);
+   				        backup_pair->l4_5tuple.ip_dst = IPv4(10, 0 , 0, 2);
+   				        backup_pair->l4_5tuple.port_src = 0x68;
+   				        backup_pair->l4_5tuple.port_dst = 0x86;
+   				        backup_pair->l4_5tuple.proto = 0x8;
+   				        backup_pair->states.ipserver = IPv4(10, 0, 0, 3);
+   				        backup_pair->states.dip = IPv4(10, 0, 0, 4);
+   				        backup_pair->states.dport = 0x36;
+   				        backup_pair->states.bip = IPv4(10, 0, 0, 5);
+  				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
    				    }
   				}
  				else if (ip_h->next_proto_id == 0) {
@@ -854,13 +907,22 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        /* This is state backup message */
   				        printf("This is state backup message\n");
    				        payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
+   				        backup_pair = (struct states_5tuple_pair*)payload;
+				        printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_src));
+				        printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_dst));
+				        printf("port_src is %d\n", backup_pair->l4_5tuple.port_src);
+				        printf("port_dst is %d\n", backup_pair->l4_5tuple.port_dst);
+				        printf("proto is %d\n", backup_pair->l4_5tuple.proto);
+				        printf("ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.ipserver));
+				        printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.dip));
+				        printf("dport is %d\n", backup_pair->states.dip);
+				        printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
+   				        setStates(&(backup_pair->l4_5tuple), &(backup_pair->states));
    				        printf("payload is %s\n", payload);
    				    }
   				}
 				printf("\n");
 			}
-
-			// const uint16_t nb_tx = rte_eth_tx_burst(port , 0, bufs, nb_rx);
 
 			/* Free any unsent packets. */
 			// if (unlikely(nb_tx < nb_rx)) {
@@ -913,6 +975,9 @@ main(int argc, char *argv[])
  		rte_socket_id());
 	if (manager_mbuf_pool == NULL)
 		rte_exit(EXIT_FAILURE, "Cannot create mbuf pool\n");
+
+    single_port_param.nf_mempool = mbuf_pool;
+    single_port_param.manager_mempool = manager_mbuf_pool;
 
 	setup_hash((int)rte_socket_id());//now is a single socket version
 

@@ -85,8 +85,8 @@ static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 	printf("data len: %d\n",probing_packet->pkt_len);
 
 	printf("%ld\n",sizeof(struct tcp_hdr));
-	printf("%x\n",eth_hdr);
-	printf("%x\n",iph);
+	printf("%p\n",eth_hdr);
+	printf("%p\n",iph);
 	
 	//TODO: need a configuration process when boot
 	topo[0].id = 1;
@@ -109,26 +109,26 @@ static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 /*
 	An implementation of IP checksum from testpmd.Proved the same as rte_ipv4_cksum()
 */
-static uint16_t
-ipv4_hdr_cksum(struct ipv4_hdr *ip_h)
-{
-        uint16_t *v16_h;
-        uint32_t ip_cksum;
+// static uint16_t
+// ipv4_hdr_cksum(struct ipv4_hdr *ip_h)
+// {
+        // uint16_t *v16_h;
+        // uint32_t ip_cksum;
 
         /*
          * Compute the sum of successive 16-bit words of the IPv4 header,
          * skipping the checksum field of the header.
          */
-        v16_h = (unaligned_uint16_t *) ip_h;
-        ip_cksum = v16_h[0] + v16_h[1] + v16_h[2] + v16_h[3] +
-                v16_h[4] + v16_h[6] + v16_h[7] + v16_h[8] + v16_h[9];
+        // v16_h = (unaligned_uint16_t *) ip_h;
+        // ip_cksum = v16_h[0] + v16_h[1] + v16_h[2] + v16_h[3] +
+                // v16_h[4] + v16_h[6] + v16_h[7] + v16_h[8] + v16_h[9];
 
-        /* reduce 32 bit checksum to 16 bits and complement it */
-        ip_cksum = (ip_cksum & 0xffff) + (ip_cksum >> 16);
-        ip_cksum = (ip_cksum & 0xffff) + (ip_cksum >> 16);
-        ip_cksum = (~ip_cksum) & 0x0000FFFF;
-        return (ip_cksum == 0) ? 0xFFFF : (uint16_t) ip_cksum;
-}
+        // [> reduce 32 bit checksum to 16 bits and complement it <]
+        // ip_cksum = (ip_cksum & 0xffff) + (ip_cksum >> 16);
+        // ip_cksum = (ip_cksum & 0xffff) + (ip_cksum >> 16);
+        // ip_cksum = (~ip_cksum) & 0x0000FFFF;
+        // return (ip_cksum == 0) ? 0xFFFF : (uint16_t) ip_cksum;
+// }
 
 
 /*
@@ -176,7 +176,7 @@ static inline uint32_t master_receive_probe_reply(struct rte_mbuf* mbuf){
 */
 
 
-static inline void build_probe_packet(){
+static inline void build_probe_packet(void){
 	eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
 	//eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_ARP);
 	//eth_hdr->ether_type =  0;
@@ -214,7 +214,7 @@ static inline void build_probe_packet(){
 	//iph->total_length= rte_cpu_to_be_16(sizeof(struct ipv4_hdr));
 	iph->hdr_checksum = 0;
 	uint16_t ck1 = rte_ipv4_cksum(iph);  
-	uint16_t ck2 = ipv4_hdr_cksum(iph);
+	// uint16_t ck2 = ipv4_hdr_cksum(iph);
 	//printf("%x\n",ck1);
 	//printf("%x\n",ck2);
 	iph->hdr_checksum = ck1;
