@@ -157,6 +157,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	//printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
+	printf("in setState %u\n", state);
 	printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	//printf("ret = %u\n", ret);
 	if (ret == 0)
@@ -185,10 +186,13 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 
 
 static int
-getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
+getStates(struct ipv4_5tuple *ip_5tuple){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	struct nf_states *state;
+	printf("in getState %x\n",state);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &state);
+	printf("in getState %x\n",state);
 	printf("in getState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	printf("ret in getState is %u\n", ret);
 	//printf("%x\n",state);
@@ -201,7 +205,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	if (ret == ENOENT){
 		printf("key not found!\n");
 	}
-	return ret;
+	return state;
 }
 
 /*
@@ -362,7 +366,7 @@ parse_args(int argc, char **argv)
 static void
 check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 {
-#define CHECK_INTERVAL 100 /* 100ms */
+#define CHECK_INTERVAL 10 /* 100ms */
 #define MAX_CHECK_TIME 90 /* 9s (90 * 100ms) in total */
 	uint8_t portid, count, all_ports_up, print_flag = 0;
 	struct rte_eth_link link;
@@ -426,13 +430,13 @@ ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,
 	p = (const uint32_t *)&k->port_src;
 
 #ifdef EM_HASH_CRC
-	printf("em-hash-crc\n");
+	//printf("em-hash-crc\n");
 	init_val = rte_hash_crc_4byte(t, init_val);
 	init_val = rte_hash_crc_4byte(k->ip_src, init_val);
 	init_val = rte_hash_crc_4byte(k->ip_dst, init_val);
 	init_val = rte_hash_crc_4byte(*p, init_val);
 #else
-	printf("not em-hash-crc\n");
+	//printf("not em-hash-crc\n");
 	init_val = rte_jhash_1word(t, init_val);
 	init_val = rte_jhash_1word(k->ip_src, init_val);
 	init_val = rte_jhash_1word(k->ip_dst, init_val);
@@ -558,9 +562,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 						counts ++;
 					}
 					else{
-						struct nf_states state;
-						int ret = getStates(&ip_5tuple, &state);
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state.ipserver);
+						struct nf_states *state = getStates(&ip_5tuple);
+						int ret = 1;
+						printf("%x\n", state);
+						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 						if (ret == ENOENT){
 							printf("if\n");
 							//getIndex();
@@ -568,14 +573,14 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 						else{
 							printf("else!\n");
-							ip_hdr->dst_addr = rte_cpu_to_be_32(state.ipserver);
+							/*ip_hdr->dst_addr = rte_cpu_to_be_32(state.ipserver);
 							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 							if (unlikely(nb_tx < nb_rx)) {
 								uint16_t buf;
 								for (buf = nb_tx; buf < nb_rx; buf++)
 									rte_pktmbuf_free(bufs[buf]);
-							}
+							}*/
 						}
 						
 					}
