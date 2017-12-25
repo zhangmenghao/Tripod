@@ -190,8 +190,8 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	struct nf_states *states1;
 	//printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
-	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &states1);
-	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states1->ipserver);
+	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &states);
+	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 	if (ret == 0){
 		printf("get success!\n");
 	}
@@ -551,7 +551,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 					}
 					else{
-						struct nf_states *states = NULL;
+						struct nf_states *states;
 						int ret = getStates(&ip_5tuple, states);
 						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 						if (ret == ENOENT){
