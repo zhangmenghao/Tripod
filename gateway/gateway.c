@@ -100,7 +100,7 @@ struct nf_states{
 
 }__rte_cache_aligned;
 
-struct nf_states states;
+struct nf_states states[20];
 
 struct ipv4_5tuple {
 	uint32_t ip_dst;
@@ -547,10 +547,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 					printf("tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					if (tcp_hdrs->tcp_flags == 2){
 						//struct nf_states states;
-						states.ipserver = dip_pool[counts % DIP_POOL_SIZE];
-						setStates(&ip_5tuple, &states);
+						states[counts].ipserver = dip_pool[counts % DIP_POOL_SIZE];
+						setStates(&ip_5tuple, &states[counts]);
 						counts ++;
-						ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
+						ip_hdr->dst_addr = rte_cpu_to_be_32(states[counts].ipserver);
 						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						//communicate with Manager
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
