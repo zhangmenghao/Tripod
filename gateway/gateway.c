@@ -183,7 +183,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	if (ret == ENOENT){
 		printf("key not found!\n");
 	}
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ttt);
+	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n",  *ipdddd);
 }
 
 
