@@ -44,11 +44,15 @@
 #include <rte_ip.h>
 #include <rte_ether.h>
 #include <rte_common.h>
+#include <rte_arp.h>
+
+#include "ecmp_predict.h"
 
 #define RX_RING_SIZE 128
 #define TX_RING_SIZE 512
 
 #define NUM_MBUFS 8191
+#define NUM_MANAGER_MBUFS 1023 
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
 #define MAX_RX_QUEUE_PER_LCORE 16
@@ -90,9 +94,9 @@ static const struct rte_eth_conf port_conf_default = {
             // },
             // .src_port_mask = 0xFFFF,
             // .dst_port_mask = 0xFFFF,
-            .mac_addr_byte_mask = 0xFF,
-            .tunnel_type_mask = 1,
-            .tunnel_id_mask = 0xFFFFFFFF,
+            // .mac_addr_byte_mask = 0xFF,
+            // .tunnel_type_mask = 1,
+            // .tunnel_id_mask = 0xFFFFFFFF,
         },
         .drop_queue = 127,
     },
@@ -160,9 +164,30 @@ static struct rte_eth_fdir_filter fdir_filter_ecmp_udp = {
     }
 };
 
+static struct rte_eth_fdir_filter fdir_filter_arp = {
+    .soft_id = 4,
+    .input = {
+        .flow_type = RTE_ETH_FLOW_RAW,
+        .flow = {
+            .l2_flow = {
+                .ether_type = 0x0608,
+            }
+        }
+    },
+    .action = {
+        .rx_queue = 1,
+        .behavior = RTE_ETH_FDIR_ACCEPT,
+        .report_status = RTE_ETH_FDIR_REPORT_ID,
+    }
+};
+
 static struct rte_eth_rss_reta_entry64 reta_conf[2];
 
+static manager_rx_queue_mask = 0x2;
+
 static int enabled_port_mask = 0;
+
+static struct rte_ring* nf_manager_ring;
 
 struct ipv4_5tuple {
 	uint32_t ip_dst;
@@ -207,7 +232,8 @@ rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
  * coming from the mbuf_pool passed as a parameter.
  */
 static inline int
-port_init(uint8_t port, struct rte_mempool *mbuf_pool)
+port_init(uint8_t port, struct rte_mempool *mbuf_pool, 
+ 		struct rte_mempool *manager_mbuf_pool)
 {
 	if ((enabled_port_mask & (1 << port)) == 0) {
 		printf("Skipping disabled port %d\n", port);
@@ -235,8 +261,12 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 
 	/* Allocate and set up 2 RX queue per Ethernet port. */
 	for (q = 0; q < rx_rings; q++) {
-		retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
-				rte_eth_dev_socket_id(port), NULL, mbuf_pool);
+		if ((manager_rx_queue_mask >> q) & 1 == 1)
+			retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
+					rte_eth_dev_socket_id(port), NULL, mbuf_pool);
+		else
+			retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
+					rte_eth_dev_socket_id(port), NULL, manager_mbuf_pool);
 		if (retval < 0)
 			return retval;
 		printf("Init queue %d for port %d\n", q, port);
@@ -257,19 +287,31 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 
     /* Set FlowDirector flow filter on port */
     retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
- 					 				 RTE_ETH_FILTER_ADD, &fdir_filter_state);
+                                       RTE_ETH_FILTER_ADD, &fdir_filter_state);
     if (retval < 0)
         return retval;
     // fdir_filter_ecmp.input.flow.tcp4_flow.src_port = rte_cpu_to_be_16(0),
     // fdir_filter_ecmp.input.flow.tcp4_flow.dst_port = rte_cpu_to_be_16(0),
     retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
-  					 				 RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_tcp);
+                                        RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_tcp);
     if (retval < 0)
         return retval;
     retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
-  					 				 RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_udp);
+                                        RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_udp);
     if (retval < 0)
         return retval;
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+  					 				 RTE_ETH_FILTER_ADD, &fdir_filter_arp);
+    if (retval < 0)
+        return retval;
+    struct rte_eth_fdir_info fdir_info;
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+  					 				 RTE_ETH_FILTER_INFO, &fdir_info);
+    if (retval < 0)
+        return retval;
+    int j;
+    for (j = 0; j < RTE_FLOW_MASK_ARRAY_SIZE; j++)
+        printf("flow_types_mask[%d]: %08x\n", j, fdir_info.flow_types_mask[j]);
 
     /* Set hash array of RSS */
     retval = rss_hash_set(1, port);
@@ -426,6 +468,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 				print_ethaddr("eth_s_addr", &eth_s_addr);
 				print_ethaddr("eth_d_addr", &eth_d_addr);
 
+ 				if (eth_hdr->ether_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
+				printf("This is ARP\n");
+  				}
+ 				else {
 				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ether_hdr));
 				struct ipv4_hdr *ip_hdr;
 				uint32_t ip_dst;
@@ -435,6 +481,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 				ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
 				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
 				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
+  				}
 				printf("\n");
 
 				//parse tcp/udp
@@ -463,9 +510,10 @@ lcore_manager(__attribute__((unused)) void *arg)
 	const uint8_t nb_ports = rte_eth_dev_count();
 	uint8_t port;
 	int i;
-    struct ether_hdr* eth_hdr;
-    struct ipv4_hdr* ip_hdr;
-	uint8_t proto;
+    struct ether_hdr* eth_h;
+    struct ipv4_hdr* ip_h;
+	uint16_t eth_type;
+	uint8_t ip_proto;
     u_char* payload;
 
 	printf("\nCore %u manage states in gateway.\n",
@@ -488,52 +536,82 @@ lcore_manager(__attribute__((unused)) void *arg)
 
 			for (i = 0; i < nb_rx; i ++){
 				printf("packet comes from port %u queue 1\n", port);
-				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
-				ip_hdr = (struct ipv4_hdr*)
-  				  		((u_char*)eth_hdr + sizeof(struct ether_hdr));
-				proto = ip_hdr->next_proto_id;
+				eth_h = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
+				eth_type = eth_h->ether_type;
 
- 				if (proto == 6 || proto == 17) {
+ 				if (eth_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
+  				    /* ARP message to keep live with switch */
+   				    struct arp_hdr* arp_h;
+   				    struct ether_addr self_eth_addr;
+   				    uint32_t ip_addr;
+  				    arp_h = (struct arp_hdr*)
+  				    		((u_char*)eth_h + sizeof(struct ether_hdr));
+  				    rte_eth_macaddr_get(port, &self_eth_addr);
+  				    ether_addr_copy(&(eth_h->s_addr), &(eth_h->d_addr));
+  				    ether_addr_copy(&(eth_h->s_addr), &interface_MAC);
+  				    /* Set source MAC address with MAC of TX Port */
+  				    ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
+  				    arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
+  				    ether_addr_copy(&(arp_h->arp_data.arp_sha)
+   				    			, &(arp_h->arp_data.arp_tha));
+  				    ether_addr_copy(&(eth_h->s_addr)
+   				    			, &(arp_h->arp_data.arp_sha));
+  				    /* Swap IP address in ARP payload */
+  				    ip_addr = arp_h->arp_data.arp_sip;
+  				    arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
+  				    arp_h->arp_data.arp_tip = ip_addr;
+  				    printf("This is ARP message\n");
+  				}
+ 				// else if (eth_type == rte_be_to_cpu_16(ETHER_TYPE_IPv4)) {
+  				// }
+
+				ip_h = (struct ipv4_hdr*)
+  				  		((u_char*)eth_h + sizeof(struct ether_hdr));
+				ip_proto = ip_h->next_proto_id;
+
+ 				if (ip_proto == 0x06 || ip_proto == 0x11) {
   				    /* Control message about ECMP */
-  				    if ((ip_hdr->dst_addr & 0x00FF0000) == (0xFE << 16)) {
-  				        /* Destination ip is 172.16.254.X */
+  				    if ((ip_h->dst_addr & 0x00FF0000) == (0xFD << 16)) {
+  				        /* Destination ip is 172.16.253.X */
   				        /* This is ECMP predict request message */
-  				        // ecmp_predict_reply(bufs[i]);
+  				        backup_receive_probe_packet(bufs[i]);
+  				        rte_eth_tx_burst(1, 0, &probing_packet, 1);
   				        printf("This is ECMP predict request message\n");
    				    }
-  				    else if ((ip_hdr->dst_addr & 0x00FF0000) == 0) {
+  				    else if ((ip_h->dst_addr & 0x00FF0000) == 0) {
   				        /* Destination ip is 172.16.0.X */
   				        /* This is ECMP predict reply message */
   				        // ecmp_receive_reply(bufs[i]);
-  				        printf("This is ECMP predict reply message\n");
+  				        uint32_t backup_no = master_receive_probe_reply(bufs[i]);
+  				        printf("This is ECMP pedict reply message\n");
    				    }
   				}
- 				else if (ip_hdr->next_proto_id == 0) {
+ 				else if (ip_h->next_proto_id == 0) {
   				    /* Control message about state */
-   				    if ((ip_hdr->dst_addr & 0xFF000000) == (255U << 24)) {
+   				    if ((ip_h->dst_addr & 0xFF000000) == (255U << 24)) {
    				        /* Destination ip is 172.16.0.255 */
    				        /* This is flow broadcast message */
     			        printf("This is flow broadcast message\n");
    				    }
-  				    else if ((ip_hdr->dst_addr & 0x00FF0000) == 0) {
+  				    else if ((ip_h->dst_addr & 0x00FF0000) == 0) {
   				        /* Destination ip is 172.16.0.X */
   				        /* This is state backup message */
   				        printf("This is state backup message\n");
-   				        payload = (u_char*)ip_hdr + ((ip_hdr->version_ihl) & 0x0F) * 4;
+   				        payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
    				        printf("payload is %s\n", payload);
    				    }
   				}
 				printf("\n");
 			}
 
-			const uint16_t nb_tx = rte_eth_tx_burst(port , 0, bufs, nb_rx);
+			// const uint16_t nb_tx = rte_eth_tx_burst(port , 0, bufs, nb_rx);
 
 			/* Free any unsent packets. */
-			if (unlikely(nb_tx < nb_rx)) {
-				uint16_t buf;
-				for (buf = nb_tx; buf < nb_rx; buf++)
-					rte_pktmbuf_free(bufs[buf]);
-			}
+			// if (unlikely(nb_tx < nb_rx)) {
+				// uint16_t buf;
+				// for (buf = nb_tx; buf < nb_rx; buf++)
+					// rte_pktmbuf_free(bufs[buf]);
+			// }
 		}
 	}
 	return 0;
@@ -548,6 +626,7 @@ int
 main(int argc, char *argv[])
 {
 	struct rte_mempool *mbuf_pool;
+	struct rte_mempool *manager_mbuf_pool;
 	unsigned nb_ports, lcore_id;
 	uint8_t portid;
 
@@ -571,8 +650,13 @@ main(int argc, char *argv[])
 	/* Creates a new mempool in memory to hold the mbufs. */
 	mbuf_pool = rte_pktmbuf_pool_create("MBUF_POOL", NUM_MBUFS * nb_ports,
 		MBUF_CACHE_SIZE, 0, RTE_MBUF_DEFAULT_BUF_SIZE, rte_socket_id());
-
 	if (mbuf_pool == NULL)
+		rte_exit(EXIT_FAILURE, "Cannot create mbuf pool\n");
+
+	manager_mbuf_pool = rte_pktmbuf_pool_create("MANAGER_MBUF_POOL", 
+		NUM_MANAGER_MBUFS, MBUF_CACHE_SIZE, 0, RTE_MBUF_DEFAULT_BUF_SIZE, 
+ 		rte_socket_id());
+	if (manager_mbuf_pool == NULL)
 		rte_exit(EXIT_FAILURE, "Cannot create mbuf pool\n");
 
 	/* check if portmask has non-existent ports */
@@ -581,10 +665,20 @@ main(int argc, char *argv[])
 
 	/* Initialize all ports. */
 	for (portid = 0; portid < nb_ports; portid++)
-		if (port_init(portid, mbuf_pool) == 0)//use mbuf_pool to cache RX/TX
+		if (port_init(portid, mbuf_pool, manager_mbuf_pool) == 0)
 			printf("Initialize port %u, finshed!\n", portid);
 		else 
 			printf("Initialize port %u, failed!\n", portid);
+    
+    /* Initialize about ECMP by QiaoYi */
+    ecmp_predict_init(manager_mbuf_pool);
+
+    /* Create and initialize ring between nf and manager */
+    nf_manager_ring = rte_ring_create("NF_MANAGER_RING", RX_RING_SIZE, 
+     				   				  rte_socket_id(), 
+      				   				  RING_F_SP_ENQ | RING_F_SC_DEQ);
+	if (nf_manager_ring == NULL)
+		rte_exit(EXIT_FAILURE, "Cannot create ring between nf and manager\n");
 
 	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
 		rte_eal_remote_launch(lcore_nf, NULL, lcore_id);

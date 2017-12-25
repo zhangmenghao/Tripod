@@ -30,7 +30,7 @@ struct udp_hdr *udp_h;
 char* l4_hdr;
 char* payload;
 struct ipv4_hdr *iph;
-struct ether_hdr interface_MAC;
+struct ether_addr interface_MAC;
 
 uint32_t probing_ip;
 
@@ -84,7 +84,7 @@ static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 
 	printf("data len: %d\n",probing_packet->pkt_len);
 
-	printf("%d\n",sizeof(struct tcp_hdr));
+	printf("%ld\n",sizeof(struct tcp_hdr));
 	printf("%x\n",eth_hdr);
 	printf("%x\n",iph);
 	
