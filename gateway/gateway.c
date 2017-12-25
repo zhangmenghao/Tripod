@@ -189,7 +189,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
-	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) states);
+	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &states);
 	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 	if (ret == 0){
 		printf("get success!\n");
