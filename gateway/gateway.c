@@ -550,15 +550,15 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 					}
 					else{
-						struct nf_states states;
-						int ret = getStates(&ip_5tuple, &states);
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
+						struct nf_states *states = NULL;
+						int ret = getStates(&ip_5tuple, states);
+						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 						if (ret == ENOENT){
 							//getIndex();
 							//if else
 						}
 						else{
-							ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
+							ip_hdr->dst_addr = rte_cpu_to_be_32(states->ipserver);
 							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 							if (unlikely(nb_tx < nb_rx)) {
