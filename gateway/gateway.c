@@ -157,8 +157,8 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	//printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
-	printf("in setState %u\n", state);
-	printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
+	//printf("in setState %u\n", state);
+	//printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	//printf("ret = %u\n", ret);
 	if (ret == 0)
 	{
@@ -190,11 +190,11 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	//struct nf_states *state;
-	printf("in getState %x\n",state);
+	//printf("in getState %x\n",state);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
-	printf("in getState %x\n",state);
-	printf("in getState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", (*state)->ipserver);
-	printf("ret in getState is %u\n", ret);
+	//printf("in getState %x\n",state);
+	//printf("in getState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", (*state)->ipserver);
+	//printf("ret in getState is %u\n", ret);
 	//printf("%x\n",state);
 	if (ret == 0){
 		printf("get success!\n");
@@ -573,14 +573,14 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 						else{
 							printf("else!\n");
-							/*ip_hdr->dst_addr = rte_cpu_to_be_32(state.ipserver);
+							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
 							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 							if (unlikely(nb_tx < nb_rx)) {
 								uint16_t buf;
 								for (buf = nb_tx; buf < nb_rx; buf++)
 									rte_pktmbuf_free(bufs[buf]);
-							}*/
+							}
 						}
 						
 					}
