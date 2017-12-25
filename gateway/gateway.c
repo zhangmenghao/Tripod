@@ -166,13 +166,11 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	}
 	ipddd = dip_pool[(counts + 1) % DIP_POOL_SIZE];
 
-	printf("init_val is %u\n", rte_hash_hash(state_hash_table[0], &newkey));
-
-
 	printf("newkey->ip_dst and ipddd is %u and %u\n",newkey.ip_dst, ipddd);
+	uint32_t ttt = 100;
 
 	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ipddd);
-	uint32_t *ipdddd = &ipddd;
+	uint32_t *ipdddd = &ttt;
 	ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **)&ipdddd);
 	printf("ret = %u\n", ret);
 	if (ret == 0)
@@ -185,7 +183,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	if (ret == ENOENT){
 		printf("key not found!\n");
 	}
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ipddd);
+	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ttt);
 }
 
 
@@ -542,18 +540,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					if (tcp_hdrs->tcp_flags == 2){
 						struct nf_states states;
 						states.ipserver = dip_pool[counts % DIP_POOL_SIZE];
-						/*uint32_t ipddd = dip_pool[counts % DIP_POOL_SIZE];
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
-						union ipv4_5tuple_host newkey;
-						convert_ipv4_5tuple(&ip_5tuple, &newkey);
-						rte_hash_add_key_data(state_hash_table[0], &newkey, (void *) &states);
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
-						states.ipserver = dip_pool[(counts + 1) % DIP_POOL_SIZE];
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
-						rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &states);
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);*/
 						setStates(&ip_5tuple, &states);
-						//getStates(&ip_5tuple, &states);
 						counts ++;
 						ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
 						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
