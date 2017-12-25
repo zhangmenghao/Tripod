@@ -797,7 +797,7 @@ lcore_manager(__attribute__((unused)) void *arg)
 				continue;
 
  			if (rte_ring_dequeue(nf_manager_ring, (void**)&backup_pair) == 0) {
-  			    build_probe_packet();
+  			    // build_probe_packet();
 			    rte_eth_tx_burst(port, 0, &probing_packet, 1);
   			}
 
