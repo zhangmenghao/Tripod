@@ -14,6 +14,7 @@
 
 
 #define N_MACHINE_MAX 8
+#define N_INTERFACE_MAX 48
 struct machine_IP_pair{
 	uint8_t id;
 	uint32_t ip;
@@ -34,7 +35,9 @@ struct ether_addr interface_MAC;
 
 uint32_t probing_ip;
 
+uint32_t this_machine_index;
 
+uint32_t reverse_table[N_INTERFACE_MAX];
 /*
 	A tool function for dumping ALL of the ip header fields.
 	The last line being 0xffff indicates that the cksum is correct.
@@ -93,17 +96,23 @@ static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 	topo[0].ip = IPv4(172,16,0,2);
 
 
-	topo[1].id = 2;
-	topo[1].ip = IPv4(172,16,1,2);
+	topo[1].id = 3;
+	topo[1].ip = IPv4(172,16,3,2);
 	
 
 	topo[2].id = 4;
 	topo[2].ip = IPv4(172,16,2,2);
-
-	this_machine = &(topo[0]);
+	this_machine_index = 1;
+	this_machine = &(topo[this_machine_index]);
 
 
 	probing_ip = IPv4(172,16,253,2); 
+
+
+	reverse_table[1] = 0;;
+	reverse_table[3] = 1;;
+	reverse_table[4] = 2;;
+
 }
 
 /*
@@ -157,9 +166,18 @@ static inline uint32_t master_receive_probe_reply(struct rte_mbuf* mbuf){
     char* payload = (char*)ip_hdr
                       + sizeof(struct ipv4_hdr)
                       + sizeof(struct tcp_hdr);
+	uint32_t backup_port_N = *((uint32_t*)payload);
+	uint32_t backup_port_N_minus_1;
 
-	printf("%d\n",*((uint32_t*)payload));
-	return *((uint32_t*)payload);
+	if(backup_port_N >= this_machine->id){
+		uint32_t index = reverse_table[backup_port_N];
+		backup_port_N_minus_1 = topo[index+1].id;	
+	}
+	else{
+		backup_port_N_minus_1 = backup_port_N;
+	}
+	//printf("%d\n",*((uint32_t*)payload));
+	return backup_port_N_minus_1;
 
 
 
@@ -176,7 +194,7 @@ static inline uint32_t master_receive_probe_reply(struct rte_mbuf* mbuf){
 */
 
 
-static inline void build_probe_packet(void){
+static inline void build_probe_packet(uint32_t sip,uint16_t dport,uint32_t sport){
 	eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
 	//eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_ARP);
 	//eth_hdr->ether_type =  0;
@@ -204,7 +222,7 @@ static inline void build_probe_packet(void){
 */	
 	memset((char *)iph, 0, sizeof(struct ipv4_hdr));
 	//static uint32_t ip = 0;
-	iph->src_addr=rte_cpu_to_be_32(IPv4(10,10,10,10));
+	iph->src_addr=rte_cpu_to_be_32(sip);
 	iph->dst_addr=rte_cpu_to_be_32(probing_ip);
 	iph->version_ihl = (4 << 4) | 5;
 	iph->total_length = rte_cpu_to_be_16(46);
@@ -221,8 +239,8 @@ static inline void build_probe_packet(void){
 	
 	//dump_ip_hdr(iph);
 
-	tcp_h->src_port = 22222;
-	tcp_h->dst_port = 22222;
+	tcp_h->src_port = sport;
+	tcp_h->dst_port = dport;
 
 
 	*((uint32_t*)payload) = this_machine->ip;
@@ -259,7 +277,7 @@ static inline  void backup_receive_probe_packet(struct rte_mbuf* mbuf){
                     ether_addr_copy(&addr,&eth_h->s_addr);
 */
 
-    build_probe_packet();
+    build_probe_packet(0,0,0);
 
     struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
     char* payload22 = (char*)ip_hdr
@@ -267,9 +285,12 @@ static inline  void backup_receive_probe_packet(struct rte_mbuf* mbuf){
                   + sizeof(struct tcp_hdr);
     uint32_t dst_ip = *((uint32_t*)payload22);
 
-    iph->src_addr = rte_be_to_cpu_32(IPv4(13,13,13,13));/*NO USE*/
+    iph->src_addr = ip_hdr->src_addr;
     iph->dst_addr = rte_be_to_cpu_32(dst_ip);
 
+    iph->hdr_checksum = 0;
+    uint16_t ck1 = rte_ipv4_cksum(iph);
+    iph->hdr_checksum = ck1;
 
     *((uint32_t*)payload) = this_machine->id;
     uint32_t ipv4_addr = dst_ip;
