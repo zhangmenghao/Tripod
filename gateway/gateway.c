@@ -560,7 +560,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					else{
 						struct nf_states state;
 						int ret = getStates(&ip_5tuple, &state);
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state.ipserver);
+						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", (&state)->ipserver);
 						if (ret == ENOENT){
 							printf("if\n");
 							//getIndex();
