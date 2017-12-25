@@ -45,6 +45,9 @@
 #include <rte_ether.h>
 #include <rte_common.h>
 #include <rte_arp.h>
+#include <rte_tcp.h>
+#include <rte_udp.h>
+#include <rte_hash.h>
 
 #include "ecmp_predict.h"
 
@@ -56,7 +59,17 @@
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
 #define MAX_RX_QUEUE_PER_LCORE 16
-#define DIP_MAX 10000001
+#define NB_SOCKETS 8
+/* Hash parameters. */
+#ifdef RTE_ARCH_64
+/* default to 4 million hash entries (approx) */
+#define HASH_ENTRIES		(1024*1024*4)
+#else
+/* 32-bit has less address-space for hugepage memory, limit to 1M entries */
+#define HASH_ENTRIES		(1024*1024*1)
+#endif
+
+#define DIP_POOL_SIZE 5
 
 #ifndef IPv4_BYTES
 #define IPv4_BYTES_FMT "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8
@@ -65,6 +78,16 @@
 		(uint8_t) (((addr) >> 16) & 0xFF),\
 		(uint8_t) (((addr) >> 8) & 0xFF),\
 		(uint8_t) ((addr) & 0xFF)
+#endif
+
+#define EM_HASH_CRC
+
+#ifdef EM_HASH_CRC
+#include <rte_hash_crc.h>
+#define DEFAULT_HASH_FUNC       rte_hash_crc
+#else
+#include <rte_jhash.h>
+#define DEFAULT_HASH_FUNC       rte_jhash
 #endif
 
 static const struct rte_eth_conf port_conf_default = {
@@ -189,6 +212,15 @@ static int enabled_port_mask = 0;
 
 static struct rte_ring* nf_manager_ring;
 
+struct nf_states{
+	uint32_t ipserver;
+
+	uint32_t dip;
+	uint16_t dport;
+
+}__rte_cache_aligned;
+
+
 struct ipv4_5tuple {
 	uint32_t ip_dst;
 	uint32_t ip_src;
@@ -196,18 +228,79 @@ struct ipv4_5tuple {
 	uint16_t port_src;
 	uint8_t  proto;
 } __rte_cache_aligned;
-struct ipv4_5tuple ipv4_5tuples;
+
+
+union ipv4_5tuple_host {
+	struct {
+		uint8_t  pad0;
+		uint8_t  proto;
+		uint16_t pad1;
+		uint32_t ip_src;
+		uint32_t ip_dst;
+		uint16_t port_src;
+		uint16_t port_dst;
+	};
+	xmm_t xmm;
+};
 
 //share variables
-uint32_t dip[DIP_MAX];
+struct rte_hash *state_hash_table[NB_SOCKETS];
 
-static inline void state_set(void){
-	dip[0] = 1;
-	//just an example
+//configurations
+uint32_t dip_pool[DIP_POOL_SIZE]={
+	IPv4(100,10,0,0),
+	IPv4(100,10,0,1),
+	IPv4(100,10,0,2),
+	IPv4(100,10,0,3),
+	IPv4(100,10,0,4),
+};
+
+static int counts = 0;
+
+static void
+convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
+{
+	key2->ip_dst = rte_cpu_to_be_32(key1->ip_dst);
+	key2->ip_src = rte_cpu_to_be_32(key1->ip_src);
+	key2->port_dst = rte_cpu_to_be_16(key1->port_dst);
+	key2->port_src = rte_cpu_to_be_16(key1->port_src);
+	key2->proto = key1->proto;
+	key2->pad0 = 0;
+	key2->pad1 = 0;
 }
 
-static inline uint32_t state_get(void){
-	return dip[0];
+
+static void 
+setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
+	union ipv4_5tuple_host newkey;
+	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+	//int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, states);
+	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, states);
+	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+	printf("ret = %u\n", ret);
+	if (ret == 0)
+	{
+		printf("set success!\n");
+	}
+	//ipddd = dip_pool[(counts + 1) % DIP_POOL_SIZE];
+
+
+	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+	struct nf_states * temp;
+	ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **)&temp);
+	printf("ret = %u\n", ret);
+	if (ret == 0)
+	{
+		printf("get success!\n");
+	}
+	if (ret == EINVAL){
+		printf("parameter invalid\n");
+	}
+	if (ret == ENOENT){
+		printf("key not found!\n");
+	}
+	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n",  temp->ipserver);
 }
 
 static inline int
@@ -225,6 +318,19 @@ rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
     }
     retval = rte_eth_dev_rss_reta_update(port, reta_conf, 128);
     return retval;
+}
+
+static int
+getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
+	union ipv4_5tuple_host newkey;
+	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &states);
+	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+	if (ret == 0){
+		printf("get success!\n");
+	}
+	return ret;
 }
 
 /*
@@ -321,8 +427,8 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 	/* Display the port MAC address. */
 	struct ether_addr addr;
 	rte_eth_macaddr_get(port, &addr);
-	printf("Port %u MAC: %02" PRIx8 " %02" PRIx8 " %02" PRIx8
-			   " %02" PRIx8 " %02" PRIx8 " %02" PRIx8 "\n",
+	printf("Port %u MAC: %02" PRIx8 ":%02" PRIx8 ":%02" PRIx8
+			   ":%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8 "\n",
 			(unsigned)port,
 			addr.addr_bytes[0], addr.addr_bytes[1],
 			addr.addr_bytes[2], addr.addr_bytes[3],
@@ -421,6 +527,114 @@ parse_args(int argc, char **argv)
 	return ret;
 }
 
+static void
+check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
+{
+#define CHECK_INTERVAL 100 /* 100ms */
+#define MAX_CHECK_TIME 90 /* 9s (90 * 100ms) in total */
+	uint8_t portid, count, all_ports_up, print_flag = 0;
+	struct rte_eth_link link;
+
+	printf("\nChecking link status");
+	fflush(stdout);
+	for (count = 0; count <= MAX_CHECK_TIME; count++) {
+		all_ports_up = 1;
+		for (portid = 0; portid < port_num; portid++) {
+			if ((port_mask & (1 << portid)) == 0)
+				continue;
+			memset(&link, 0, sizeof(link));
+			rte_eth_link_get_nowait(portid, &link);
+			/* print link status if flag set */
+			if (print_flag == 1) {
+				if (link.link_status)
+					printf("Port %d Link Up - speed %u "
+						"Mbps - %s\n", (uint8_t)portid,
+						(unsigned)link.link_speed,
+				(link.link_duplex == ETH_LINK_FULL_DUPLEX) ?
+					("full-duplex") : ("half-duplex\n"));
+				else
+					printf("Port %d Link Down\n",
+							(uint8_t)portid);
+				continue;
+			}
+			/* clear all_ports_up flag if any link down */
+			if (link.link_status == ETH_LINK_DOWN) {
+				all_ports_up = 0;
+				break;
+			}
+		}
+		/* after finally printing all link status, get out */
+		if (print_flag == 1)
+			break;
+
+		if (all_ports_up == 0) {
+			printf(".");
+			fflush(stdout);
+			rte_delay_ms(CHECK_INTERVAL);
+		}
+
+		/* set the print_flag if all ports up or timeout */
+		if (all_ports_up == 1 || count == (MAX_CHECK_TIME - 1)) {
+			print_flag = 1;
+			printf("\ndone\n");
+		}
+	}
+}
+
+static inline uint32_t
+ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,
+		uint32_t init_val)
+{
+	const union ipv4_5tuple_host *k;
+	uint32_t t;
+	const uint32_t *p;
+
+	k = data;
+	t = k->proto;
+	p = (const uint32_t *)&k->port_src;
+
+#ifdef EM_HASH_CRC
+	printf("em-hash-crc\n");
+	init_val = rte_hash_crc_4byte(t, init_val);
+	init_val = rte_hash_crc_4byte(k->ip_src, init_val);
+	init_val = rte_hash_crc_4byte(k->ip_dst, init_val);
+	init_val = rte_hash_crc_4byte(*p, init_val);
+#else
+	printf("not em-hash-crc\n");
+	init_val = rte_jhash_1word(t, init_val);
+	init_val = rte_jhash_1word(k->ip_src, init_val);
+	init_val = rte_jhash_1word(k->ip_dst, init_val);
+	init_val = rte_jhash_1word(*p, init_val);
+#endif
+
+	printf("init_val = %u\n", init_val);
+	return init_val;
+}
+
+static void
+setup_hash(const int socketid)
+{
+	struct rte_hash_parameters hash_params = {
+		.name = NULL,
+		.entries = HASH_ENTRIES,
+		.key_len = sizeof(union ipv4_5tuple_host),
+		.hash_func = ipv4_hash_crc,
+		.hash_func_init_val = 0,
+	};
+	char s[64];
+	snprintf(s, sizeof(s), "ipv4_hash_%d", socketid);
+	hash_params.name = s;
+	hash_params.socket_id = socketid;
+	state_hash_table[socketid] =
+		rte_hash_create(&hash_params);
+
+	if (state_hash_table[socketid] == NULL)
+		rte_exit(EXIT_FAILURE,
+			"Unable to create the l3fwd hash on socket %d\n",
+			socketid);
+	printf("setup hash_table %s\n", s);
+}
+
 /*
  * gateway network funtions.
  */
@@ -455,47 +669,89 @@ lcore_nf(__attribute__((unused)) void *arg)
 					bufs, BURST_SIZE);
 
 			if (unlikely(nb_rx == 0))
-				continue;
-
+				continue;	
+			
+						
 			for (i = 0; i < nb_rx; i ++){
-				printf("packet comes from port %u queue 0\n", port);
+				struct rte_mbuf *p;
+				p = bufs[i];
+				printf("packet comes from %u\n", port);
+
 				struct ether_hdr *eth_hdr;
-				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
+				eth_hdr = rte_pktmbuf_mtod(p, struct ether_hdr *);
 				struct ether_addr eth_s_addr;
 				eth_s_addr = eth_hdr->s_addr;
 				struct ether_addr eth_d_addr;
 				eth_d_addr = eth_hdr->d_addr;
+
 				print_ethaddr("eth_s_addr", &eth_s_addr);
 				print_ethaddr("eth_d_addr", &eth_d_addr);
 
- 				if (eth_hdr->ether_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
-				printf("This is ARP\n");
-  				}
- 				else {
-				rte_pktmbuf_adj(bufs[i], (uint16_t)sizeof(struct ether_hdr));
-				struct ipv4_hdr *ip_hdr;
-				uint32_t ip_dst;
-				uint32_t ip_src;
-				ip_hdr = rte_pktmbuf_mtod(bufs[i], struct ipv4_hdr *);
-				ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
-				ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
-				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_dst));
-				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_src));
-  				}
+				struct ipv4_5tuple ip_5tuple;
+				//rte_pktmbuf_adj(p, (uint16_t)sizeof(struct ether_hdr));
+				struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
+
+				ip_5tuple.ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
+				ip_5tuple.ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
+				ip_5tuple.proto = ip_hdr->next_proto_id;
+
+				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple.ip_dst));
+				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple.ip_src));
+				printf("next_proto_id is %u\n", ip_5tuple.proto);
+				
+				if (ip_5tuple.proto == 17){
+					struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+					ip_5tuple.port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
+					ip_5tuple.port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
+				}
+				else if (ip_5tuple.proto == 6){
+					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+					ip_5tuple.port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
+					ip_5tuple.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
+					printf("tcp_flags is %u\n", tcp_hdrs->tcp_flags);
+					if (tcp_hdrs->tcp_flags == 2){
+						struct nf_states states;
+						states.ipserver = dip_pool[counts % DIP_POOL_SIZE];
+						setStates(&ip_5tuple, &states);
+						counts ++;
+						ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
+						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+						//communicate with Manager
+						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
+						if (unlikely(nb_tx < nb_rx)) {
+							uint16_t buf;
+							for (buf = nb_tx; buf < nb_rx; buf++)
+								rte_pktmbuf_free(bufs[buf]);
+						}
+					}
+					else{
+						struct nf_states states;
+						int ret = getStates(&ip_5tuple, &states);
+						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
+						if (ret == ENOENT){
+							//getIndex();
+							//if else
+						}
+						else{
+							ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
+							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
+							if (unlikely(nb_tx < nb_rx)) {
+								uint16_t buf;
+								for (buf = nb_tx; buf < nb_rx; buf++)
+									rte_pktmbuf_free(bufs[buf]);
+							}
+						}
+						
+					}
+				}
+				else{
+					rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
+				}
+				printf("port_src and port_dst is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
 				printf("\n");
-
-				//parse tcp/udp
-
 			}
 
-			const uint16_t nb_tx = rte_eth_tx_burst(port , 0, bufs, nb_rx);
-
-			/* Free any unsent packets. */
-			if (unlikely(nb_tx < nb_rx)) {
-				uint16_t buf;
-				for (buf = nb_tx; buf < nb_rx; buf++)
-					rte_pktmbuf_free(bufs[buf]);
-			}
 		}
 	}
 	return 0;
@@ -615,7 +871,6 @@ lcore_manager(__attribute__((unused)) void *arg)
 		}
 	}
 	return 0;
-	return 0;
 }
 
 /*
@@ -659,6 +914,8 @@ main(int argc, char *argv[])
 	if (manager_mbuf_pool == NULL)
 		rte_exit(EXIT_FAILURE, "Cannot create mbuf pool\n");
 
+	setup_hash((int)rte_socket_id());//now is a single socket version
+
 	/* check if portmask has non-existent ports */
 	if (enabled_port_mask & ~(RTE_LEN2MASK(nb_ports, unsigned)))
 		rte_exit(EXIT_FAILURE, "Non-existent ports in portmask!\n");
@@ -679,6 +936,8 @@ main(int argc, char *argv[])
       				   				  RING_F_SP_ENQ | RING_F_SC_DEQ);
 	if (nf_manager_ring == NULL)
 		rte_exit(EXIT_FAILURE, "Cannot create ring between nf and manager\n");
+
+	check_all_ports_link_status((uint8_t)nb_ports, enabled_port_mask);
 
 	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
 		rte_eal_remote_launch(lcore_nf, NULL, lcore_id);

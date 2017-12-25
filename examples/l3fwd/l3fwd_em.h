@@ -115,6 +115,7 @@ l3fwd_em_no_opt_send_packets(int nb_rx, struct rte_mbuf **pkts_burst,
 			uint8_t portid, struct lcore_conf *qconf)
 {
 	int32_t j;
+	printf("enter l3fwd_em_no_opt_send_packets()\n");
 
 	/* Prefetch first packets */
 	for (j = 0; j < PREFETCH_OFFSET && j < nb_rx; j++)

@@ -61,6 +61,15 @@
 #define EM_HASH_CRC 1
 #endif
 
+#ifndef IPv4_BYTES
+#define IPv4_BYTES_FMT "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8
+#define IPv4_BYTES(addr) \
+		(uint8_t) (((addr) >> 24) & 0xFF),\
+		(uint8_t) (((addr) >> 16) & 0xFF),\
+		(uint8_t) (((addr) >> 8) & 0xFF),\
+		(uint8_t) ((addr) & 0xFF)
+#endif
+
 #ifdef EM_HASH_CRC
 #include <rte_hash_crc.h>
 #define DEFAULT_HASH_FUNC       rte_hash_crc
@@ -239,7 +248,7 @@ ipv6_hash_crc(const void *data, __rte_unused uint32_t data_len,
 #define IPV6_L3FWD_EM_NUM_ROUTES \
 	(sizeof(ipv6_l3fwd_em_route_array) / sizeof(ipv6_l3fwd_em_route_array[0]))
 
-static uint8_t ipv4_l3fwd_out_if[L3FWD_HASH_ENTRIES] __rte_cache_aligned;
+static uint8_t ipv4_l3fwd_out_if[L3FWD_HASH_ENTRIES] __rte_cache_aligned;//default 4M
 static uint8_t ipv6_l3fwd_out_if[L3FWD_HASH_ENTRIES] __rte_cache_aligned;
 
 static rte_xmm_t mask0;
@@ -393,7 +402,10 @@ populate_ipv4_few_flow_into_table(const struct rte_hash *h)
 			rte_exit(EXIT_FAILURE, "Unable to add entry %" PRIu32
 				" to the l3fwd hash.\n", i);
 		}
+		printf("the value of ret is %u\n", ret);
 		ipv4_l3fwd_out_if[ret] = entry.if_out;
+		printf("populate_ipv4_few_flow_into_table entry.key.ip_dst, ip_src, port_dst, port_src, proto is "IPv4_BYTES_FMT", "IPv4_BYTES_FMT", %u, %u, %u\n",  
+			IPv4_BYTES(entry.key.ip_dst), IPv4_BYTES(entry.key.ip_src), entry.key.port_dst, entry.key.port_src, entry.key.proto);
 	}
 	printf("Hash: Adding 0x%" PRIx64 " keys\n",
 		(uint64_t)IPV4_L3FWD_EM_NUM_ROUTES);
@@ -470,6 +482,8 @@ populate_ipv4_many_flow_into_table(const struct rte_hash *h,
 			break;
 		};
 		convert_ipv4_5tuple(&entry.key, &newkey);
+		printf("populate_ipv4_many_flow_into_table entry.key.ip_dst, ip_src, port_dst, port_src, proto is %u, %u, %u, %u, %u\n",  
+			entry.key.ip_dst, entry.key.ip_src, entry.key.port_dst, entry.key.port_src, entry.key.proto);
 		int32_t ret = rte_hash_add_key(h, (void *) &newkey);
 
 		if (ret < 0)
@@ -664,7 +678,7 @@ em_main_loop(__attribute__((unused)) void *dummy)
 		return 0;
 	}
 
-	RTE_LOG(INFO, L3FWD, "entering main loop on lcore %u\n", lcore_id);
+	RTE_LOG(INFO, L3FWD, "entering em main loop on lcore %u\n", lcore_id);
 
 	for (i = 0; i < qconf->n_rx_queue; i++) {
 
@@ -706,8 +720,10 @@ em_main_loop(__attribute__((unused)) void *dummy)
 			queueid = qconf->rx_queue_list[i].queue_id;
 			nb_rx = rte_eth_rx_burst(portid, queueid, pkts_burst,
 				MAX_PKT_BURST);
+
 			if (nb_rx == 0)
 				continue;
+			printf("nb_rx is %u\n", nb_rx);
 
 #if defined RTE_ARCH_X86 || defined RTE_MACHINE_CPUFLAG_NEON
 			l3fwd_em_send_packets(nb_rx, pkts_burst,
