@@ -224,8 +224,6 @@ struct nf_states{
 
 }__rte_cache_aligned;
 
-struct nf_states states[10000];
-
 struct ipv4_5tuple {
 	uint32_t ip_dst;
 	uint32_t ip_src;
@@ -233,6 +231,9 @@ struct ipv4_5tuple {
 	uint16_t port_src;
 	uint8_t  proto;
 } __rte_cache_aligned;
+
+struct ipv4_5tuple ip_5tuples[10000];
+struct nf_states states[10000];
 
 struct states_5tuple_pair {
     struct ipv4_5tuple l4_5tuple;
@@ -299,23 +300,6 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	}
 }
 
-static inline int
-rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
-{
-    unsigned int idx, i, j = 0;
-	int retval;
-    for (idx = 0; idx < 2; idx++) {
-        reta_conf[idx].mask = ~0ULL;
-        for (i = 0; i < RTE_RETA_GROUP_SIZE; i++, j++) {
-            if (j == nb_nf_lcore)
-                j = 0;
-            reta_conf[idx].reta[i] = j;
-        }
-    }
-    retval = rte_eth_dev_rss_reta_update(port, reta_conf, 128);
-    return retval;
-}
-
 static int
 getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	union ipv4_5tuple_host newkey;
@@ -331,6 +315,23 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		printf("key not found!\n");
 	}
 	return ret;
+}
+
+static inline int
+rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
+{
+    unsigned int idx, i, j = 0;
+	int retval;
+    for (idx = 0; idx < 2; idx++) {
+        reta_conf[idx].mask = ~0ULL;
+        for (i = 0; i < RTE_RETA_GROUP_SIZE; i++, j++) {
+            if (j == nb_nf_lcore)
+                j = 0;
+            reta_conf[idx].reta[i] = j;
+        }
+    }
+    retval = rte_eth_dev_rss_reta_update(port, reta_conf, 128);
+    return retval;
 }
 
 /*
@@ -673,12 +674,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 			
 						
 			for (i = 0; i < nb_rx; i ++){
-				struct rte_mbuf *p;
-				p = bufs[i];
 				printf("packet comes from %u\n", port);
 
 				struct ether_hdr *eth_hdr;
-				eth_hdr = rte_pktmbuf_mtod(p, struct ether_hdr *);
+				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
 				struct ether_addr eth_s_addr;
 				eth_s_addr = eth_hdr->s_addr;
 				struct ether_addr eth_d_addr;
@@ -688,7 +687,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 				print_ethaddr("eth_d_addr", &eth_d_addr);
 
 				struct ipv4_5tuple ip_5tuple;
-				//rte_pktmbuf_adj(p, (uint16_t)sizeof(struct ether_hdr));
 				struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
 
 				ip_5tuple.ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
@@ -710,13 +708,18 @@ lcore_nf(__attribute__((unused)) void *arg)
 					ip_5tuple.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
 					printf("tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					if (tcp_hdrs->tcp_flags == 2){
-						//struct nf_states states;
 						states[counts].ipserver = dip_pool[counts % DIP_POOL_SIZE];
-						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states[counts].ipserver);
 						setStates(&ip_5tuple, &states[counts]);
 						ip_hdr->dst_addr = rte_cpu_to_be_32(states[counts].ipserver);
 						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						//communicate with Manager
+						ip_5tuples[counts] = ip_5tuple;
+						if (rte_ring_enqueue(nf_manager_ring, &ip_5tuples[counts]) == 0) {
+							printf("enqueue success!\n");
+						}
+						else{
+							printf("enqueu failed!!!\n");
+						}
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 						rte_pktmbuf_free(bufs[i]);
 						counts ++;
