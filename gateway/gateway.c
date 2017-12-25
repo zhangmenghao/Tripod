@@ -224,6 +224,7 @@ struct nf_states{
 
 }__rte_cache_aligned;
 
+struct nf_states states[10000];
 
 struct ipv4_5tuple {
 	uint32_t ip_dst;
@@ -284,36 +285,18 @@ convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
 
 
 static void 
-setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
+setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
-	//int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, states);
-	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, states);
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
-	printf("ret = %u\n", ret);
+	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
 	if (ret == 0)
 	{
 		printf("set success!\n");
 	}
-	//ipddd = dip_pool[(counts + 1) % DIP_POOL_SIZE];
-
-
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
-	struct nf_states * temp;
-	ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **)&temp);
-	printf("ret = %u\n", ret);
-	if (ret == 0)
-	{
-		printf("get success!\n");
+	else{
+		printf("error found!\n");
+		return;
 	}
-	if (ret == EINVAL){
-		printf("parameter invalid\n");
-	}
-	if (ret == ENOENT){
-		printf("key not found!\n");
-	}
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n",  temp->ipserver);
 }
 
 static inline int
@@ -334,14 +317,18 @@ rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
 }
 
 static int
-getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
+getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
-	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &states);
-	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
 	if (ret == 0){
 		printf("get success!\n");
+	}
+	if (ret == EINVAL){
+		printf("parameter invalid\n");
+	}
+	if (ret == ENOENT){
+		printf("key not found!\n");
 	}
 	return ret;
 }
@@ -607,13 +594,13 @@ ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,
 	p = (const uint32_t *)&k->port_src;
 
 #ifdef EM_HASH_CRC
-	printf("em-hash-crc\n");
+	//printf("em-hash-crc\n");
 	init_val = rte_hash_crc_4byte(t, init_val);
 	init_val = rte_hash_crc_4byte(k->ip_src, init_val);
 	init_val = rte_hash_crc_4byte(k->ip_dst, init_val);
 	init_val = rte_hash_crc_4byte(*p, init_val);
 #else
-	printf("not em-hash-crc\n");
+	//printf("not em-hash-crc\n");
 	init_val = rte_jhash_1word(t, init_val);
 	init_val = rte_jhash_1word(k->ip_src, init_val);
 	init_val = rte_jhash_1word(k->ip_dst, init_val);
@@ -723,11 +710,11 @@ lcore_nf(__attribute__((unused)) void *arg)
 					ip_5tuple.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
 					printf("tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					if (tcp_hdrs->tcp_flags == 2){
-						struct nf_states states;
-						states.ipserver = dip_pool[counts % DIP_POOL_SIZE];
-						setStates(&ip_5tuple, &states);
-						counts ++;
-						ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
+						//struct nf_states states;
+						states[counts].ipserver = dip_pool[counts % DIP_POOL_SIZE];
+						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states[counts].ipserver);
+						setStates(&ip_5tuple, &states[counts]);
+						ip_hdr->dst_addr = rte_cpu_to_be_32(states[counts].ipserver);
 						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						//communicate with Manager
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
@@ -736,17 +723,21 @@ lcore_nf(__attribute__((unused)) void *arg)
 							for (buf = nb_tx; buf < nb_rx; buf++)
 								rte_pktmbuf_free(bufs[buf]);
 						}
+						counts ++;
 					}
 					else{
-						struct nf_states states;
-						int ret = getStates(&ip_5tuple, &states);
-						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states.ipserver);
+						struct nf_states *state;
+						int ret =  getStates(&ip_5tuple, &state);
+						//printf("%x\n", state);
+						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 						if (ret == ENOENT){
+							printf("if\n");
 							//getIndex();
 							//if else
 						}
 						else{
-							ip_hdr->dst_addr = rte_cpu_to_be_32(states.ipserver);
+							printf("else!\n");
+							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
 							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
 							if (unlikely(nb_tx < nb_rx)) {
