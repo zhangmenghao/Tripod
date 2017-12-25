@@ -152,13 +152,13 @@ convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
 
 
 static void 
-setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
+setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
-	//int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, states);
-	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, states);
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+	printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
+	//int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
+	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
+	printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	printf("ret = %u\n", ret);
 	if (ret == 0)
 	{
@@ -167,13 +167,11 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	//ipddd = dip_pool[(counts + 1) % DIP_POOL_SIZE];
 
 
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
-	union ipv4_5tuple_host newkey2;
-	convert_ipv4_5tuple(ip_5tuple, &newkey2);
+	printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	struct nf_states * temp;
-	ret = rte_hash_lookup_data(state_hash_table[0], &newkey2, (void **)&temp);
+	ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **)&temp);
 	printf("%x\n",temp);
-	printf("%x\n",states);
+	printf("%x\n",state);
 	printf("ret = %u\n", ret);
 	if (ret == 0)
 	{
@@ -185,18 +183,18 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	if (ret == ENOENT){
 		printf("key not found!\n");
 	}
-	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n",  temp->ipserver);
+	printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n",  temp->ipserver);
 }
 
 
 static int
-getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
+getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	struct nf_states *states1;
-	//printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
-	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &states1);
-	printf("%x\n",states);
+	struct nf_states *state1;
+	//printf("in getState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
+	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &state);
+	printf("%x\n",state);
 	if (ret == 0){
 		printf("get success!\n");
 	}
@@ -206,7 +204,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	if (ret == ENOENT){
 		printf("key not found!\n");
 	}
-	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+	printf("in getState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	return 2;
 }
 
@@ -563,8 +561,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 					}
 					else{
-						struct nf_states statess;
-						int ret = getStates(&ip_5tuple, &states);
+						struct nf_states state;
+						int ret = getStates(&ip_5tuple, &state);
 						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
 						if (ret == ENOENT){
 							printf("if\n");
