@@ -215,9 +215,9 @@ static int enabled_port_mask = 0;
 static struct rte_ring* nf_manager_ring;
 
 struct nf_states{
-	uint32_t ipserver;
+	uint32_t ipserver; //Load Balancer
 
-	uint32_t dip;
+	uint32_t dip; //NAT
 	uint16_t dport;
 
     uint32_t bip; // Backup Machine IP
@@ -607,7 +607,7 @@ ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,
 	init_val = rte_jhash_1word(*p, init_val);
 #endif
 
-	printf("init_val = %u\n", init_val);
+	//printf("init_val = %u\n", init_val);
 	return init_val;
 }
 
@@ -630,7 +630,7 @@ setup_hash(const int socketid)
 
 	if (state_hash_table[socketid] == NULL)
 		rte_exit(EXIT_FAILURE,
-			"Unable to create the l3fwd hash on socket %d\n",
+			"Unable to create the hash on socket %d\n",
 			socketid);
 	printf("setup hash_table %s\n", s);
 }
@@ -717,12 +717,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 						ip_hdr->dst_addr = rte_cpu_to_be_32(states[counts].ipserver);
 						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						//communicate with Manager
-						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
-						if (unlikely(nb_tx < nb_rx)) {
-							uint16_t buf;
-							for (buf = nb_tx; buf < nb_rx; buf++)
-								rte_pktmbuf_free(bufs[buf]);
-						}
+						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
+						rte_pktmbuf_free(bufs[i]);
 						counts ++;
 					}
 					else{
@@ -739,21 +735,14 @@ lcore_nf(__attribute__((unused)) void *arg)
 							printf("else!\n");
 							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
 							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
-							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, bufs, nb_rx);
-							if (unlikely(nb_tx < nb_rx)) {
-								uint16_t buf;
-								for (buf = nb_tx; buf < nb_rx; buf++)
-									rte_pktmbuf_free(bufs[buf]);
-							}
+							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
+							rte_pktmbuf_free(bufs[i]);
 						}
 						
 					}
 					printf("port_src and port_dst is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
 				}
 				printf("\n");
-				// else{
-					// rte_exit(EXIT_FAILURE, "L4 header unrecognized!\n");
-				// }
 			}
 
 		}
