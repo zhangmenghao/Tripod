@@ -76,6 +76,8 @@
 		(uint8_t) ((addr) & 0xFF)
 #endif
 
+#define EM_HASH_CRC
+
 #ifdef EM_HASH_CRC
 #include <rte_hash_crc.h>
 #define DEFAULT_HASH_FUNC       rte_hash_crc
@@ -415,17 +417,20 @@ ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,
 	p = (const uint32_t *)&k->port_src;
 
 #ifdef EM_HASH_CRC
+	printf("em-hash-crc\n");
 	init_val = rte_hash_crc_4byte(t, init_val);
 	init_val = rte_hash_crc_4byte(k->ip_src, init_val);
 	init_val = rte_hash_crc_4byte(k->ip_dst, init_val);
 	init_val = rte_hash_crc_4byte(*p, init_val);
 #else
+	printf("not em-hash-crc\n");
 	init_val = rte_jhash_1word(t, init_val);
 	init_val = rte_jhash_1word(k->ip_src, init_val);
 	init_val = rte_jhash_1word(k->ip_dst, init_val);
 	init_val = rte_jhash_1word(*p, init_val);
 #endif
 
+	printf("init_val = %u\n", init_val);
 	return init_val;
 }
 
