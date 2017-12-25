@@ -157,7 +157,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	//printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
-	//printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
+	printf("in setState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	//printf("ret = %u\n", ret);
 	if (ret == 0)
 	{
@@ -188,8 +188,8 @@ static int
 getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	//printf("in getState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &state);
+	printf("in getState the value of state is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 	printf("ret in getState is %u\n", ret);
 	//printf("%x\n",state);
 	if (ret == 0){
@@ -544,8 +544,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 					if (tcp_hdrs->tcp_flags == 2){
 						//struct nf_states states;
 						states[counts].ipserver = dip_pool[counts % DIP_POOL_SIZE];
+						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states[counts].ipserver);
 						setStates(&ip_5tuple, &states[counts]);
-						counts ++;
 						ip_hdr->dst_addr = rte_cpu_to_be_32(states[counts].ipserver);
 						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						//communicate with Manager
@@ -555,11 +555,12 @@ lcore_nf(__attribute__((unused)) void *arg)
 							for (buf = nb_tx; buf < nb_rx; buf++)
 								rte_pktmbuf_free(bufs[buf]);
 						}
+						counts ++;
 					}
 					else{
 						struct nf_states state;
 						int ret = getStates(&ip_5tuple, &state);
-						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", states->ipserver);
+						printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state.ipserver);
 						if (ret == ENOENT){
 							printf("if\n");
 							//getIndex();
