@@ -166,7 +166,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *states){
 	}
 	ipddd = dip_pool[(counts + 1) % DIP_POOL_SIZE];;
 	printf("in setState the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", ipddd);
-	ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) &ipddd);
+	ret = rte_hash_lookup_data(state_hash_table[0], &newkey,(void **) &ipddd);
 	printf("ret = %u\n", ret);
 	if (ret == 0)
 	{
