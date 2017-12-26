@@ -883,10 +883,10 @@ lcore_manager(__attribute__((unused)) void *arg)
 
  				if (ip_proto == 0x06 || ip_proto == 0x11) {
   				    /* Control message about ECMP */
-  				    if ((ip_h->dst_addr & 0x00FF0000) == (0xFE << 16)) {
+  				    if ((ip_h->dst_addr & 0x00FF0000) == (0xFD << 16)) {
   				        /* Destination ip is 172.16.253.X */
   				        /* This is ECMP predict request message */
-  				        // backup_receive_probe_packet(bufs[i]);
+ 				        backup_receive_probe_packet(bufs[i]);
   				        rte_eth_tx_burst(port, 0, &probing_packet, 1);
   				        printf("This is ECMP predict request message\n");
    				    }
