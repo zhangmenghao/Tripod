@@ -638,7 +638,7 @@ setup_hash(const int socketid)
 
 static struct rte_mbuf*
 build_backup_packet(uint8_t port, uint32_t backup_machine_ip, 
- 					struct states_5tuple_pair* backup_pair)
+ 					struct ipv4_5tuple* ip_5tuple, struct nf_states* states)
 {
     struct rte_mbuf* backup_packet;
     struct ether_hdr* eth_h;
@@ -670,16 +670,15 @@ build_backup_packet(uint8_t port, uint32_t backup_machine_ip,
     ip_h->next_proto_id = 0x0;
     ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
     /* Set the packet payload(5tuple:states) */
-    payload->l4_5tuple.ip_dst = backup_pair->l4_5tuple.ip_dst;
-    payload->l4_5tuple.ip_src = backup_pair->l4_5tuple.ip_src;
-    payload->l4_5tuple.port_dst = backup_pair->l4_5tuple.port_dst;
-    payload->l4_5tuple.port_src = backup_pair->l4_5tuple.port_src;
-    payload->l4_5tuple.proto = backup_pair->l4_5tuple.proto;
-    payload->states.ipserver = backup_pair->states.ipserver;
-    payload->states.dip = backup_pair->states.dip;
-    payload->states.dport = backup_pair->states.dport;
-    payload->states.bip = backup_pair->states.bip;
-    printf("Debug backup no %d\n", backup_no);
+    payload->l4_5tuple.ip_dst = ip_5tuple->ip_dst;
+    payload->l4_5tuple.ip_src = ip_5tuple->ip_src;
+    payload->l4_5tuple.port_dst = ip_5tuple->port_dst;
+    payload->l4_5tuple.port_src = ip_5tuple->port_src;
+    payload->l4_5tuple.proto = ip_5tuple->proto;
+    payload->states.ipserver = states->ipserver;
+    payload->states.dip = states->dip;
+    payload->states.dport = states->dport;
+    payload->states.bip = states->bip;
 
     return backup_packet;
 }
@@ -755,7 +754,7 @@ lcore_nf(__attribute__((unused)) void *arg)
   				    ip_addr = arp_h->arp_data.arp_sip;
   				    arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
   				    arp_h->arp_data.arp_tip = ip_addr;
-  				    rte_eth_tx_burst(port, 0, &p, 1);
+  				    rte_eth_tx_burst(port, 0, &bufs[i], 1);
 				    printf("This is arp request message\n");
 				    printf("\n");
   				    continue;
@@ -842,6 +841,7 @@ lcore_manager(__attribute__((unused)) void *arg)
 	// uint16_t eth_type;
 	uint8_t ip_proto;
     u_char* payload;
+    struct ipv4_5tuple* ip_5tuple;
 
 	printf("\nCore %u manage states in gateway.\n",
 			rte_lcore_id());
@@ -854,17 +854,24 @@ lcore_manager(__attribute__((unused)) void *arg)
 				continue;
 			}
 
+ 			if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
+  			    // build_probe_packet();
+  			    printf("Receive backup request from nf\n");
+			    printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
+			    printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
+			    printf("port_src is 0x%x\n", ip_5tuple->port_src);
+			    printf("port_dst is 0x%x\n", ip_5tuple->port_dst);
+			    printf("proto is 0x%x\n", ip_5tuple->proto);
+			    printf("\n");
+			    rte_eth_tx_burst(port, 0, &probing_packet, 1);
+  			}
+
 			struct rte_mbuf *bufs[BURST_SIZE];
 			const uint16_t nb_rx = rte_eth_rx_burst(port, 1,
 					bufs, BURST_SIZE);
 
 			if (unlikely(nb_rx == 0))
 				continue;
-
- 			if (rte_ring_dequeue(nf_manager_ring, (void**)&backup_pair) == 0) {
-  			    // build_probe_packet();
-			    rte_eth_tx_burst(port, 0, &probing_packet, 1);
-  			}
 
 			for (i = 0; i < nb_rx; i ++){
 				printf("packet comes from port %u queue 1\n", port);
@@ -876,12 +883,11 @@ lcore_manager(__attribute__((unused)) void *arg)
 
  				if (ip_proto == 0x06 || ip_proto == 0x11) {
   				    /* Control message about ECMP */
-  				    if ((ip_h->dst_addr & 0x00FF0000) == (0xFD << 16)) {
+  				    if ((ip_h->dst_addr & 0x00FF0000) == (0xFE << 16)) {
   				        /* Destination ip is 172.16.253.X */
   				        /* This is ECMP predict request message */
-  				        backup_receive_probe_packet(bufs[i]);
+  				        // backup_receive_probe_packet(bufs[i]);
   				        rte_eth_tx_burst(port, 0, &probing_packet, 1);
-					// rte_pktmbuf_free(bufs[buf]);
   				        printf("This is ECMP predict request message\n");
    				    }
   				    else if ((ip_h->dst_addr & 0x00FF0000) == 0) {
@@ -889,11 +895,10 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        /* This is ECMP predict reply message */
   				        // ecmp_receive_reply(bufs[i]);
   				        uint32_t backup_no = master_receive_probe_reply(bufs[i]);
-  				        struct ipv4_5tuple *ip_5tuple, 
   				        struct rte_mbuf* backup_packet;
-  				        struct states_5tuple_pair backup_pair;
-  				        getStates(ip_5tuple, struct nf_states ** state){
-  				        backup_packet = build_backup_packet(port, IPv4(172, 16, 0, 2), &backup_pair);
+  				        struct nf_states* states;
+  				        getStates(ip_5tuple, &states);
+  				        backup_packet = build_backup_packet(port, IPv4(172, 16, 0, 2), ip_5tuple, states);
   				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
   				        printf("This is ECMP pedict reply message\n");
    				    }
@@ -910,7 +915,7 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        /* This is state backup message */
   				        printf("This is state backup message\n");
    				        payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
-   				        backup_pair = (struct states_5tuple_pair*)payload;
+   				        struct states_5tuple_pair* backup_pair = (struct states_5tuple_pair*)payload;
 				        printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_src));
 				        printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_dst));
 				        printf("port_src is 0x%x\n", backup_pair->l4_5tuple.port_src);
