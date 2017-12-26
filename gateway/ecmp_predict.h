@@ -31,7 +31,14 @@ struct udp_hdr *udp_h;
 char* l4_hdr;
 char* payload;
 struct ipv4_hdr *iph;
-struct ether_hdr interface_MAC;
+struct ether_addr interface_MAC = {
+    .addr_bytes[0] = 0x48,
+    .addr_bytes[1] = 0x6E,
+    .addr_bytes[2] = 0x73,
+    .addr_bytes[3] = 0x00,
+    .addr_bytes[4] = 0x04,
+    .addr_bytes[5] = 0xDB,
+};
 
 uint32_t probing_ip;
 
@@ -65,10 +72,7 @@ static inline void dump_ip_hdr(struct ipv4_hdr* iph_h){
 	printf("%x\n",iph_h->fragment_offset);
 	printf("%x\n",iph_h->time_to_live);
 	printf("%x\n",iph_h->next_proto_id);
-	printf("%x\n",iph_h->hdr_checksum);
-	printf("checksum correct?(should be 0xffff):%x\n",rte_ipv4_cksum(iph_h));
-
-
+	printf("%x\n",iph_h->hdr_checksum); printf("checksum correct?(should be 0xffff):%x\n",rte_ipv4_cksum(iph_h)); 
 }
 
 /*
@@ -95,11 +99,13 @@ static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 	topo[0].id = 1;
 	topo[0].ip = IPv4(172,16,0,2);
 
+	topo[1].id = 3;
+	topo[1].ip = IPv4(172,16,3,2);
 
+	topo[2].id = 4;
+	topo[2].ip = IPv4(172,16,2,2);
+    this_machine_index = 1;
 
-	topo[1].id = 4;
-	topo[1].ip = IPv4(172,16,2,2);
-	this_machine_index = 1;
 	this_machine = &(topo[this_machine_index]);
 
 
@@ -107,7 +113,8 @@ static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 
 
 	reverse_table[1] = 0;;
-	reverse_table[4] = 1;;
+	reverse_table[3] = 1;;
+	reverse_table[4] = 2;;
 
 }
 
@@ -146,7 +153,7 @@ ipv4_hdr_cksum(struct ipv4_hdr *ip_h)
 
 
 */
-static inline void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* no
+static inline void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip
 ,uint32_t* sip, uint32_t* dip, uint16_t* sport, uint16_t* dport){
 
 
@@ -165,21 +172,23 @@ static inline void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* no
                       + sizeof(struct ipv4_hdr)
                       + sizeof(struct tcp_hdr);
 	uint32_t backup_port_N = *((uint32_t*)payload);
-	uint32_t backup_port_N_minus_1;
+	uint32_t flow_dip = *((uint32_t*)(payload+4));
 
+	uint32_t backup_port_N_minus_1;
+    uint32_t index;
 	if(backup_port_N >= this_machine->id){
-		uint32_t index = reverse_table[backup_port_N];
-		backup_port_N_minus_1 = topo[index+1].id;	
+		index = reverse_table[backup_port_N];
+		backup_port_N_minus_1 = topo[++index].id;	
 	}
 	else{
 		backup_port_N_minus_1 = backup_port_N;
 	}
 	//printf("payload: %d\n",*((uint32_t*)payload));
-
-	*no = backup_port_N_minus_1;
+    
+        *machine_ip = topo[index].ip;
 
         *sip = rte_be_to_cpu_32(ip_hdr->src_addr);
-        *dip = rte_be_to_cpu_32(ip_hdr->dst_addr);
+        *dip = rte_be_to_cpu_32(flow_dip);
         *sport = rte_be_to_cpu_16(tcph->src_port);
         *dport = rte_be_to_cpu_16(tcph->dst_port);
 
@@ -198,7 +207,7 @@ static inline void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* no
 */
 
 
-static inline void build_probe_packet(uint32_t sip,uint32_t dip,uint16_t dport,uint32_t sport){
+static inline void build_probe_packet(uint32_t dip,uint32_t sip,uint16_t dport,uint32_t sport){
 	eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
 	//eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_ARP);
 	//eth_hdr->ether_type =  0;

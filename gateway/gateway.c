@@ -661,7 +661,7 @@ build_backup_packet(uint8_t port, uint32_t backup_machine_ip,
     ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
     /* Set the packet ip header */
     memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
-    ip_h->src_addr=rte_cpu_to_be_32(MACHINE_IP);
+    ip_h->src_addr=rte_cpu_to_be_32(this_machine->ip);
     ip_h->dst_addr=rte_cpu_to_be_32(backup_machine_ip);
     ip_h->version_ihl = (4 << 4) | 5;
     ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct states_5tuple_pair));
@@ -855,7 +855,10 @@ lcore_manager(__attribute__((unused)) void *arg)
 			}
 
  			if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
-  			    // build_probe_packet();
+   			    build_probe_packet(
+    		 	    ip_5tuple->ip_dst, ip_5tuple->ip_src,
+   			        ip_5tuple->port_dst, ip_5tuple->port_src
+   			    );
   			    printf("Receive backup request from nf\n");
 			    printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
 			    printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
@@ -890,17 +893,29 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        rte_eth_tx_burst(port, 0, &probing_packet, 1);
   				        printf("This is ECMP predict request message\n");
    				    }
-  				    else if ((ip_h->dst_addr & 0x00FF0000) == 0) {
-  				        /* Destination ip is 172.16.0.X */
+  				    // else if ((ip_h->dst_addr & 0x00FF0000) == 0) {
+  				    else {
+  				        /* Destination ip is 172.16.X.Y */
   				        /* This is ECMP predict reply message */
   				        // ecmp_receive_reply(bufs[i]);
-  				        uint32_t backup_no = master_receive_probe_reply(bufs[i]);
-  				        struct rte_mbuf* backup_packet;
-  				        struct nf_states* states;
-  				        getStates(ip_5tuple, &states);
-  				        backup_packet = build_backup_packet(port, IPv4(172, 16, 0, 2), ip_5tuple, states);
-  				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
   				        printf("This is ECMP pedict reply message\n");
+   				        struct rte_mbuf* backup_packet;
+   				        struct nf_states* states;
+   				        struct ipv4_5tuple tmp_tuple;
+   				        uint32_t backup_ip;
+   				        master_receive_probe_reply(
+   				            bufs[i], &backup_ip,
+    			 	        &tmp_tuple.ip_src, &tmp_tuple.ip_dst,
+    			 	        &tmp_tuple.port_src, &tmp_tuple.port_dst
+   				        );
+   				        tmp_tuple.proto = 0x6;
+   				        ip_5tuple = &tmp_tuple;
+   				        getStates(ip_5tuple, &states);
+   				        backup_packet = build_backup_packet(
+    			            port, backup_ip, ip_5tuple, states
+    			 	    );
+   				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
+   				        printf("This is ECMP pedict reply message\n");
    				    }
   				}
  				else if (ip_h->next_proto_id == 0) {
