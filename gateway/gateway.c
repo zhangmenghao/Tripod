@@ -714,6 +714,9 @@ lcore_nf(__attribute__((unused)) void *arg)
 						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						//communicate with Manager
 						ip_5tuples[counts] = ip_5tuple;
+						printf("ip_5tuples.ip_dst, ip_src, next_proto_id, port_dst and port_src is "IPv4_BYTES_FMT " , "IPv4_BYTES_FMT " , %u, %u, and %u\n", 
+							IPv4_BYTES(ip_5tuples[counts].ip_dst), IPv4_BYTES(ip_5tuples[counts].ip_src), ip_5tuples[counts].proto, 
+							ip_5tuples[counts].port_dst, ip_5tuples[counts].port_src);
 						if (rte_ring_enqueue(nf_manager_ring, &ip_5tuples[counts]) == 0) {
 							printf("enqueue success!\n");
 						}
