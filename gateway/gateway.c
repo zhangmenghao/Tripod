@@ -883,6 +883,8 @@ lcore_manager(__attribute__((unused)) void *arg)
 				ip_h = (struct ipv4_hdr*)
   				  		((u_char*)eth_h + sizeof(struct ether_hdr));
 				ip_proto = ip_h->next_proto_id;
+				printf("receive ip "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_h->dst_addr));
+				printf("proto: %x\n",ip_proto);
 
  				if (ip_proto == 0x06 || ip_proto == 0x11) {
   				    /* Control message about ECMP */
@@ -898,7 +900,6 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        /* Destination ip is 172.16.X.Y */
   				        /* This is ECMP predict reply message */
   				        // ecmp_receive_reply(bufs[i]);
-  				        printf("This is ECMP pedict reply message\n");
    				        struct rte_mbuf* backup_packet;
    				        struct nf_states* states;
    				        struct ipv4_5tuple tmp_tuple;
@@ -918,14 +919,14 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        printf("This is ECMP pedict reply message\n");
    				    }
   				}
- 				else if (ip_h->next_proto_id == 0) {
+ 				else if (ip_proto == 0) {
   				    /* Control message about state */
    				    if ((ip_h->dst_addr & 0xFF000000) == (255U << 24)) {
    				        /* Destination ip is 172.16.0.255 */
    				        /* This is flow broadcast message */
     			        printf("This is flow broadcast message\n");
    				    }
-  				    else if ((ip_h->dst_addr & 0x00FF0000) == 0) {
+  				    else{
   				        /* Destination ip is 172.16.0.X */
   				        /* This is state backup message */
   				        printf("This is state backup message\n");
