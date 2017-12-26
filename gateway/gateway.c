@@ -635,6 +635,54 @@ setup_hash(const int socketid)
 	printf("setup hash_table %s\n", s);
 }
 
+static struct rte_mbuf*
+build_backup_packet(uint8_t port, uint32_t backup_machine_ip, 
+ 					struct states_5tuple_pair* backup_pair)
+{
+    struct rte_mbuf* backup_packet;
+    struct ether_hdr* eth_h;
+    struct ipv4_hdr* ip_h;
+    struct states_5tuple_pair* payload;
+    struct ether_addr self_eth_addr;
+
+    /* Allocate space */
+    backup_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
+    eth_h = (struct ether_hdr *)
+ 			rte_pktmbuf_append(backup_packet, sizeof(struct ether_hdr));
+    ip_h = (struct ipv4_hdr *)
+  			rte_pktmbuf_append(backup_packet, sizeof(struct ipv4_hdr));
+    payload = (struct states_5tuple_pair*)
+   		rte_pktmbuf_append(backup_packet, sizeof(struct states_5tuple_pair));
+    /* Set the packet ether header */
+    eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
+    ether_addr_copy(&interface_MAC, &(eth_h->d_addr));
+    rte_eth_macaddr_get(port, &self_eth_addr);
+    ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
+    /* Set the packet ip header */
+    memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
+    ip_h->src_addr=rte_cpu_to_be_32(MACHINE_IP);
+    ip_h->dst_addr=rte_cpu_to_be_32(backup_machine_ip);
+    ip_h->version_ihl = (4 << 4) | 5;
+    ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct states_5tuple_pair));
+    ip_h->packet_id= 0x36;/* NO USE */
+    ip_h->time_to_live=4;
+    ip_h->next_proto_id = 0x0;
+    ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
+    /* Set the packet payload(5tuple:states) */
+    payload->l4_5tuple.ip_dst = backup_pair->l4_5tuple.ip_dst;
+    payload->l4_5tuple.ip_src = backup_pair->l4_5tuple.ip_src;
+    payload->l4_5tuple.port_dst = backup_pair->l4_5tuple.port_dst;
+    payload->l4_5tuple.port_src = backup_pair->l4_5tuple.port_src;
+    payload->l4_5tuple.proto = backup_pair->l4_5tuple.proto;
+    payload->states.ipserver = backup_pair->states.ipserver;
+    payload->states.dip = backup_pair->states.dip;
+    payload->states.dport = backup_pair->states.dport;
+    payload->states.bip = backup_pair->states.bip;
+    printf("Debug backup no %d\n", backup_no);
+
+    return backup_packet;
+}
+
 /*
  * gateway network funtions.
  */
@@ -686,6 +734,33 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 				print_ethaddr("eth_s_addr", &eth_s_addr);
 				print_ethaddr("eth_d_addr", &eth_d_addr);
+
+ 				if (eth_hdr->ether_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
+  				    /* arp message to keep live with switch */
+   				    struct arp_hdr* arp_h;
+   				    struct ether_addr self_eth_addr;
+   				    uint32_t ip_addr;
+  				    arp_h = (struct arp_hdr*)
+  				    		((u_char*)eth_hdr + sizeof(struct ether_hdr));
+  				    rte_eth_macaddr_get(port, &self_eth_addr);
+  				    ether_addr_copy(&(eth_hdr->s_addr), &(eth_hdr->d_addr));
+  				    ether_addr_copy(&(eth_hdr->s_addr), &interface_MAC);
+  				    /* Set source MAC address with MAC of TX Port */
+  				    ether_addr_copy(&self_eth_addr, &(eth_hdr->s_addr));
+  				    arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
+  				    ether_addr_copy(&(arp_h->arp_data.arp_sha)
+   				    			, &(arp_h->arp_data.arp_tha));
+  				    ether_addr_copy(&(eth_hdr->s_addr)
+   				    			, &(arp_h->arp_data.arp_sha));
+  				    /* Swap IP address in ARP payload */
+  				    ip_addr = arp_h->arp_data.arp_sip;
+  				    arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
+  				    arp_h->arp_data.arp_tip = ip_addr;
+  				    rte_eth_tx_burst(port, 0, &p, 1);
+				    printf("This is arp request message\n");
+				    printf("\n");
+  				    continue;
+  				}
 
 				struct ipv4_5tuple ip_5tuple;
 				//rte_pktmbuf_adj(p, (uint16_t)sizeof(struct ether_hdr));
@@ -775,8 +850,6 @@ lcore_manager(__attribute__((unused)) void *arg)
 	// uint16_t eth_type;
 	uint8_t ip_proto;
     u_char* payload;
-    struct states_5tuple_pair* backup_pair;
-    struct rte_mbuf* backup_packet;
 
 	printf("\nCore %u manage states in gateway.\n",
 			rte_lcore_id());
@@ -804,33 +877,6 @@ lcore_manager(__attribute__((unused)) void *arg)
 			for (i = 0; i < nb_rx; i ++){
 				printf("packet comes from port %u queue 1\n", port);
 				eth_h = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
-				// eth_type = eth_h->ether_type;
-
- 				// if (eth_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
-  				//     /* ARP message to keep live with switch */
-   				//     struct arp_hdr* arp_h;
-   				//     struct ether_addr self_eth_addr;
-   				//     uint32_t ip_addr;
-  				//     arp_h = (struct arp_hdr*)
-  				//     		((u_char*)eth_h + sizeof(struct ether_hdr));
-  				//     rte_eth_macaddr_get(port, &self_eth_addr);
-  				//     ether_addr_copy(&(eth_h->s_addr), &(eth_h->d_addr));
-  				//     ether_addr_copy(&(eth_h->s_addr), &interface_MAC);
-  				//     /* Set source MAC address with MAC of TX Port */
-  				//     ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
-  				//     arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
-  				//     ether_addr_copy(&(arp_h->arp_data.arp_sha)
-   				//     			, &(arp_h->arp_data.arp_tha));
-  				//     ether_addr_copy(&(eth_h->s_addr)
-   				//     			, &(arp_h->arp_data.arp_sha));
-  				//     /* Swap IP address in ARP payload */
-  				//     ip_addr = arp_h->arp_data.arp_sip;
-  				//     arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
-  				//     arp_h->arp_data.arp_tip = ip_addr;
-  				//     printf("This is ARP message\n");
-  				// }
- 				// else if (eth_type == rte_be_to_cpu_16(ETHER_TYPE_IPv4)) {
-  				// }
 
 				ip_h = (struct ipv4_hdr*)
   				  		((u_char*)eth_h + sizeof(struct ether_hdr));
@@ -850,40 +896,14 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        /* Destination ip is 172.16.0.X */
   				        /* This is ECMP predict reply message */
   				        // ecmp_receive_reply(bufs[i]);
-   				        struct ether_addr self_eth_addr;
   				        uint32_t backup_no = master_receive_probe_reply(bufs[i]);
-  				        printf("This is ECMP pedict reply message\n");
-  				        backup_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
-  				        /* Allocate space */
-  				        eth_h = (struct ether_hdr *)rte_pktmbuf_append(backup_packet, sizeof(struct ether_hdr));
-  				        ip_h = (struct ipv4_hdr *)rte_pktmbuf_append(backup_packet, sizeof(struct ipv4_hdr));
-  				        payload = (u_char*)rte_pktmbuf_append(backup_packet, sizeof(struct states_5tuple_pair));
-  				        /* Set the packet */
-  				        eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
-  				        ether_addr_copy(&interface_MAC, &(eth_h->d_addr));
-  				        rte_eth_macaddr_get(port, &self_eth_addr);
-  				        ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
-  				        memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
-  				        ip_h->src_addr=rte_cpu_to_be_32(MACHINE_IP);
-  				        ip_h->dst_addr=rte_cpu_to_be_32(IPv4(172, 16, 0, 2));
-  				        ip_h->version_ihl = (4 << 4) | 5;
-  				        ip_h->total_length = rte_cpu_to_be_16(20 + sizeof(struct states_5tuple_pair));
-  				        ip_h->packet_id= 0x36;/* NO USE */
-  				        ip_h->time_to_live=4;
-  				        ip_h->next_proto_id = 0x0;
-  				        printf("Debug backup no %d\n", backup_no);
-  				        ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
-   				        backup_pair = (struct states_5tuple_pair*)payload;
-   				        backup_pair->l4_5tuple.ip_src = IPv4(10, 0 , 0, 1);
-   				        backup_pair->l4_5tuple.ip_dst = IPv4(10, 0 , 0, 2);
-   				        backup_pair->l4_5tuple.port_src = 0x68;
-   				        backup_pair->l4_5tuple.port_dst = 0x86;
-   				        backup_pair->l4_5tuple.proto = 0x8;
-   				        backup_pair->states.ipserver = IPv4(10, 0, 0, 3);
-   				        backup_pair->states.dip = IPv4(10, 0, 0, 4);
-   				        backup_pair->states.dport = 0x36;
-   				        backup_pair->states.bip = IPv4(10, 0, 0, 5);
+  				        struct ipv4_5tuple *ip_5tuple, 
+  				        struct rte_mbuf* backup_packet;
+  				        struct states_5tuple_pair backup_pair;
+  				        getStates(ip_5tuple, struct nf_states ** state){
+  				        backup_packet = build_backup_packet(port, IPv4(172, 16, 0, 2), &backup_pair);
   				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
+  				        printf("This is ECMP pedict reply message\n");
    				    }
   				}
  				else if (ip_h->next_proto_id == 0) {
@@ -901,15 +921,14 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        backup_pair = (struct states_5tuple_pair*)payload;
 				        printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_src));
 				        printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_dst));
-				        printf("port_src is %d\n", backup_pair->l4_5tuple.port_src);
-				        printf("port_dst is %d\n", backup_pair->l4_5tuple.port_dst);
-				        printf("proto is %d\n", backup_pair->l4_5tuple.proto);
+				        printf("port_src is 0x%x\n", backup_pair->l4_5tuple.port_src);
+				        printf("port_dst is 0x%x\n", backup_pair->l4_5tuple.port_dst);
+				        printf("proto is 0x%x\n", backup_pair->l4_5tuple.proto);
 				        printf("ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.ipserver));
 				        printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.dip));
-				        printf("dport is %d\n", backup_pair->states.dip);
+				        printf("dport is 0x%x\n", backup_pair->states.dport);
 				        printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
    				        setStates(&(backup_pair->l4_5tuple), &(backup_pair->states));
-   				        printf("payload is %s\n", payload);
    				    }
   				}
 				printf("\n");
