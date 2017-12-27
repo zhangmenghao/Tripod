@@ -11,26 +11,19 @@
 #include <inttypes.h>
 #include <rte_byteorder.h>
 
+#include "main.h"
 
-
-#define N_MACHINE_MAX 8
-#define N_INTERFACE_MAX 48
-struct machine_IP_pair{
-	uint8_t id;
-	uint32_t ip;
-};
 struct machine_IP_pair topo[N_MACHINE_MAX];
 struct machine_IP_pair* this_machine;
 
-
 struct rte_mbuf* probing_packet;
-struct ether_hdr *eth_hdr;
-struct ipv4_hdr *iph;
-struct tcp_hdr *tcp_h;
-struct udp_hdr *udp_h;
-char* l4_hdr;
-char* payload;
-struct ipv4_hdr *iph;
+static struct ether_hdr *eth_hdr;
+static struct ipv4_hdr *iph;
+static struct tcp_hdr *tcp_h;
+static struct udp_hdr *udp_h;
+static char* l4_hdr;
+static char* payload;
+static struct ipv4_hdr *iph;
 struct ether_addr interface_MAC = {
     .addr_bytes[0] = 0x48,
     .addr_bytes[1] = 0x6E,
@@ -80,7 +73,7 @@ static inline void dump_ip_hdr(struct ipv4_hdr* iph_h){
 	Should be called in initializtion, for example together with port init
 	NOTE: The rte_mempool should be different from those holding traffic packets.We should build another rte_mempool specifcally for management packets.
 */
-static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
+void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 
 	probing_packet = rte_pktmbuf_alloc(mbuf_pool);
 	eth_hdr = (struct ether_hdr *) rte_pktmbuf_append(probing_packet, sizeof(struct ether_hdr));
@@ -153,7 +146,7 @@ ipv4_hdr_cksum(struct ipv4_hdr *ip_h)
 
 
 */
-static inline void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip
+void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip
 ,uint32_t* sip, uint32_t* dip, uint16_t* sport, uint16_t* dport){
 
 
@@ -210,7 +203,7 @@ static inline void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* ma
 */
 
 
-static inline void build_probe_packet(uint32_t dip,uint32_t sip,uint16_t dport,uint32_t sport){
+void build_probe_packet(uint32_t dip,uint32_t sip,uint16_t dport,uint32_t sport){
 	eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
 	//eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_ARP);
 	//eth_hdr->ether_type =  0;
@@ -281,7 +274,7 @@ static inline void build_probe_packet(uint32_t dip,uint32_t sip,uint16_t dport,u
 
 */
 
-static inline  void backup_receive_probe_packet(struct rte_mbuf* mbuf){
+void backup_receive_probe_packet(struct rte_mbuf* mbuf){
 
 
     struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
