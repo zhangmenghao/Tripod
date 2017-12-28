@@ -45,17 +45,17 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
 	if (ret == 0)
 	{
-		printf("set success!\n");
+		printf("nf: set success!\n");
 		//communicate with Manager
 		if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0) {
-			printf("enqueue success!\n");
+			printf("nf: enqueue success!\n");
 		}
 		else{
-			printf("enqueue failed!!!\n");
+			printf("nf: enqueue failed!!!\n");
 		}
 	}
 	else{
-		printf("error found!\n");
+		printf("nf: error found!\n");
 		return;
 	}
 }
@@ -66,13 +66,13 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
 	if (ret == 0){
-		printf("get success!\n");
+		printf("nf: get success!\n");
 	}
 	if (ret == EINVAL){
-		printf("parameter invalid\n");
+		printf("nf: parameter invalid\n");
 	}
 	if (ret == ENOENT){
-		printf("key not found!\n");
+		printf("nf: key not found!\n");
 		//ask index table
 	}
 	return ret;
@@ -83,7 +83,7 @@ print_ethaddr(const char *name, struct ether_addr *eth_addr)
 {
 	char buf[ETHER_ADDR_FMT_SIZE];
 	ether_format_addr(buf, ETHER_ADDR_FMT_SIZE, eth_addr);
-	printf("%s is %s\n", name, buf);
+	printf("nf: %s is %s\n", name, buf);
 }
 
 /*
@@ -100,7 +100,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 		if (rte_eth_dev_socket_id(port) > 0 &&
 				rte_eth_dev_socket_id(port) !=
 						(int)rte_socket_id())
-			printf("WARNING, port %u is on remote NUMA node to "
+			printf("nf: WARNING, port %u is on remote NUMA node to "
 					"polling thread.\n\tPerformance will "
 					"not be optimal.\n", port);
 
@@ -124,7 +124,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 			
 						
 			for (i = 0; i < nb_rx; i ++){
-				printf("packet comes from %u\n", port);
+				printf("nf: packet comes from %u\n", port);
 
 				struct ether_hdr *eth_hdr;
 				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
@@ -133,8 +133,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 				struct ether_addr eth_d_addr;
 				eth_d_addr = eth_hdr->d_addr;
 
-				print_ethaddr("eth_s_addr", &eth_s_addr);
-				print_ethaddr("eth_d_addr", &eth_d_addr);
+				print_ethaddr("nf: eth_s_addr", &eth_s_addr);
+				print_ethaddr("nf: eth_d_addr", &eth_d_addr);
 
  				if (eth_hdr->ether_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
   				    /* arp message to keep live with switch */
@@ -169,9 +169,9 @@ lcore_nf(__attribute__((unused)) void *arg)
 				ip_5tuples[counts].ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
 				ip_5tuples[counts].proto = ip_hdr->next_proto_id;
 
-				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[counts].ip_dst));
-				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[counts].ip_src));
-				printf("next_proto_id is %u\n", ip_5tuples[counts].proto);
+				printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[counts].ip_dst));
+				printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[counts].ip_src));
+				printf("nf: next_proto_id is %u\n", ip_5tuples[counts].proto);
 				
 				if (ip_5tuples[counts].proto == 17){
 					struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
@@ -182,12 +182,12 @@ lcore_nf(__attribute__((unused)) void *arg)
 					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
 					ip_5tuples[counts].port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
 					ip_5tuples[counts].port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
-					printf("tcp_flags is %u\n", tcp_hdrs->tcp_flags);
+					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					if (tcp_hdrs->tcp_flags == 2){
 						states[counts].ipserver = dip_pool[counts % DIP_POOL_SIZE];
 						setStates(&ip_5tuples[counts], &states[counts]);
 						ip_hdr->dst_addr = rte_cpu_to_be_32(states[counts].ipserver);
-						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+						printf("nf: new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 						rte_pktmbuf_free(bufs[i]);
 						counts ++;
@@ -198,19 +198,19 @@ lcore_nf(__attribute__((unused)) void *arg)
 						//printf("%x\n", state);
 						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 						if (ret == ENOENT){
-							printf("packet wait, state not found!\n");
+							printf("nf: packet wait, state not found!\n");
 							//getIndex();
 							//if else
 						}
 						else{
 							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
-							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+							printf("nf: new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 							rte_pktmbuf_free(bufs[i]);
 						}
 						
 					}
-					printf("port_src and port_dst is %u and %u\n", ip_5tuples[counts].port_src, ip_5tuples[counts].port_dst);
+					printf("nf: port_src and port_dst is %u and %u\n", ip_5tuples[counts].port_src, ip_5tuples[counts].port_dst);
 				}
 				printf("\n");
 			}
