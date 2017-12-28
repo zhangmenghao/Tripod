@@ -104,7 +104,7 @@ static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 
 	topo[2].id = 4;
 	topo[2].ip = IPv4(172,16,2,2);
-    this_machine_index = 1;
+    this_machine_index = 0;
 
 	this_machine = &(topo[this_machine_index]);
 
@@ -178,20 +178,23 @@ static inline void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* ma
     uint32_t index;
 	if(backup_port_N >= this_machine->id){
 		index = reverse_table[backup_port_N];
-		backup_port_N_minus_1 = topo[++index].id;	
+		backup_port_N_minus_1 = topo[index+1].id;	
+        	*machine_ip = topo[index+1].ip;
 	}
 	else{
+		index = reverse_table[backup_port_N];
 		backup_port_N_minus_1 = backup_port_N;
+        	*machine_ip = topo[index].ip;
 	}
 	//printf("payload: %d\n",*((uint32_t*)payload));
     
-        *machine_ip = topo[index].ip;
-
+	printf("in master_receive, will send state to port:%d, index: %d\n",backup_port_N_minus_1,index);
         *sip = rte_be_to_cpu_32(ip_hdr->src_addr);
-        *dip = rte_be_to_cpu_32(flow_dip);
+        *dip = flow_dip;
         *sport = rte_be_to_cpu_16(tcph->src_port);
         *dport = rte_be_to_cpu_16(tcph->dst_port);
-
+	printf("dport: %x\n",*dport);
+	printf("sport: %x\n",*sport);
 
 
 }
@@ -238,7 +241,7 @@ static inline void build_probe_packet(uint32_t dip,uint32_t sip,uint16_t dport,u
 	iph->src_addr=rte_cpu_to_be_32(sip);
 	iph->dst_addr=rte_cpu_to_be_32(probing_ip);
 	iph->version_ihl = (4 << 4) | 5;
-	iph->total_length = rte_cpu_to_be_16(46);
+	iph->total_length = rte_cpu_to_be_16(48);
 	iph->packet_id= 0xd84c;/* NO USE */
 	iph->time_to_live=4;
 	iph->next_proto_id = 0x6;
@@ -252,8 +255,8 @@ static inline void build_probe_packet(uint32_t dip,uint32_t sip,uint16_t dport,u
 	
 	//dump_ip_hdr(iph);
 
-	tcp_h->src_port = sport;
-	tcp_h->dst_port = dport;
+	tcp_h->src_port = rte_cpu_to_be_16(sport);
+	tcp_h->dst_port = rte_cpu_to_be_16(dport);
 
 
 	*((uint32_t*)payload) = this_machine->ip;
@@ -294,6 +297,8 @@ static inline  void backup_receive_probe_packet(struct rte_mbuf* mbuf){
     build_probe_packet(0,0,0,0);
 
     struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
+	struct tcp_hdr *tcph = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+
     char* payload22 = (char*)ip_hdr
                   + sizeof(struct ipv4_hdr)
                   + sizeof(struct tcp_hdr);
@@ -307,7 +312,12 @@ static inline  void backup_receive_probe_packet(struct rte_mbuf* mbuf){
     iph->hdr_checksum = ck1;
 
     *((uint32_t*)payload) = this_machine->id;
+    *((uint32_t*)(payload+4)) = *((uint32_t*)(payload22+4));
     uint32_t ipv4_addr = dst_ip;
+
+
+	tcp_h->src_port = tcph->src_port;
+        tcp_h->dst_port = tcph->dst_port;
 /*
      printf("in func: %d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,
         (ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,
