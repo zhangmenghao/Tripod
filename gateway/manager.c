@@ -201,3 +201,34 @@ lcore_manager(__attribute__((unused)) void *arg)
 	return 0;
 }
 
+int
+lcore_manager_slave(__attribute__((unused)) void *arg)
+{
+	const uint8_t nb_ports = rte_eth_dev_count();
+	uint8_t port;
+    struct ipv4_5tuple* ip_5tuple;
+	for (;;) {
+		for (port = 0; port < nb_ports; port++) {
+			if ((enabled_port_mask & (1 << port)) == 0) {
+				//printf("Skipping %u\n", port);
+				continue;
+			}
+
+ 			if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
+   			    build_probe_packet(
+    		 	    ip_5tuple->ip_dst, ip_5tuple->ip_src,
+   			        ip_5tuple->port_dst, ip_5tuple->port_src
+   			    );
+  			    printf("Receive backup request from nf\n");
+			    printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
+			    printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
+			    printf("port_src is 0x%x\n", ip_5tuple->port_src);
+			    printf("port_dst is 0x%x\n", ip_5tuple->port_dst);
+			    printf("proto is 0x%x\n", ip_5tuple->proto);
+			    printf("\n");
+			    rte_eth_tx_burst(port, 0, &probing_packet, 1);
+  			}
+		}
+	}
+	return 0;
+}
