@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <getopt.h>
-
 #include <rte_eal.h>
 #include <rte_ethdev.h>
 #include <rte_cycles.h>
@@ -15,14 +14,11 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 #include <rte_hash.h>
-
 #include "main.h"
-
 struct states_5tuple_pair {
     struct ipv4_5tuple l4_5tuple;
     struct nf_states states;
 } __rte_cache_aligned;
-
 static struct rte_mbuf*
 build_backup_packet(uint8_t port, uint32_t backup_machine_ip, 
  					struct ipv4_5tuple* ip_5tuple, struct nf_states* states)
@@ -32,7 +28,6 @@ build_backup_packet(uint8_t port, uint32_t backup_machine_ip,
     struct ipv4_hdr* ip_h;
     struct states_5tuple_pair* payload;
     struct ether_addr self_eth_addr;
-
     /* Allocate space */
     backup_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
     eth_h = (struct ether_hdr *)
@@ -66,10 +61,8 @@ build_backup_packet(uint8_t port, uint32_t backup_machine_ip,
     payload->states.dip = states->dip;
     payload->states.dport = states->dport;
     payload->states.bip = states->bip;
-
     return backup_packet;
 }
-
 /*
  * gateway manager.
  */
@@ -85,10 +78,8 @@ lcore_manager(__attribute__((unused)) void *arg)
 	uint8_t ip_proto;
     u_char* payload;
     struct ipv4_5tuple* ip_5tuple;
-
 	printf("\nCore %u manage states in gateway.\n",
 			rte_lcore_id());
-
 	/* Run until the application is quit or killed. */
 	for (;;) {
 		for (port = 0; port < nb_ports; port++) {
@@ -96,39 +87,19 @@ lcore_manager(__attribute__((unused)) void *arg)
 				//printf("Skipping %u\n", port);
 				continue;
 			}
-
- 			if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
-   			    build_probe_packet(
-    		 	    ip_5tuple->ip_dst, ip_5tuple->ip_src,
-   			        ip_5tuple->port_dst, ip_5tuple->port_src
-   			    );
-  			    printf("Receive backup request from nf\n");
-			    printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
-			    printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
-			    printf("port_src is 0x%x\n", ip_5tuple->port_src);
-			    printf("port_dst is 0x%x\n", ip_5tuple->port_dst);
-			    printf("proto is 0x%x\n", ip_5tuple->proto);
-			    printf("\n");
-			    rte_eth_tx_burst(port, 0, &probing_packet, 1);
-  			}
-
 			struct rte_mbuf *bufs[BURST_SIZE];
 			const uint16_t nb_rx = rte_eth_rx_burst(port, 1,
 					bufs, BURST_SIZE);
-
 			if (unlikely(nb_rx == 0))
 				continue;
-
 			for (i = 0; i < nb_rx; i ++){
 				printf("packet comes from port %u queue 1\n", port);
 				eth_h = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
-
 				ip_h = (struct ipv4_hdr*)
   				  		((u_char*)eth_h + sizeof(struct ether_hdr));
 				ip_proto = ip_h->next_proto_id;
 				printf("receive ip "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_h->dst_addr));
 				printf("proto: %x\n",ip_proto);
-
  				if (ip_proto == 0x06 || ip_proto == 0x11) {
   				    /* Control message about ECMP */
   				    if ((ip_h->dst_addr & 0x00FF0000) == (0xFD << 16)) {
@@ -189,7 +160,6 @@ lcore_manager(__attribute__((unused)) void *arg)
   				}
 				printf("\n");
 			}
-
 			/* Free any unsent packets. */
 			// if (unlikely(nb_tx < nb_rx)) {
 				// uint16_t buf;
@@ -200,20 +170,20 @@ lcore_manager(__attribute__((unused)) void *arg)
 	}
 	return 0;
 }
-
 int
 lcore_manager_slave(__attribute__((unused)) void *arg)
 {
 	const uint8_t nb_ports = rte_eth_dev_count();
 	uint8_t port;
     struct ipv4_5tuple* ip_5tuple;
+	printf("\nCore %u process request from nf\n",
+			rte_lcore_id());
 	for (;;) {
 		for (port = 0; port < nb_ports; port++) {
 			if ((enabled_port_mask & (1 << port)) == 0) {
 				//printf("Skipping %u\n", port);
 				continue;
 			}
-
  			if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
    			    build_probe_packet(
     		 	    ip_5tuple->ip_dst, ip_5tuple->ip_src,

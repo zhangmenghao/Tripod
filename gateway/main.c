@@ -120,13 +120,21 @@ main(int argc, char *argv[])
 
 	check_all_ports_link_status((uint8_t)nb_ports, enabled_port_mask);
 
+	// RTE_LCORE_FOREACH_SLAVE(lcore_id) {
+		// rte_eal_remote_launch(lcore_nf, NULL, lcore_id);
+	// }
+
+	// lcore_manager(NULL);
+
+	// rte_eal_mp_wait_lcore();
+
+	/* Launch per-lcore init on every lcore */
+	rte_eal_mp_remote_launch(lcore_main_loop, NULL, CALL_MASTER);
 	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
-		rte_eal_remote_launch(lcore_nf, NULL, lcore_id);
+		if (rte_eal_wait_lcore(lcore_id) < 0) {
+			return -1;
+		}
 	}
-
-	lcore_manager(NULL);
-
-	rte_eal_mp_wait_lcore();
 
 	return 0;
 }

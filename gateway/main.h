@@ -114,4 +114,5 @@ void ecmp_predict_init(struct rte_mempool * mbuf_pool);
 int lcore_nf(__attribute__((unused)) void *arg);
 int lcore_manager(__attribute__((unused)) void *arg);
 int lcore_manager_slave(__attribute__((unused)) void *arg);
+int lcore_main_loop(__attribute__((unused)) void *arg);
 

@@ -462,3 +462,16 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 	}
 }
 
+int 
+lcore_main_loop(__attribute__((unused)) void *arg)
+{
+    unsigned lcore;
+
+    lcore = rte_lcore_id();
+    if (lcore == 1)
+        lcore_nf(NULL);
+    else if (lcore == 3)
+        lcore_manager_slave(NULL);
+    else
+        lcore_manager(NULL);
+}
