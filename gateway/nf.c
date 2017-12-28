@@ -46,6 +46,13 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	if (ret == 0)
 	{
 		printf("set success!\n");
+		//communicate with Manager
+		if (rte_ring_enqueue(nf_manager_ring, &ip_5tuple) == 0) {
+			printf("enqueue success!\n");
+		}
+		else{
+			printf("enqueue failed!!!\n");
+		}
 	}
 	else{
 		printf("error found!\n");
@@ -66,6 +73,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	}
 	if (ret == ENOENT){
 		printf("key not found!\n");
+		//ask index table
 	}
 	return ret;
 }
@@ -155,56 +163,46 @@ lcore_nf(__attribute__((unused)) void *arg)
   				    continue;
   				}
 
-				struct ipv4_5tuple ip_5tuple;
 				struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
 
-				ip_5tuple.ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
-				ip_5tuple.ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
-				ip_5tuple.proto = ip_hdr->next_proto_id;
+				ip_5tuples[counts].ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
+				ip_5tuples[counts].ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
+				ip_5tuples[counts].proto = ip_hdr->next_proto_id;
 
-				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple.ip_dst));
-				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple.ip_src));
-				printf("next_proto_id is %u\n", ip_5tuple.proto);
+				printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[counts].ip_dst));
+				printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[counts].ip_src));
+				printf("next_proto_id is %u\n", ip_5tuples[counts].proto);
 				
-				if (ip_5tuple.proto == 17){
+				if (ip_5tuples[counts].proto == 17){
 					struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
-					ip_5tuple.port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
-					ip_5tuple.port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
+					ip_5tuples[counts].port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
+					ip_5tuples[counts].port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
 				}
-				else if (ip_5tuple.proto == 6){
+				else if (ip_5tuples[counts].proto == 6){
 					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
-					ip_5tuple.port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
-					ip_5tuple.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
+					ip_5tuples[counts].port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
+					ip_5tuples[counts].port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
 					printf("tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					if (tcp_hdrs->tcp_flags == 2){
 						states[counts].ipserver = dip_pool[counts % DIP_POOL_SIZE];
-						setStates(&ip_5tuple, &states[counts]);
+						setStates(&ip_5tuples[counts], &states[counts]);
 						ip_hdr->dst_addr = rte_cpu_to_be_32(states[counts].ipserver);
 						printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
-						//communicate with Manager
-						ip_5tuples[counts] = ip_5tuple;
-						if (rte_ring_enqueue(nf_manager_ring, &ip_5tuples[counts]) == 0) {
-							printf("enqueue success!\n");
-						}
-						else{
-							printf("enqueu failed!!!\n");
-						}
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 						rte_pktmbuf_free(bufs[i]);
 						counts ++;
 					}
 					else{
 						struct nf_states *state;
-						int ret =  getStates(&ip_5tuple, &state);
+						int ret =  getStates(&ip_5tuples[counts], &state);
 						//printf("%x\n", state);
 						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 						if (ret == ENOENT){
-							printf("if\n");
+							printf("packet wait, state not found!\n");
 							//getIndex();
 							//if else
 						}
 						else{
-							printf("else!\n");
 							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
 							printf("new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
@@ -212,7 +210,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 						
 					}
-					printf("port_src and port_dst is %u and %u\n", ip_5tuple.port_src, ip_5tuple.port_dst);
+					printf("port_src and port_dst is %u and %u\n", ip_5tuples[counts].port_src, ip_5tuples[counts].port_dst);
 				}
 				printf("\n");
 			}
