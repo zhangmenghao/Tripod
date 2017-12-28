@@ -47,7 +47,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	{
 		printf("set success!\n");
 		//communicate with Manager
-		if (rte_ring_enqueue(nf_manager_ring, &ip_5tuple) == 0) {
+		if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0) {
 			printf("enqueue success!\n");
 		}
 		else{
