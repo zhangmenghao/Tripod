@@ -11,27 +11,27 @@
 #include <inttypes.h>
 #include <rte_byteorder.h>
 
+#include "main.h"
 
-
-#define N_MACHINE_MAX 8
-#define N_INTERFACE_MAX 48
-struct machine_IP_pair{
-	uint8_t id;
-	uint32_t ip;
-};
 struct machine_IP_pair topo[N_MACHINE_MAX];
 struct machine_IP_pair* this_machine;
 
-
 struct rte_mbuf* probing_packet;
-struct ether_hdr *eth_hdr;
-struct ipv4_hdr *iph;
-struct tcp_hdr *tcp_h;
-struct udp_hdr *udp_h;
-char* l4_hdr;
-char* payload;
-struct ipv4_hdr *iph;
-struct ether_addr interface_MAC;
+static struct ether_hdr *eth_hdr;
+static struct ipv4_hdr *iph;
+static struct tcp_hdr *tcp_h;
+static struct udp_hdr *udp_h;
+static char* l4_hdr;
+static char* payload;
+static struct ipv4_hdr *iph;
+struct ether_addr interface_MAC = {
+    .addr_bytes[0] = 0x48,
+    .addr_bytes[1] = 0x6E,
+    .addr_bytes[2] = 0x73,
+    .addr_bytes[3] = 0x00,
+    .addr_bytes[4] = 0x04,
+    .addr_bytes[5] = 0xDB,
+};
 
 uint32_t probing_ip;
 
@@ -65,10 +65,7 @@ static inline void dump_ip_hdr(struct ipv4_hdr* iph_h){
 	printf("%x\n",iph_h->fragment_offset);
 	printf("%x\n",iph_h->time_to_live);
 	printf("%x\n",iph_h->next_proto_id);
-	printf("%x\n",iph_h->hdr_checksum);
-	printf("checksum correct?(should be 0xffff):%x\n",rte_ipv4_cksum(iph_h));
-
-
+	printf("%x\n",iph_h->hdr_checksum); printf("checksum correct?(should be 0xffff):%x\n",rte_ipv4_cksum(iph_h)); 
 }
 
 /*
@@ -76,33 +73,32 @@ static inline void dump_ip_hdr(struct ipv4_hdr* iph_h){
 	Should be called in initializtion, for example together with port init
 	NOTE: The rte_mempool should be different from those holding traffic packets.We should build another rte_mempool specifcally for management packets.
 */
-static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
+void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 
 	probing_packet = rte_pktmbuf_alloc(mbuf_pool);
 	eth_hdr = (struct ether_hdr *) rte_pktmbuf_append(probing_packet, sizeof(struct ether_hdr));
 	iph = (struct ipv4_hdr *)rte_pktmbuf_append(probing_packet, sizeof(struct ipv4_hdr));
 	tcp_h = (struct tcp_hdr *) rte_pktmbuf_append(probing_packet,sizeof(struct tcp_hdr));
 	//a packet has minimum size 64B
-	payload = (char*) rte_pktmbuf_append(probing_packet,6);	
+	payload = (char*) rte_pktmbuf_append(probing_packet,8);	
 
-	printf("data len: %d\n",probing_packet->pkt_len);
+	//printf("data len: %d\n",probing_packet->pkt_len);
 
-	printf("%ld\n",sizeof(struct tcp_hdr));
-	printf("%p\n",eth_hdr);
-	printf("%p\n",iph);
+	//printf("%d\n",sizeof(struct tcp_hdr));
+	//printf("%x\n",eth_hdr);
+	//printf("%x\n",iph);
 	
 	//TODO: need a configuration process when boot
 	topo[0].id = 1;
 	topo[0].ip = IPv4(172,16,0,2);
 
-
 	topo[1].id = 3;
 	topo[1].ip = IPv4(172,16,3,2);
-	
 
 	topo[2].id = 4;
 	topo[2].ip = IPv4(172,16,2,2);
-	this_machine_index = 1;
+    this_machine_index = 1;
+
 	this_machine = &(topo[this_machine_index]);
 
 
@@ -118,26 +114,26 @@ static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 /*
 	An implementation of IP checksum from testpmd.Proved the same as rte_ipv4_cksum()
 */
-// static uint16_t
-// ipv4_hdr_cksum(struct ipv4_hdr *ip_h)
-// {
-        // uint16_t *v16_h;
-        // uint32_t ip_cksum;
+static uint16_t
+ipv4_hdr_cksum(struct ipv4_hdr *ip_h)
+{
+        uint16_t *v16_h;
+        uint32_t ip_cksum;
 
         /*
          * Compute the sum of successive 16-bit words of the IPv4 header,
          * skipping the checksum field of the header.
          */
-        // v16_h = (unaligned_uint16_t *) ip_h;
-        // ip_cksum = v16_h[0] + v16_h[1] + v16_h[2] + v16_h[3] +
-                // v16_h[4] + v16_h[6] + v16_h[7] + v16_h[8] + v16_h[9];
+        v16_h = (unaligned_uint16_t *) ip_h;
+        ip_cksum = v16_h[0] + v16_h[1] + v16_h[2] + v16_h[3] +
+                v16_h[4] + v16_h[6] + v16_h[7] + v16_h[8] + v16_h[9];
 
-        // [> reduce 32 bit checksum to 16 bits and complement it <]
-        // ip_cksum = (ip_cksum & 0xffff) + (ip_cksum >> 16);
-        // ip_cksum = (ip_cksum & 0xffff) + (ip_cksum >> 16);
-        // ip_cksum = (~ip_cksum) & 0x0000FFFF;
-        // return (ip_cksum == 0) ? 0xFFFF : (uint16_t) ip_cksum;
-// }
+        /* reduce 32 bit checksum to 16 bits and complement it */
+        ip_cksum = (ip_cksum & 0xffff) + (ip_cksum >> 16);
+        ip_cksum = (ip_cksum & 0xffff) + (ip_cksum >> 16);
+        ip_cksum = (~ip_cksum) & 0x0000FFFF;
+        return (ip_cksum == 0) ? 0xFFFF : (uint16_t) ip_cksum;
+}
 
 
 /*
@@ -150,7 +146,8 @@ static inline void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 
 
 */
-static inline uint32_t master_receive_probe_reply(struct rte_mbuf* mbuf){
+void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip
+,uint32_t* sip, uint32_t* dip, uint16_t* sport, uint16_t* dport){
 
 
 	struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
@@ -162,23 +159,35 @@ static inline uint32_t master_receive_probe_reply(struct rte_mbuf* mbuf){
 	*/
 
  	struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
+	struct tcp_hdr *tcph = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
 
     char* payload = (char*)ip_hdr
                       + sizeof(struct ipv4_hdr)
                       + sizeof(struct tcp_hdr);
 	uint32_t backup_port_N = *((uint32_t*)payload);
-	uint32_t backup_port_N_minus_1;
+	uint32_t flow_dip = *((uint32_t*)(payload+4));
 
+	uint32_t backup_port_N_minus_1;
+    uint32_t index;
 	if(backup_port_N >= this_machine->id){
-		uint32_t index = reverse_table[backup_port_N];
+		index = reverse_table[backup_port_N];
 		backup_port_N_minus_1 = topo[index+1].id;	
+        	*machine_ip = topo[index+1].ip;
 	}
 	else{
+		index = reverse_table[backup_port_N];
 		backup_port_N_minus_1 = backup_port_N;
+        	*machine_ip = topo[index].ip;
 	}
-	//printf("%d\n",*((uint32_t*)payload));
-	return backup_port_N_minus_1;
-
+	//printf("payload: %d\n",*((uint32_t*)payload));
+    
+	printf("in master_receive, will send state to port:%d, index: %d\n",backup_port_N_minus_1,index);
+        *sip = rte_be_to_cpu_32(ip_hdr->src_addr);
+        *dip = flow_dip;
+        *sport = rte_be_to_cpu_16(tcph->src_port);
+        *dport = rte_be_to_cpu_16(tcph->dst_port);
+	printf("dport: %x\n",*dport);
+	printf("sport: %x\n",*sport);
 
 
 }
@@ -194,11 +203,11 @@ static inline uint32_t master_receive_probe_reply(struct rte_mbuf* mbuf){
 */
 
 
-static inline void build_probe_packet(uint32_t sip,uint16_t dport,uint32_t sport){
+void build_probe_packet(uint32_t dip,uint32_t sip,uint16_t dport,uint32_t sport){
 	eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
 	//eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_ARP);
 	//eth_hdr->ether_type =  0;
-	printf("%x\n",eth_hdr->ether_type);
+	//printf("%x\n",eth_hdr->ether_type);
     ether_addr_copy(&interface_MAC, &eth_hdr->d_addr);
 	struct ether_addr addr;
 	rte_eth_macaddr_get(0, &addr);
@@ -225,25 +234,26 @@ static inline void build_probe_packet(uint32_t sip,uint16_t dport,uint32_t sport
 	iph->src_addr=rte_cpu_to_be_32(sip);
 	iph->dst_addr=rte_cpu_to_be_32(probing_ip);
 	iph->version_ihl = (4 << 4) | 5;
-	iph->total_length = rte_cpu_to_be_16(46);
+	iph->total_length = rte_cpu_to_be_16(48);
 	iph->packet_id= 0xd84c;/* NO USE */
 	iph->time_to_live=4;
 	iph->next_proto_id = 0x6;
 	//iph->total_length= rte_cpu_to_be_16(sizeof(struct ipv4_hdr));
 	iph->hdr_checksum = 0;
 	uint16_t ck1 = rte_ipv4_cksum(iph);  
-	// uint16_t ck2 = ipv4_hdr_cksum(iph);
+	uint16_t ck2 = ipv4_hdr_cksum(iph);
 	//printf("%x\n",ck1);
 	//printf("%x\n",ck2);
 	iph->hdr_checksum = ck1;
 	
 	//dump_ip_hdr(iph);
 
-	tcp_h->src_port = sport;
-	tcp_h->dst_port = dport;
+	tcp_h->src_port = rte_cpu_to_be_16(sport);
+	tcp_h->dst_port = rte_cpu_to_be_16(dport);
 
 
 	*((uint32_t*)payload) = this_machine->ip;
+	*((uint32_t*)(payload+4)) = dip;
 
 /*
 	udp_h->src_port = 10000;
@@ -264,7 +274,7 @@ static inline void build_probe_packet(uint32_t sip,uint16_t dport,uint32_t sport
 
 */
 
-static inline  void backup_receive_probe_packet(struct rte_mbuf* mbuf){
+void backup_receive_probe_packet(struct rte_mbuf* mbuf){
 
 
     struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
@@ -277,9 +287,11 @@ static inline  void backup_receive_probe_packet(struct rte_mbuf* mbuf){
                     ether_addr_copy(&addr,&eth_h->s_addr);
 */
 
-    build_probe_packet(0,0,0);
+    build_probe_packet(0,0,0,0);
 
     struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
+	struct tcp_hdr *tcph = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+
     char* payload22 = (char*)ip_hdr
                   + sizeof(struct ipv4_hdr)
                   + sizeof(struct tcp_hdr);
@@ -293,12 +305,18 @@ static inline  void backup_receive_probe_packet(struct rte_mbuf* mbuf){
     iph->hdr_checksum = ck1;
 
     *((uint32_t*)payload) = this_machine->id;
+    *((uint32_t*)(payload+4)) = *((uint32_t*)(payload22+4));
     uint32_t ipv4_addr = dst_ip;
+
+
+	tcp_h->src_port = tcph->src_port;
+        tcp_h->dst_port = tcph->dst_port;
+/*
      printf("in func: %d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,
         (ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,
         ipv4_addr & 0xFF);
-
-	rte_pktmbuf_dump(stdout,probing_packet,100);
+*/
+	//rte_pktmbuf_dump(stdout,probing_packet,100);
 
 
 }

@@ -42,7 +42,7 @@ include $(RTE_SDK)/mk/rte.vars.mk
 APP = gateway
 
 # all source are stored in SRCS-y
-SRCS-y := gateway.c
+SRCS-y := main.c config.c nf.c manager.c ecmp_predict.c
 
 #CFLAGS += $(WERROR_FLAGS)
 
