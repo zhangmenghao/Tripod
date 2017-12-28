@@ -86,8 +86,7 @@ lcore_manager(__attribute__((unused)) void *arg)
     u_char* payload;
     struct ipv4_5tuple* ip_5tuple;
 
-	printf("\nCore %u manage states in gateway.\n",
-			rte_lcore_id());
+	printf("\nCore %u manage states in gateway.\n", rte_lcore_id());
 
 	/* Run until the application is quit or killed. */
 	for (;;) {
@@ -155,6 +154,7 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        tmp_tuple.proto = 0x6;
    				        ip_5tuple = &tmp_tuple;
    				        getStates(ip_5tuple, &states);
+                  printf("backup state %u\n", states->ipserver);
    				        backup_packet = build_backup_packet(
     			            port, backup_ip, ip_5tuple, states
     			 	    );
