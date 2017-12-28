@@ -184,6 +184,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					ip_5tuples[counts].port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
 					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					if (tcp_hdrs->tcp_flags == 2){
+						printf("nf: recerive a new flow!\n");
 						states[counts].ipserver = dip_pool[counts % DIP_POOL_SIZE];
 						setStates(&ip_5tuples[counts], &states[counts]);
 						ip_hdr->dst_addr = rte_cpu_to_be_32(states[counts].ipserver);
