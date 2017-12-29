@@ -20,10 +20,11 @@
 
 struct ipv4_5tuple ip_5tuples[10000];
 struct nf_states states[10000];
+struct nf_indexs indexs[10000];
 
 //share variables
 struct rte_hash *state_hash_table[NB_SOCKETS];
-struct ret_hash *index_hash_table[NB_SOCKETS];
+struct rte_hash *index_hash_table[NB_SOCKETS];
 
 static int counts = 0;
 
@@ -40,7 +41,7 @@ convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
 }
 
 void 
-setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_index *index){
+setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	int ret =  rte_hash_add_key_data(index_hash_table[0], &newkey, index);
@@ -55,8 +56,8 @@ setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_index *index){
 	}
 }
 
-void 
-getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_index **index){
+int
+getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	int ret = rte_hash_lookup_data(index_hash_table[0], &newkey, (void **) index);
@@ -109,9 +110,19 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	if (ret == ENOENT){
 		printf("nf: key not found in getStates!\n");
 		//ask index table
+		struct nf_indexs *index;
+		int ret1 =  getIndexs(&ip_5tuples[counts], &index);
+		if (ret1 == 0){
+			//getRemoteState(index, state);
+		}
+		if (ret1 == ENOENT){
+			printf("this is an attack!\n");
+		}
 	}
 	return ret;
 }
+
+
 
 static void
 print_ethaddr(const char *name, struct ether_addr *eth_addr)

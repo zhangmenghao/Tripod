@@ -53,7 +53,7 @@ struct nf_states{
 
 };
 
-struct nf_index{
+struct nf_indexs{
 	uint32_t backupip;
 };
 
@@ -106,6 +106,8 @@ extern struct ether_addr interface_MAC;
 
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
 int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state);
+void setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index);
+int getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index);
 int port_init(uint8_t port, struct rte_mempool *mbuf_pool, struct rte_mempool *manager_mbuf_pool);
 int parse_args(int argc, char **argv);
 void setup_hash(const int socketid);
