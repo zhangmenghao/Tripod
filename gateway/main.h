@@ -47,11 +47,15 @@ struct nf_states{
     uint32_t ipserver; //Load Balancer
 
     uint32_t dip; //NAT
-uint16_t dport;
+	uint16_t dport;
 
     uint32_t bip; // Backup Machine IP
 
-}__rte_cache_aligned;
+};
+
+struct nf_index{
+	uint32_t backupip;
+};
 
 struct ipv4_5tuple {
 	uint32_t ip_dst;
@@ -59,7 +63,7 @@ struct ipv4_5tuple {
 	uint16_t port_dst;
 	uint16_t port_src;
 	uint8_t  proto;
-} __rte_cache_aligned;
+};
 
 union ipv4_5tuple_host {
 	struct {
@@ -93,6 +97,7 @@ extern int enabled_port_mask;
 extern uint32_t dip_pool[DIP_POOL_SIZE];
 
 extern struct rte_hash *state_hash_table[NB_SOCKETS];
+extern struct rte_hash *index_hash_table[NB_SOCKETS];
 
 extern struct machine_IP_pair topo[N_MACHINE_MAX];
 extern struct machine_IP_pair* this_machine;

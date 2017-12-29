@@ -23,6 +23,7 @@ struct nf_states states[10000];
 
 //share variables
 struct rte_hash *state_hash_table[NB_SOCKETS];
+struct ret_hash *index_hash_table[NB_SOCKETS];
 
 static int counts = 0;
 
@@ -39,23 +40,57 @@ convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
 }
 
 void 
+setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_index *index){
+	union ipv4_5tuple_host newkey;
+	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	int ret =  rte_hash_add_key_data(index_hash_table[0], &newkey, index);
+	if (ret == 0)
+	{
+		printf("nf: set index success!\n");
+		//broadcast
+	}
+	else{
+		printf("nf: error found in setIndexs!\n");
+		return;
+	}
+}
+
+void 
+getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_index **index){
+	union ipv4_5tuple_host newkey;
+	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	int ret = rte_hash_lookup_data(index_hash_table[0], &newkey, (void **) index);
+	if (ret == 0){
+		printf("nf: get index success!\n");
+	}
+	if (ret == EINVAL){
+		printf("nf: parameter invalid in getIndexs!\n");
+	}
+	if (ret == ENOENT){
+		printf("nf: key not found in getIndexs!\n");
+		//ask index table
+	}
+	return ret;
+}
+
+void 
 setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
 	if (ret == 0)
 	{
-		printf("nf: set success!\n");
+		printf("nf: set state success!\n");
 		//communicate with Manager
 		if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0) {
-			printf("nf: enqueue success!\n");
+			printf("nf: enqueue success in setStates!\n");
 		}
 		else{
-			printf("nf: enqueue failed!!!\n");
+			printf("nf: enqueue failed in setStates!!!\n");
 		}
 	}
 	else{
-		printf("nf: error found!\n");
+		printf("nf: error found in setStates!\n");
 		return;
 	}
 }
@@ -66,13 +101,13 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
 	if (ret == 0){
-		printf("nf: get success!\n");
+		printf("nf: get state success!\n");
 	}
 	if (ret == EINVAL){
-		printf("nf: parameter invalid\n");
+		printf("nf: parameter invalid in getStates\n");
 	}
 	if (ret == ENOENT){
-		printf("nf: key not found!\n");
+		printf("nf: key not found in getStates!\n");
 		//ask index table
 	}
 	return ret;

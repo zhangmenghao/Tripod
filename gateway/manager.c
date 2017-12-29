@@ -21,7 +21,7 @@
 struct states_5tuple_pair {
     struct ipv4_5tuple l4_5tuple;
     struct nf_states states;
-} __rte_cache_aligned;
+};
 
 static struct rte_mbuf*
 build_backup_packet(uint8_t port, uint32_t backup_machine_ip, 

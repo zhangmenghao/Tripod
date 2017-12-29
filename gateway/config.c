@@ -197,12 +197,14 @@ setup_hash(const int socketid)
 	hash_params.socket_id = socketid;
 	state_hash_table[socketid] =
 		rte_hash_create(&hash_params);
+	index_hash_table[socketid] =
+		rte_hash_create(&hash_params);
 
-	if (state_hash_table[socketid] == NULL)
+	if (state_hash_table[socketid] == NULL||index_hash_table[socketid] == NULL)
 		rte_exit(EXIT_FAILURE,
 			"Unable to create the hash on socket %d\n",
 			socketid);
-	printf("setup hash_table %s\n", s);
+	printf("setup hash_table for state and index %s\n", s);
 }
 
 static inline int
