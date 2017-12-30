@@ -19,7 +19,7 @@
 struct states_5tuple_pair {
     struct ipv4_5tuple l4_5tuple;
     struct nf_states states;
-} __rte_cache_aligned;
+};
 
 static struct rte_mbuf*
 build_backup_packet(uint8_t port, uint32_t backup_machine_ip, 
@@ -129,6 +129,7 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        tmp_tuple.proto = 0x6;
    				        ip_5tuple = &tmp_tuple;
    				        getStates(ip_5tuple, &states);
+                  printf("backup state %u\n", states->ipserver);
    				        backup_packet = build_backup_packet(
     			            port, backup_ip, ip_5tuple, states
     			 	    );

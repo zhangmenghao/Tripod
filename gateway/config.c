@@ -198,11 +198,25 @@ setup_hash(const int socketid)
 	state_hash_table[socketid] =
 		rte_hash_create(&hash_params);
 
-	if (state_hash_table[socketid] == NULL)
+	struct rte_hash_parameters hash_paramss = {
+		.name = NULL,
+		.entries = HASH_ENTRIES,
+		.key_len = sizeof(union ipv4_5tuple_host),
+		.hash_func = ipv4_hash_crc,
+		.hash_func_init_val = 0,
+	};
+	char ss[64];
+	snprintf(ss, sizeof(ss), "ipv4_hash_%d", socketid);
+	hash_paramss.name = s;
+	hash_paramss.socket_id = socketid;
+	index_hash_table[socketid] =
+		rte_hash_create(&hash_paramss);
+
+	if (state_hash_table[socketid] == NULL||index_hash_table[socketid] == NULL)
 		rte_exit(EXIT_FAILURE,
 			"Unable to create the hash on socket %d\n",
 			socketid);
-	printf("setup hash_table %s\n", s);
+	printf("setup hash_table for state and index %s\n", s);
 }
 
 static inline int
