@@ -142,6 +142,7 @@ uint32_t dip_pool[DIP_POOL_SIZE]={
 };
 
 struct rte_ring* nf_manager_ring;
+struct rte_ring* nf_pull_wait_ring;
 
 struct port_param single_port_param;
 
@@ -150,6 +151,8 @@ int enabled_port_mask = 0;
 static struct rte_eth_rss_reta_entry64 reta_conf[2];
 
 static uint32_t manager_rx_queue_mask = 0x2;
+
+uint32_t broadcast_ip = IPv4(172,16,255,255);
 
 static inline uint32_t
 ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,

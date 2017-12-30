@@ -117,6 +117,12 @@ main(int argc, char *argv[])
       				   				  RING_F_SP_ENQ | RING_F_SC_DEQ);
 	if (nf_manager_ring == NULL)
 		rte_exit(EXIT_FAILURE, "Cannot create ring between nf and manager\n");
+    /* Create and initialize ring for nf to wait pull state */
+    nf_manager_ring = rte_ring_create("NF_PULL_WAIT_RING", RX_RING_SIZE, 
+     				   				  rte_socket_id(), 
+      				   				  RING_F_SP_ENQ | RING_F_SC_DEQ);
+	if (nf_manager_ring == NULL)
+		rte_exit(EXIT_FAILURE, "Cannot create ring for nf to wait pulled state\n");
 
 	check_all_ports_link_status((uint8_t)nb_ports, enabled_port_mask);
 

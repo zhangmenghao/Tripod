@@ -26,7 +26,8 @@ struct nf_indexs indexs[10000];
 struct rte_hash *state_hash_table[NB_SOCKETS];
 struct rte_hash *index_hash_table[NB_SOCKETS];
 
-static int counts = 0;
+int flow_counts = 0;
+int index_counts = 0;
 
 static void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
@@ -111,7 +112,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		printf("nf: key not found in getStates!\n");
 		//ask index table
 		struct nf_indexs *index;
-		int ret1 =  getIndexs(&ip_5tuples[counts], &index);
+		int ret1 =  getIndexs(&ip_5tuples[flow_counts], &index);
 		if (ret1 == 0){
 			//getRemoteState(index, state);
 		}
@@ -211,37 +212,37 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 				struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
 
-				ip_5tuples[counts].ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
-				ip_5tuples[counts].ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
-				ip_5tuples[counts].proto = ip_hdr->next_proto_id;
+				ip_5tuples[flow_counts].ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
+				ip_5tuples[flow_counts].ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
+				ip_5tuples[flow_counts].proto = ip_hdr->next_proto_id;
 
-				printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[counts].ip_dst));
-				printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[counts].ip_src));
-				printf("nf: next_proto_id is %u\n", ip_5tuples[counts].proto);
+				printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[flow_counts].ip_dst));
+				printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[flow_counts].ip_src));
+				printf("nf: next_proto_id is %u\n", ip_5tuples[flow_counts].proto);
 				
-				if (ip_5tuples[counts].proto == 17){
+				if (ip_5tuples[flow_counts].proto == 17){
 					struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
-					ip_5tuples[counts].port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
-					ip_5tuples[counts].port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
+					ip_5tuples[flow_counts].port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
+					ip_5tuples[flow_counts].port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
 				}
-				else if (ip_5tuples[counts].proto == 6){
+				else if (ip_5tuples[flow_counts].proto == 6){
 					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
-					ip_5tuples[counts].port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
-					ip_5tuples[counts].port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
+					ip_5tuples[flow_counts].port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
+					ip_5tuples[flow_counts].port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
 					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					if (tcp_hdrs->tcp_flags == 2){
 						printf("nf: recerive a new flow!\n");
-						states[counts].ipserver = dip_pool[counts % DIP_POOL_SIZE];
-						setStates(&ip_5tuples[counts], &states[counts]);
-						ip_hdr->dst_addr = rte_cpu_to_be_32(states[counts].ipserver);
+						states[flow_counts].ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
+						setStates(&ip_5tuples[flow_counts], &states[flow_counts]);
+						ip_hdr->dst_addr = rte_cpu_to_be_32(states[flow_counts].ipserver);
 						printf("nf: new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 						rte_pktmbuf_free(bufs[i]);
-						counts ++;
+						flow_counts ++;
 					}
 					else{
 						struct nf_states *state;
-						int ret =  getStates(&ip_5tuples[counts], &state);
+						int ret =  getStates(&ip_5tuples[flow_counts], &state);
 						//printf("%x\n", state);
 						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 						if (ret == ENOENT){
@@ -257,7 +258,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 						
 					}
-					printf("nf: port_src and port_dst is %u and %u\n", ip_5tuples[counts].port_src, ip_5tuples[counts].port_dst);
+					printf("nf: port_src and port_dst is %u and %u\n", ip_5tuples[flow_counts].port_src, ip_5tuples[flow_counts].port_dst);
 				}
 				printf("\n");
 			}

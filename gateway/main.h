@@ -91,11 +91,18 @@ struct machine_IP_pair{
 extern struct port_param single_port_param;
 
 extern struct rte_ring* nf_manager_ring;
+extern struct rte_ring* nf_pull_wait_ring;
 
 extern int enabled_port_mask; 
 
 extern uint32_t dip_pool[DIP_POOL_SIZE];
 
+extern int flow_counts;
+extern int index_counts;
+
+extern struct ipv4_5tuple ip_5tuples[10000];
+extern struct nf_states states[10000];
+extern struct nf_indexs indexs[10000];
 extern struct rte_hash *state_hash_table[NB_SOCKETS];
 extern struct rte_hash *index_hash_table[NB_SOCKETS];
 
@@ -103,6 +110,7 @@ extern struct machine_IP_pair topo[N_MACHINE_MAX];
 extern struct machine_IP_pair* this_machine;
 extern struct rte_mbuf* probing_packet;
 extern struct ether_addr interface_MAC;
+extern uint32_t broadcast_ip;
 
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
 int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state);

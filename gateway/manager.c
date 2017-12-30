@@ -21,8 +21,13 @@ struct states_5tuple_pair {
     struct nf_states states;
 };
 
+struct indexs_5tuple_pair {
+    struct ipv4_5tuple l4_5tuple;
+    struct nf_indexs indexs;
+};
+
 static struct rte_mbuf*
-build_backup_packet(uint8_t port, uint32_t backup_machine_ip, 
+build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
  					struct ipv4_5tuple* ip_5tuple, struct nf_states* states)
 {
     struct rte_mbuf* backup_packet;
@@ -49,7 +54,7 @@ build_backup_packet(uint8_t port, uint32_t backup_machine_ip,
     ip_h->dst_addr=rte_cpu_to_be_32(backup_machine_ip);
     ip_h->version_ihl = (4 << 4) | 5;
     ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct states_5tuple_pair));
-    ip_h->packet_id= 0x36;/* NO USE */
+    ip_h->packet_id = rte_cpu_to_be_16(packet_id);/* NO USE */
     ip_h->time_to_live=4;
     ip_h->next_proto_id = 0x0;
     ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
@@ -64,6 +69,134 @@ build_backup_packet(uint8_t port, uint32_t backup_machine_ip,
     payload->states.dport = states->dport;
     payload->states.bip = states->bip;
     return backup_packet;
+}
+
+static struct rte_mbuf*
+build_pull_packet(uint8_t port, struct nf_indexs* indexs, 
+  				  uint16_t nf_id, struct ipv4_5tuple* ip_5tuple)
+{
+    struct rte_mbuf* pull_packet;
+    struct ether_hdr* eth_h;
+    struct ipv4_hdr* ip_h;
+    struct ipv4_5tuple* payload;
+    struct ether_addr self_eth_addr;
+    /* Allocate space */
+    pull_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
+    eth_h = (struct ether_hdr *)
+ 			rte_pktmbuf_append(pull_packet, sizeof(struct ether_hdr));
+    ip_h = (struct ipv4_hdr *)
+  			rte_pktmbuf_append(pull_packet, sizeof(struct ipv4_hdr));
+    payload = (struct ipv4_5tuple*)
+   		rte_pktmbuf_append(pull_packet, sizeof(struct ipv4_5tuple));
+    /* Set the packet ether header */
+    eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
+    ether_addr_copy(&interface_MAC, &(eth_h->d_addr));
+    rte_eth_macaddr_get(port, &self_eth_addr);
+    ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
+    /* Set the packet ip header */
+    memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
+    ip_h->src_addr=rte_cpu_to_be_32(this_machine->ip);
+    ip_h->dst_addr=rte_cpu_to_be_32(indexs->backupip);
+    ip_h->version_ihl = (4 << 4) | 5;
+    ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct ipv4_5tuple));
+    ip_h->packet_id = nf_id;/* NO USE */
+    ip_h->time_to_live=4;
+    ip_h->next_proto_id = 0x1;
+    ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
+    /* Set the packet payload(5tuple:states) */
+    payload->ip_dst = ip_5tuple->ip_dst;
+    payload->ip_src = ip_5tuple->ip_src;
+    payload->port_dst = ip_5tuple->port_dst;
+    payload->port_src = ip_5tuple->port_src;
+    payload->proto = ip_5tuple->proto;
+    return pull_packet;
+}
+
+static struct rte_mbuf*
+build_keyset_packet(uint8_t port, struct nf_indexs* indexs, 
+  					struct ipv4_5tuple* ip_5tuple)
+{
+    struct rte_mbuf* keyset_packet;
+    struct ether_hdr* eth_h;
+    struct ipv4_hdr* ip_h;
+    struct indexs_5tuple_pair* payload;
+    struct ether_addr self_eth_addr;
+    /* Allocate space */
+    keyset_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
+    eth_h = (struct ether_hdr *)
+ 			rte_pktmbuf_append(keyset_packet, sizeof(struct ether_hdr));
+    ip_h = (struct ipv4_hdr *)
+  			rte_pktmbuf_append(keyset_packet, sizeof(struct ipv4_hdr));
+    payload = (struct indexs_5tuple_pair*)
+   		rte_pktmbuf_append(keyset_packet, sizeof(struct indexs_5tuple_pair));
+    /* Set the packet ether header */
+    eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
+    ether_addr_copy(&interface_MAC, &(eth_h->d_addr));
+    rte_eth_macaddr_get(port, &self_eth_addr);
+    ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
+    /* Set the packet ip header */
+    memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
+    ip_h->src_addr=rte_cpu_to_be_32(this_machine->ip);
+    ip_h->dst_addr=rte_cpu_to_be_32(broadcast_ip);
+    ip_h->version_ihl = (4 << 4) | 5;
+    ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct indexs_5tuple_pair));
+    ip_h->packet_id = 0;/* NO USE */
+    ip_h->time_to_live=4;
+    ip_h->next_proto_id = 0x2;
+    ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
+    /* Set the packet payload(5tuple:states) */
+    payload->l4_5tuple.ip_dst = ip_5tuple->ip_dst;
+    payload->l4_5tuple.ip_src = ip_5tuple->ip_src;
+    payload->l4_5tuple.port_dst = ip_5tuple->port_dst;
+    payload->l4_5tuple.port_src = ip_5tuple->port_src;
+    payload->l4_5tuple.proto = ip_5tuple->proto;
+    payload->indexs.backupip = indexs->backupip;
+    return keyset_packet;
+}
+
+static struct nf_states*
+backup_to_machine(struct states_5tuple_pair* backup_pair)
+{
+    ip_5tuples[flow_counts].ip_dst = backup_pair->l4_5tuple.ip_dst;
+    ip_5tuples[flow_counts].ip_src = backup_pair->l4_5tuple.ip_src;
+    ip_5tuples[flow_counts].proto = backup_pair->l4_5tuple.proto;
+    ip_5tuples[flow_counts].port_dst = backup_pair->l4_5tuple.port_dst;
+    ip_5tuples[flow_counts].port_src = backup_pair->l4_5tuple.port_src;
+    states[flow_counts].ipserver = backup_pair->states.ipserver;
+    states[flow_counts].dip = backup_pair->states.dip;
+    states[flow_counts].dport = backup_pair->states.dport;
+    states[flow_counts].bip = backup_pair->states.bip;
+    setStates(&(ip_5tuples[flow_counts]), &(states[flow_counts]));
+    return &states[flow_counts++];
+}
+
+static void
+keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
+{
+    ip_5tuples[flow_counts].ip_dst = keyset_pair->l4_5tuple.ip_dst;
+    ip_5tuples[flow_counts].ip_src = keyset_pair->l4_5tuple.ip_src;
+    ip_5tuples[flow_counts].proto = keyset_pair->l4_5tuple.proto;
+    ip_5tuples[flow_counts].port_dst = keyset_pair->l4_5tuple.port_dst;
+    ip_5tuples[flow_counts].port_src = keyset_pair->l4_5tuple.port_src;
+    indexs[index_counts].backupip = keyset_pair->indexs.backupip;
+    setIndexs(&(ip_5tuples[flow_counts]), &(indexs[index_counts]));
+    flow_counts += 1;
+    index_counts += 1;
+}
+
+int
+pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
+          struct nf_indexs* target_indexs, struct nf_states** target_states)
+{
+    if (nf_id == 1) {
+        struct rte_mbuf* pull_packet;
+        pull_packet = build_pull_packet(
+            port, target_indexs, nf_id, ip_5tuple
+        );
+        rte_eth_tx_burst(port, 0, &pull_packet, 1);
+        while (rte_ring_dequeue(nf_pull_wait_ring,(void**)&target_states) == 0);
+        return 0;
+    }
 }
 
 /*
@@ -118,7 +251,8 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        // ecmp_receive_reply(bufs[i]);
    				        struct ipv4_5tuple* ip_5tuple;
    				        struct rte_mbuf* backup_packet;
-   				        struct nf_states* states;
+   				        struct rte_mbuf* keyset_packet;
+   				        struct nf_states* backup_states;
    				        struct ipv4_5tuple tmp_tuple;
    				        uint32_t backup_ip;
    				        master_receive_probe_reply(
@@ -126,14 +260,20 @@ lcore_manager(__attribute__((unused)) void *arg)
     			 	        &tmp_tuple.ip_src, &tmp_tuple.ip_dst,
     			 	        &tmp_tuple.port_src, &tmp_tuple.port_dst
    				        );
+   				        indexs[index_counts].backupip = backup_ip;
+   				        setIndexs(ip_5tuple, &indexs[index_counts]);
    				        tmp_tuple.proto = 0x6;
    				        ip_5tuple = &tmp_tuple;
-   				        getStates(ip_5tuple, &states);
-                  printf("backup state %u\n", states->ipserver);
+   				        getStates(ip_5tuple, &backup_states);
    				        backup_packet = build_backup_packet(
-    			            port, backup_ip, ip_5tuple, states
+    			            port, backup_ip, 0x00, ip_5tuple, backup_states
+    			 	    );
+   				        keyset_packet = build_keyset_packet(
+    			            port, &indexs[index_counts], ip_5tuple
     			 	    );
    				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
+   				        rte_eth_tx_burst(port, 0, &keyset_packet, 1);
+   				        index_counts += 1;
    				        printf("This is ECMP pedict reply message\n");
    				    }
   				}
@@ -141,10 +281,9 @@ lcore_manager(__attribute__((unused)) void *arg)
   				    /* Control message about state backup */
   				    /* Destination ip is 172.16.X.Y */
   				    /* This is state backup message */
-   				    struct states_5tuple_pair* backup_pair;
   				    printf("This is state backup message\n");
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
-    				backup_pair = (struct states_5tuple_pair*)payload;
+  				    /* 
 				    printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_src));
 				    printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_dst));
 				    printf("port_src is 0x%x\n", backup_pair->l4_5tuple.port_src);
@@ -154,41 +293,36 @@ lcore_manager(__attribute__((unused)) void *arg)
 				    printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.dip));
 				    printf("dport is 0x%x\n", backup_pair->states.dport);
 				    printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
-   				    setStates(&(backup_pair->l4_5tuple), &(backup_pair->states));
+  				    */ 
+   				    if (ip_h->packet_id != 0)
+   				        backup_to_machine((struct states_5tuple_pair*)payload);
+   				    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1) {
+   				        rte_ring_enqueue(nf_pull_wait_ring, backup_to_machine((struct states_5tuple_pair*)payload));
+  				    }
   				}
  				else if (ip_proto == 1) {
   				    /* Control message about state pull */
    				    struct ipv4_5tuple* ip_5tuple;
-   				    struct nf_states* states;
+   				    struct rte_mbuf* backup_packet;
    				    struct nf_states* request_states;
    				    struct ether_addr self_eth_addr;
    				    uint32_t request_ip;
   				    printf("This is state pull message\n");
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
    				    ip_5tuple = (struct ipv4_5tuple*)payload;
-   				    request_states = (struct nf_states*)payload;
-   				    getStates(ip_5tuple, &states);
-   				    
-   				    /* Modify the packet ether header */
-   				    eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
-   				    ether_addr_copy(&interface_MAC, &(eth_h->d_addr));
-   				    rte_eth_macaddr_get(port, &self_eth_addr);
-   				    ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
-   				    /* Modify the packet ip header */
-   				    ip_h->dst_addr = ip_h->src_addr;
-   				    ip_h->src_addr = rte_cpu_to_be_32(this_machine->ip);
-   				    ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct nf_states));
-   				    ip_h->time_to_live=4;
-   				    ip_h->next_proto_id = 0x0;
-   				    ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
-   				    /* Set the packet payload(5tuple:states) */
-   				    request_states->ipserver = states->ipserver;
-   				    request_states->dip = states->dip;
-   				    request_states->dport = states->dport;
-   				    request_states->bip = states->bip;
+   				    getStates(ip_5tuple, &request_states);
+   				    backup_packet = build_backup_packet(
+    			        port, rte_be_to_cpu_32(ip_h->src_addr),  
+    			        rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
+    			        request_states 
+    			 	);
+   				    rte_eth_tx_burst(port, 0, &backup_packet, 1);
   				}
  				else if (ip_proto == 2) {
   				    /* Control message about keyset broadcast */
+  				    printf("This is keyset broadcast message\n");
+   				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
+   				    keyset_to_machine((struct indexs_5tuple_pair*)payload);
   				}
 				printf("\n");
 			}
