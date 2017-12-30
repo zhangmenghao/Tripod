@@ -15,10 +15,12 @@
 #include <rte_udp.h>
 #include <rte_hash.h>
 #include "main.h"
+
 struct states_5tuple_pair {
     struct ipv4_5tuple l4_5tuple;
     struct nf_states states;
 } __rte_cache_aligned;
+
 static struct rte_mbuf*
 build_backup_packet(uint8_t port, uint32_t backup_machine_ip, 
  					struct ipv4_5tuple* ip_5tuple, struct nf_states* states)
@@ -63,6 +65,7 @@ build_backup_packet(uint8_t port, uint32_t backup_machine_ip,
     payload->states.bip = states->bip;
     return backup_packet;
 }
+
 /*
  * gateway manager.
  */
@@ -77,7 +80,6 @@ lcore_manager(__attribute__((unused)) void *arg)
 	// uint16_t eth_type;
 	uint8_t ip_proto;
     u_char* payload;
-    struct ipv4_5tuple* ip_5tuple;
 	printf("\nCore %u manage states in gateway.\n",
 			rte_lcore_id());
 	/* Run until the application is quit or killed. */
@@ -114,6 +116,7 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        /* Destination ip is 172.16.X.Y */
   				        /* This is ECMP predict reply message */
   				        // ecmp_receive_reply(bufs[i]);
+   				        struct ipv4_5tuple* ip_5tuple;
    				        struct rte_mbuf* backup_packet;
    				        struct nf_states* states;
    				        struct ipv4_5tuple tmp_tuple;
@@ -134,29 +137,57 @@ lcore_manager(__attribute__((unused)) void *arg)
    				    }
   				}
  				else if (ip_proto == 0) {
-  				    /* Control message about state */
-   				    if ((ip_h->dst_addr & 0xFF000000) == (255U << 24)) {
-   				        /* Destination ip is 172.16.0.255 */
-   				        /* This is flow broadcast message */
-    			        printf("This is flow broadcast message\n");
-   				    }
-  				    else{
-  				        /* Destination ip is 172.16.0.X */
-  				        /* This is state backup message */
-  				        printf("This is state backup message\n");
-   				        payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
-   				        struct states_5tuple_pair* backup_pair = (struct states_5tuple_pair*)payload;
-				        printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_src));
-				        printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_dst));
-				        printf("port_src is 0x%x\n", backup_pair->l4_5tuple.port_src);
-				        printf("port_dst is 0x%x\n", backup_pair->l4_5tuple.port_dst);
-				        printf("proto is 0x%x\n", backup_pair->l4_5tuple.proto);
-				        printf("ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.ipserver));
-				        printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.dip));
-				        printf("dport is 0x%x\n", backup_pair->states.dport);
-				        printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
-   				        setStates(&(backup_pair->l4_5tuple), &(backup_pair->states));
-   				    }
+  				    /* Control message about state backup */
+  				    /* Destination ip is 172.16.X.Y */
+  				    /* This is state backup message */
+   				    struct states_5tuple_pair* backup_pair;
+  				    printf("This is state backup message\n");
+   				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
+    				backup_pair = (struct states_5tuple_pair*)payload;
+				    printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_src));
+				    printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_dst));
+				    printf("port_src is 0x%x\n", backup_pair->l4_5tuple.port_src);
+				    printf("port_dst is 0x%x\n", backup_pair->l4_5tuple.port_dst);
+				    printf("proto is 0x%x\n", backup_pair->l4_5tuple.proto);
+				    printf("ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.ipserver));
+				    printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.dip));
+				    printf("dport is 0x%x\n", backup_pair->states.dport);
+				    printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
+   				    setStates(&(backup_pair->l4_5tuple), &(backup_pair->states));
+  				}
+ 				else if (ip_proto == 1) {
+  				    /* Control message about state pull */
+   				    struct ipv4_5tuple* ip_5tuple;
+   				    struct nf_states* states;
+   				    struct nf_states* request_states;
+   				    struct ether_addr self_eth_addr;
+   				    uint32_t request_ip;
+  				    printf("This is state pull message\n");
+   				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
+   				    ip_5tuple = (struct ipv4_5tuple*)payload;
+   				    request_states = (struct nf_states*)payload;
+   				    getStates(ip_5tuple, &states);
+   				    
+   				    /* Modify the packet ether header */
+   				    eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
+   				    ether_addr_copy(&interface_MAC, &(eth_h->d_addr));
+   				    rte_eth_macaddr_get(port, &self_eth_addr);
+   				    ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
+   				    /* Modify the packet ip header */
+   				    ip_h->dst_addr = ip_h->src_addr;
+   				    ip_h->src_addr = rte_cpu_to_be_32(this_machine->ip);
+   				    ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct nf_states));
+   				    ip_h->time_to_live=4;
+   				    ip_h->next_proto_id = 0x0;
+   				    ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
+   				    /* Set the packet payload(5tuple:states) */
+   				    request_states->ipserver = states->ipserver;
+   				    request_states->dip = states->dip;
+   				    request_states->dport = states->dport;
+   				    request_states->bip = states->bip;
+  				}
+ 				else if (ip_proto == 2) {
+  				    /* Control message about keyset broadcast */
   				}
 				printf("\n");
 			}
