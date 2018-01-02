@@ -260,11 +260,11 @@ lcore_manager(__attribute__((unused)) void *arg)
     			 	        &tmp_tuple.ip_src, &tmp_tuple.ip_dst,
     			 	        &tmp_tuple.port_src, &tmp_tuple.port_dst
    				        );
-   				        indexs[index_counts].backupip = backup_ip;
-   				        setIndexs(ip_5tuple, &indexs[index_counts]);
    				        tmp_tuple.proto = 0x6;
    				        ip_5tuple = &tmp_tuple;
    				        getStates(ip_5tuple, &backup_states);
+   				        indexs[index_counts].backupip = backup_ip;
+   				        setIndexs(ip_5tuple, &indexs[index_counts]);
    				        backup_packet = build_backup_packet(
     			            port, backup_ip, 0x00, ip_5tuple, backup_states
     			 	    );
@@ -294,7 +294,7 @@ lcore_manager(__attribute__((unused)) void *arg)
 				    printf("dport is 0x%x\n", backup_pair->states.dport);
 				    printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
   				    */ 
-   				    if (ip_h->packet_id != 0)
+   				    if (ip_h->packet_id == 0)
    				        backup_to_machine((struct states_5tuple_pair*)payload);
    				    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1) {
    				        rte_ring_enqueue(nf_pull_wait_ring, backup_to_machine((struct states_5tuple_pair*)payload));
