@@ -195,7 +195,7 @@ setup_hash(const int socketid)
 		.hash_func_init_val = 0,
 	};
 	char s[64];
-	snprintf(s, sizeof(s), "ipv4_hash_%d", socketid);
+	snprintf(s, sizeof(s), "ipv4_state_hash_%d", socketid);
 	hash_params.name = s;
 	hash_params.socket_id = socketid;
 	state_hash_table[socketid] =
@@ -209,8 +209,8 @@ setup_hash(const int socketid)
 		.hash_func_init_val = 0,
 	};
 	char ss[64];
-	snprintf(ss, sizeof(ss), "ipv4_hash_%d", socketid);
-	hash_paramss.name = s;
+	snprintf(ss, sizeof(ss), "ipv4_index_hash_%d", socketid);
+	hash_paramss.name = ss;
 	hash_paramss.socket_id = socketid;
 	index_hash_table[socketid] =
 		rte_hash_create(&hash_paramss);
