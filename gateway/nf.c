@@ -224,6 +224,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
 					ip_5tuples[flow_counts].port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
 					ip_5tuples[flow_counts].port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
+					printf("nf: udp packets! pass!\n");
 				}
 				else if (ip_5tuples[flow_counts].proto == 6){
 					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));

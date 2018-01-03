@@ -336,6 +336,7 @@ lcore_manager(__attribute__((unused)) void *arg)
 	}
 	return 0;
 }
+
 int
 lcore_manager_slave(__attribute__((unused)) void *arg)
 {
