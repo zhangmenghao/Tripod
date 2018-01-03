@@ -212,18 +212,19 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 				struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
 
-				ip_5tuples[flow_counts].ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
-				ip_5tuples[flow_counts].ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
-				ip_5tuples[flow_counts].proto = ip_hdr->next_proto_id;
+				struct ipv4_5tuple ip_5tuple;
+				ip_5tuple.ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
+				ip_5tuple.ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
+				ip_5tuple.proto = ip_hdr->next_proto_id;
 
-				printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[flow_counts].ip_dst));
-				printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[flow_counts].ip_src));
-				printf("nf: next_proto_id is %u\n", ip_5tuples[flow_counts].proto);
+				printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple.ip_dst));
+				printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple.ip_src));
+				printf("nf: next_proto_id is %u\n", ip_5tuple.proto);
 				
 				if (ip_5tuples[flow_counts].proto == 17){
 					struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
-					ip_5tuples[flow_counts].port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
-					ip_5tuples[flow_counts].port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
+					ip_5tuple.port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
+					ip_5tuple.port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
 					printf("nf: udp packets! pass!\n");
 				}
 				else if (ip_5tuples[flow_counts].proto == 6){
