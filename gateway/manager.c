@@ -26,6 +26,19 @@ struct indexs_5tuple_pair {
     struct nf_indexs indexs;
 };
 
+static void 
+managerSetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
+	union ipv4_5tuple_host newkey;
+	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
+	if (ret == 0)
+		printf("mg: set state success!\n");
+	else{
+		printf("mg: error found in setStates!\n");
+		return;
+	}
+}
+
 static struct rte_mbuf*
 build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
  					struct ipv4_5tuple* ip_5tuple, struct nf_states* states)
@@ -166,7 +179,7 @@ backup_to_machine(struct states_5tuple_pair* backup_pair)
     states[flow_counts].dip = backup_pair->states.dip;
     states[flow_counts].dport = backup_pair->states.dport;
     states[flow_counts].bip = backup_pair->states.bip;
-    setStates(&(ip_5tuples[flow_counts]), &(states[flow_counts]));
+    managerSetStates(&(ip_5tuples[flow_counts]), &(states[flow_counts]));
     return &states[flow_counts++];
 }
 
