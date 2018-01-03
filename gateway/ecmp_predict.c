@@ -92,12 +92,16 @@ void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 	topo[0].id = 1;
 	topo[0].ip = IPv4(172,16,0,2);
 
-	topo[1].id = 3;
-	topo[1].ip = IPv4(172,16,3,2);
+	topo[1].id = 2;
+	topo[1].ip = IPv4(172,16,1,2);
 
-	topo[2].id = 4;
+	topo[2].id = 3;
 	topo[2].ip = IPv4(172,16,2,2);
-    this_machine_index = 1;
+
+	topo[3].id = 4;
+	topo[3].ip = IPv4(172,16,3,2);
+
+    this_machine_index = 3;
 
 	this_machine = &(topo[this_machine_index]);
 
@@ -106,8 +110,9 @@ void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 
 
 	reverse_table[1] = 0;;
-	reverse_table[3] = 1;;
-	reverse_table[4] = 2;;
+	reverse_table[2] = 1;;
+	reverse_table[3] = 3;;
+	reverse_table[4] = 4;;
 
 }
 
