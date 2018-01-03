@@ -110,7 +110,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		printf("nf: key not found in getStates!\n");
 		//ask index table
 		struct nf_indexs *index;
-		int ret1 =  getIndexs(&ip_5tuple, &index);
+		int ret1 =  getIndexs(ip_5tuple, &index);
 		if (ret1 == 0){
 			//getRemoteState(index, state);
 		}
