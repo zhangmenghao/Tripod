@@ -15,7 +15,8 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 #include <rte_hash.h>
-#include <rte_memory.h>
+#include <rte_malloc.h>
+#include <rte_debug.h>
 
 #include "main.h"
 
@@ -234,6 +235,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 					if (tcp_hdrs->tcp_flags == 2){
 						printf("nf: recerive a new flow!\n");
 						struct nf_states * state = rte_malloc(NULL, sizeof(*state), 0);
+						if (!state)
+							rte_panic("malloc failed!");
 						state->ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
 						setStates(&ip_5tuple, state);
 						ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
