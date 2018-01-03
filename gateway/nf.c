@@ -15,10 +15,10 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 #include <rte_hash.h>
+#include <rte_memory.h>
 
 #include "main.h"
 
-struct nf_states states[10000];
 struct nf_indexs indexs[10000];
 
 //share variables
@@ -233,9 +233,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					if (tcp_hdrs->tcp_flags == 2){
 						printf("nf: recerive a new flow!\n");
-						states[flow_counts].ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
-						setStates(&ip_5tuple, &states[flow_counts]);
-						ip_hdr->dst_addr = rte_cpu_to_be_32(states[flow_counts].ipserver);
+						struct nf_states * state = rte_malloc(NULL, sizeof(*state), 0);
+						state->ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
+						setStates(&ip_5tuple, state);
+						ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
 						printf("nf: tcp_syn new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 						rte_pktmbuf_free(bufs[i]);
