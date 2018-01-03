@@ -180,8 +180,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 				struct ether_addr eth_d_addr;
 				eth_d_addr = eth_hdr->d_addr;
 
-				print_ethaddr("nf: eth_s_addr", &eth_s_addr);
-				print_ethaddr("nf: eth_d_addr", &eth_d_addr);
+				print_ethaddr("eth_s_addr", &eth_s_addr);
+				print_ethaddr("eth_d_addr", &eth_d_addr);
 
  				if (eth_hdr->ether_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
   				    /* arp message to keep live with switch */

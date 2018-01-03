@@ -359,9 +359,9 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
   			    printf("Receive backup request from nf\n");
 			    printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
 			    printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
-			    printf("port_src is 0x%x\n", ip_5tuple->port_src);
-			    printf("port_dst is 0x%x\n", ip_5tuple->port_dst);
-			    printf("proto is 0x%x\n", ip_5tuple->proto);
+			    printf("port_src is %u\n", ip_5tuple->port_src);
+			    printf("port_dst is %u\n", ip_5tuple->port_dst);
+			    printf("proto is %u\n", ip_5tuple->proto);
 			    printf("\n");
 			    rte_eth_tx_burst(port, 0, &probing_packet, 1);
   			}
