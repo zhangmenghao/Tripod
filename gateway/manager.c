@@ -30,9 +30,7 @@ static void
 managerSetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-    printf("debug: setStates: ok here\n");
 	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
-    printf("debug: setStates: ok here, ret is %d\n", ret);
 	if (ret == 0)
 		printf("mg: set state success!\n");
 	else{
@@ -181,7 +179,7 @@ backup_to_machine(struct states_5tuple_pair* backup_pair)
     states[flow_counts].dip = backup_pair->states.dip;
     states[flow_counts].dport = backup_pair->states.dport;
     states[flow_counts].bip = backup_pair->states.bip;
-    setStates(&(ip_5tuples[flow_counts]), &(states[flow_counts]));
+    managerSetStates(&(ip_5tuples[flow_counts]), &(states[flow_counts]));
     return &states[flow_counts++];
 }
 
