@@ -487,7 +487,7 @@ lcore_main_loop(__attribute__((unused)) void *arg)
     lcore = rte_lcore_id();
     if (lcore == 1)
         lcore_nf(NULL);
-    else if (lcore == 3)
+    else if (lcore == 2)
         lcore_manager_slave(NULL);
     else
         lcore_manager(NULL);
