@@ -154,6 +154,7 @@ build_keyset_packet(uint8_t port, struct nf_indexs* indexs,
     return keyset_packet;
 }
 
+/*
 static struct nf_states*
 backup_to_machine(struct states_5tuple_pair* backup_pair)
 {
@@ -182,7 +183,7 @@ keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
     setIndexs(&(ip_5tuples[flow_counts]), &(indexs[index_counts]));
     flow_counts += 1;
     index_counts += 1;
-}
+}*/
 
 int
 pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
@@ -294,11 +295,11 @@ lcore_manager(__attribute__((unused)) void *arg)
 				    printf("dport is 0x%x\n", backup_pair->states.dport);
 				    printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
   				    */ 
-   				    if (ip_h->packet_id == 0)
+   				    /*if (ip_h->packet_id == 0)
    				        backup_to_machine((struct states_5tuple_pair*)payload);
    				    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1) {
    				        rte_ring_enqueue(nf_pull_wait_ring, backup_to_machine((struct states_5tuple_pair*)payload));
-  				    }
+  				    }*/
   				}
  				else if (ip_proto == 1) {
   				    /* Control message about state pull */
@@ -322,16 +323,10 @@ lcore_manager(__attribute__((unused)) void *arg)
   				    /* Control message about keyset broadcast */
   				    printf("This is keyset broadcast message\n");
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
-   				    keyset_to_machine((struct indexs_5tuple_pair*)payload);
+   				    //keyset_to_machine((struct indexs_5tuple_pair*)payload);
   				}
 				printf("\n");
 			}
-			/* Free any unsent packets. */
-			// if (unlikely(nb_tx < nb_rx)) {
-				// uint16_t buf;
-				// for (buf = nb_tx; buf < nb_rx; buf++)
-					// rte_pktmbuf_free(bufs[buf]);
-			// }
 		}
 	}
 	return 0;

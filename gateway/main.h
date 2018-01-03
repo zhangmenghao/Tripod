@@ -100,7 +100,6 @@ extern uint32_t dip_pool[DIP_POOL_SIZE];
 extern int flow_counts;
 extern int index_counts;
 
-extern struct ipv4_5tuple ip_5tuples[10000];
 extern struct nf_states states[10000];
 extern struct nf_indexs indexs[10000];
 extern struct rte_hash *state_hash_table[NB_SOCKETS];
