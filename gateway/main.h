@@ -55,6 +55,7 @@ struct nf_states{
 
 struct nf_indexs{
 	uint32_t backupip;
+	uint32_t backupip2;
 };
 
 struct ipv4_5tuple {

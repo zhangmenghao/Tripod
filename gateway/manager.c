@@ -14,6 +14,9 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 #include <rte_hash.h>
+#include <rte_malloc.h>
+#include <rte_debug.h>
+
 #include "main.h"
 
 struct states_5tuple_pair {
@@ -264,13 +267,17 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        tmp_tuple.proto = 0x6;
    				        ip_5tuple = &tmp_tuple;
    				        getStates(ip_5tuple, &backup_states);
-   				        indexs[index_counts].backupip = backup_ip;
-   				        setIndexs(ip_5tuple, &indexs[index_counts]);
+                  struct nf_indexs *index = rte_malloc(NULL, sizeof(*index), 0);
+                  if (!index){
+                    rte_panic("index malloc failed!");
+                  }
+   				        index->backupip = backup_ip;
+   				        setIndexs(ip_5tuple, index);
    				        backup_packet = build_backup_packet(
     			            port, backup_ip, 0x00, ip_5tuple, backup_states
     			 	    );
    				        keyset_packet = build_keyset_packet(
-    			            port, &indexs[index_counts], ip_5tuple
+    			            port, index, ip_5tuple
     			 	    );
    				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
    				        rte_eth_tx_burst(port, 0, &keyset_packet, 1);
@@ -358,6 +365,7 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
 			    printf("port_dst is %u\n", ip_5tuple->port_dst);
 			    printf("proto is %u\n", ip_5tuple->proto);
 			    printf("\n");
+          rte_free(ip_5tuple);
 			    rte_eth_tx_burst(port, 0, &probing_packet, 1);
   			}
 		}
