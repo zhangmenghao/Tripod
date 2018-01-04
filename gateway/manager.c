@@ -115,7 +115,7 @@ build_pull_packet(uint8_t port, struct nf_indexs* indexs,
     ip_h->dst_addr=rte_cpu_to_be_32(indexs->backupip[0]);
     ip_h->version_ihl = (4 << 4) | 5;
     ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct ipv4_5tuple));
-    ip_h->packet_id = nf_id;/* NO USE */
+    ip_h->packet_id = rte_cpu_to_be_16(nf_id);/* NO USE */
     ip_h->time_to_live=4;
     ip_h->next_proto_id = 0x1;
     ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
@@ -217,7 +217,7 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
             port, target_indexs, nf_id, ip_5tuple
         );
         rte_eth_tx_burst(port, 0, &pull_packet, 1);
-        while (rte_ring_dequeue(nf_pull_wait_ring,(void**)&target_states) == 0);
+        while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0);
         return 0;
     }
 }
@@ -293,11 +293,15 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        }
    				        if (backup_ip1 ==  this_machine->ip) {
    				            indexs->backupip[0] = backup_ip2;
+   				            // indexs->backupip[0] = topo[3].ip;
    				            indexs->backupip[1] = 0;
    				            setIndexs(ip_5tuple, indexs);
    				            backup_packet = build_backup_packet(
     			                port, backup_ip2, 0x00, ip_5tuple, backup_states
     			 	        );
+   				            // backup_packet = build_backup_packet(
+    			            //     port, topo[3].ip, 0x00, ip_5tuple, backup_states
+    			 	        // );
    				            rte_eth_tx_burst(port, 0, &backup_packet, 1);
    				        }
    				        else if (backup_ip2 ==  this_machine->ip) {
@@ -341,9 +345,13 @@ lcore_manager(__attribute__((unused)) void *arg)
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
    				    if (ip_h->packet_id == 0)
    				        backup_to_machine((struct states_5tuple_pair*)payload);
-   				    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1) {
-   				        rte_ring_enqueue(nf_pull_wait_ring, backup_to_machine((struct states_5tuple_pair*)payload));
-  				    }
+   				    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1)
+   				        rte_ring_enqueue(
+    			 	        nf_pull_wait_ring, 
+    			 	        backup_to_machine(
+    			 	            (struct states_5tuple_pair*)payload
+    			 	        )
+   				        );
   				}
  				else if (ip_proto == 1) {
   				    /* Control message about state pull */
