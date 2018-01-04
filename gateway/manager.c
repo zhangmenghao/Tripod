@@ -112,7 +112,7 @@ build_pull_packet(uint8_t port, struct nf_indexs* indexs,
     /* Set the packet ip header */
     memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
     ip_h->src_addr=rte_cpu_to_be_32(this_machine->ip);
-    ip_h->dst_addr=rte_cpu_to_be_32(indexs->backupip);
+    ip_h->dst_addr=rte_cpu_to_be_32(indexs->backupip[0]);
     ip_h->version_ihl = (4 << 4) | 5;
     ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct ipv4_5tuple));
     ip_h->packet_id = nf_id;/* NO USE */
@@ -129,8 +129,8 @@ build_pull_packet(uint8_t port, struct nf_indexs* indexs,
 }
 
 static struct rte_mbuf*
-build_keyset_packet(uint8_t port, struct nf_indexs* indexs, 
-  					struct ipv4_5tuple* ip_5tuple)
+build_keyset_packet(uint32_t target_ip, struct nf_indexs* indexs, 
+  					uint8_t port, struct ipv4_5tuple* ip_5tuple)
 {
     struct rte_mbuf* keyset_packet;
     struct ether_hdr* eth_h;
@@ -144,7 +144,7 @@ build_keyset_packet(uint8_t port, struct nf_indexs* indexs,
     ip_h = (struct ipv4_hdr *)
   			rte_pktmbuf_append(keyset_packet, sizeof(struct ipv4_hdr));
     payload = (struct indexs_5tuple_pair*)
-   		rte_pktmbuf_append(keyset_packet, sizeof(struct indexs_5tuple_pair));
+  			rte_pktmbuf_append(keyset_packet, sizeof(struct indexs_5tuple_pair));
     /* Set the packet ether header */
     eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
     ether_addr_copy(&interface_MAC, &(eth_h->d_addr));
@@ -153,7 +153,7 @@ build_keyset_packet(uint8_t port, struct nf_indexs* indexs,
     /* Set the packet ip header */
     memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
     ip_h->src_addr=rte_cpu_to_be_32(this_machine->ip);
-    ip_h->dst_addr=rte_cpu_to_be_32(broadcast_ip);
+    ip_h->dst_addr=rte_cpu_to_be_32(target_ip);
     ip_h->version_ihl = (4 << 4) | 5;
     ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct indexs_5tuple_pair));
     ip_h->packet_id = 0;/* NO USE */
@@ -166,7 +166,8 @@ build_keyset_packet(uint8_t port, struct nf_indexs* indexs,
     payload->l4_5tuple.port_dst = ip_5tuple->port_dst;
     payload->l4_5tuple.port_src = ip_5tuple->port_src;
     payload->l4_5tuple.proto = ip_5tuple->proto;
-    payload->indexs.backupip = indexs->backupip;
+    payload->indexs.backupip[0] = indexs->backupip[0];
+    payload->indexs.backupip[1] = indexs->backupip[1];
     return keyset_packet;
 }
 
@@ -199,9 +200,10 @@ keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
 	printf("mg: port_src is 0x%x\n", keyset_pair->l4_5tuple.port_src);
 	printf("mg: port_dst is 0x%x\n", keyset_pair->l4_5tuple.port_dst);
 	printf("mg: proto is 0x%x\n", keyset_pair->l4_5tuple.proto);
-	printf("mg: backup_ip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->indexs.backupip));
+	printf("mg: backup_ip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->indexs.backupip[0]));
     struct nf_indexs* indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
-    indexs->backupip = keyset_pair->indexs.backupip;
+    indexs->backupip[0] = keyset_pair->indexs.backupip[0];
+    indexs->backupip[1] = keyset_pair->indexs.backupip[1];
     setIndexs(&(keyset_pair->l4_5tuple), indexs);
 }
 
@@ -272,10 +274,11 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        // ecmp_receive_reply(bufs[i]);
    				        struct ipv4_5tuple* ip_5tuple;
    				        struct rte_mbuf* backup_packet;
-   				        struct rte_mbuf* keyset_packet;
    				        struct nf_states* backup_states;
+   				        struct rte_mbuf* keyset_packet;
    				        uint32_t backup_ip1;
    				        uint32_t backup_ip2;
+   				        int idx;
    				        master_receive_probe_reply(
    				            bufs[i], &backup_ip1, &backup_ip2, &ip_5tuple
    				        );
@@ -284,25 +287,49 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        ip_5tuple->proto = 0x6;
    				        getStates(ip_5tuple, &backup_states);
    				        
-   				        struct nf_indexs *index = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
-   				        if (!index){
-   				            rte_panic("index malloc failed!");
+   				        struct nf_indexs *indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
+   				        if (!indexs){
+   				            rte_panic("indexs malloc failed!");
    				        }
-   				        index->backupip = backup_ip1;
-   				        setIndexs(ip_5tuple, index);
-   				        
-   				        backup_packet = build_backup_packet(
-    			            port, backup_ip1, 0x00, ip_5tuple, backup_states
-    			 	    );
-   				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
-   				        backup_packet = build_backup_packet(
-    			            port, backup_ip2, 0x00, ip_5tuple, backup_states
-    			 	    );
-   				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
-   				        keyset_packet = build_keyset_packet(
-    			            port, index, ip_5tuple
-    			 	    );
-   				        rte_eth_tx_burst(port, 0, &keyset_packet, 1);
+   				        if (backup_ip1 ==  this_machine->ip) {
+   				            indexs->backupip[0] = backup_ip2;
+   				            indexs->backupip[1] = 0;
+   				            setIndexs(ip_5tuple, indexs);
+   				            backup_packet = build_backup_packet(
+    			                port, backup_ip2, 0x00, ip_5tuple, backup_states
+    			 	        );
+   				            rte_eth_tx_burst(port, 0, &backup_packet, 1);
+   				        }
+   				        else if (backup_ip2 ==  this_machine->ip) {
+   				            indexs->backupip[0] = backup_ip1;
+   				            indexs->backupip[1] = 0;
+   				            setIndexs(ip_5tuple, indexs);
+   				            backup_packet = build_backup_packet(
+    			                port, backup_ip1, 0x00, ip_5tuple, backup_states
+    			 	        );
+   				            rte_eth_tx_burst(port, 0, &backup_packet, 1);
+   				        }
+   				        else {
+   				            indexs->backupip[0] = backup_ip1;
+   				            indexs->backupip[1] = backup_ip2;
+   				            setIndexs(ip_5tuple, indexs);
+   				            backup_packet = build_backup_packet(
+    			                port, backup_ip1, 0x00, ip_5tuple, backup_states
+    			 	        );
+   				            rte_eth_tx_burst(port, 0, &backup_packet, 1);
+   				            backup_packet = build_backup_packet(
+    			                port, backup_ip2, 0x00, ip_5tuple, backup_states
+    			 	        );
+   				            rte_eth_tx_burst(port, 0, &backup_packet, 1);
+   				        }
+   				        for (idx = 0; idx < 4; idx++) {
+   				            if (idx == this_machine_index) 
+   				                continue;
+   				            keyset_packet = build_keyset_packet(
+   				                topo[idx].ip, indexs, port, ip_5tuple
+    			 	        );
+    			 	        rte_eth_tx_burst(port, 0, &keyset_packet, 1);
+   				        }
    				        rte_free(ip_5tuple);
    				    }
   				}
@@ -340,7 +367,7 @@ lcore_manager(__attribute__((unused)) void *arg)
   				    /* Control message about keyset broadcast */
   				    printf("mg: This is keyset broadcast message\n");
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
-   				    //keyset_to_machine((struct indexs_5tuple_pair*)payload);
+   				    keyset_to_machine((struct indexs_5tuple_pair*)payload);
   				}
 				printf("\n");
 			}
