@@ -55,6 +55,7 @@ struct nf_states{
 
 struct nf_indexs{
 	uint32_t backupip;
+	uint32_t backupip2;
 };
 
 struct ipv4_5tuple {
@@ -98,9 +99,7 @@ extern int enabled_port_mask;
 extern uint32_t dip_pool[DIP_POOL_SIZE];
 
 extern int flow_counts;
-extern int index_counts;
 
-extern struct ipv4_5tuple ip_5tuples[10000];
 extern struct nf_states states[10000];
 extern struct nf_indexs indexs[10000];
 extern struct rte_hash *state_hash_table[NB_SOCKETS];
@@ -117,14 +116,16 @@ void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
 int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state);
 void setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index);
 int getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index);
+int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
+          struct nf_indexs* target_indexs, struct nf_states** target_states);
 int port_init(uint8_t port, struct rte_mempool *mbuf_pool, struct rte_mempool *manager_mbuf_pool);
 int parse_args(int argc, char **argv);
 void setup_hash(const int socketid);
 void check_all_ports_link_status(uint8_t port_num, uint32_t port_mask);
 
-void build_probe_packet(uint32_t dip,uint32_t sip,uint16_t dport,uint32_t sport);
+void build_probe_packet(struct ipv4_5tuple* ip_5tuple);
 void backup_receive_probe_packet(struct rte_mbuf* mbuf);
-void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip ,uint32_t* sip, uint32_t* dip, uint16_t* sport, uint16_t* dport);
+void master_receive_probe_reply(struct rte_mbuf* mbuf, uint32_t* machine_ip1, uint32_t* machine_ip2, struct ipv4_5tuple** ip_5tuple);
 void ecmp_predict_init(struct rte_mempool * mbuf_pool);
 
 int lcore_nf(__attribute__((unused)) void *arg);

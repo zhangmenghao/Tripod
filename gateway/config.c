@@ -152,7 +152,7 @@ static struct rte_eth_rss_reta_entry64 reta_conf[2];
 
 static uint32_t manager_rx_queue_mask = 0x2;
 
-uint32_t broadcast_ip = IPv4(172,16,255,255);
+uint32_t broadcast_ip = IPv4(172,16,3,2);
 
 static inline uint32_t
 ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,
@@ -255,7 +255,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 	struct rte_eth_conf port_conf = port_conf_default;
 	const uint16_t rx_rings = 2, tx_rings = 1;
 	uint16_t nb_rxd = RX_RING_SIZE;
-	uint16_t nb_txd = TX_RING_SIZE;//64k
+	uint16_t nb_txd = TX_RING_SIZE;
 	int retval;
 	uint16_t q;
 

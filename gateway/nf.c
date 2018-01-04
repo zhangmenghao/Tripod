@@ -15,19 +15,16 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 #include <rte_hash.h>
+#include <rte_malloc.h>
+#include <rte_debug.h>
 
 #include "main.h"
-
-struct ipv4_5tuple ip_5tuples[10000];
-struct nf_states states[10000];
-struct nf_indexs indexs[10000];
 
 //share variables
 struct rte_hash *state_hash_table[NB_SOCKETS];
 struct rte_hash *index_hash_table[NB_SOCKETS];
 
 int flow_counts = 0;
-int index_counts = 0;
 
 void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
@@ -65,10 +62,10 @@ getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index){
 	if (ret == 0){
 		printf("nf: get index success!\n");
 	}
-	if (ret == EINVAL){
+	if (ret == -EINVAL){
 		printf("nf: parameter invalid in getIndexs!\n");
 	}
-	if (ret == ENOENT){
+	if (ret == -ENOENT){
 		printf("nf: key not found in getIndexs!\n");
 		//ask index table
 	}
@@ -104,21 +101,23 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
+	//printf("ret, EINVAL, ENOENT is %d, %u and %u\n", ret, EINVAL, ENOENT);
 	if (ret == 0){
 		printf("nf: get state success!\n");
 	}
-	if (ret == EINVAL){
+	if (ret == -EINVAL){
 		printf("nf: parameter invalid in getStates\n");
 	}
-	if (ret == ENOENT){
+	if (ret == -ENOENT){
 		printf("nf: key not found in getStates!\n");
 		//ask index table
 		struct nf_indexs *index;
-		int ret1 =  getIndexs(&ip_5tuples[flow_counts], &index);
+		int ret1 =  getIndexs(ip_5tuple, &index);
 		if (ret1 == 0){
 			//getRemoteState(index, state);
+			pullState(1, 0, ip_5tuple, index, state);
 		}
-		if (ret1 == ENOENT){
+		if (ret1 == -ENOENT){
 			printf("this is an attack!\n");
 		}
 	}
@@ -182,8 +181,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 				struct ether_addr eth_d_addr;
 				eth_d_addr = eth_hdr->d_addr;
 
-				print_ethaddr("nf: eth_s_addr", &eth_s_addr);
-				print_ethaddr("nf: eth_d_addr", &eth_d_addr);
+				print_ethaddr("eth_s_addr", &eth_s_addr);
+				print_ethaddr("eth_d_addr", &eth_d_addr);
 
  				if (eth_hdr->ether_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
   				    /* arp message to keep live with switch */
@@ -214,37 +213,50 @@ lcore_nf(__attribute__((unused)) void *arg)
 
 				struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
 
-				ip_5tuples[flow_counts].ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
-				ip_5tuples[flow_counts].ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
-				ip_5tuples[flow_counts].proto = ip_hdr->next_proto_id;
+				struct ipv4_5tuple ip_5tuples;
+				ip_5tuples.ip_dst = rte_be_to_cpu_32(ip_hdr->dst_addr);
+				ip_5tuples.ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
+				ip_5tuples.proto = ip_hdr->next_proto_id;
 
-				printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[flow_counts].ip_dst));
-				printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples[flow_counts].ip_src));
-				printf("nf: next_proto_id is %u\n", ip_5tuples[flow_counts].proto);
+				printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_dst));
+				printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_src));
+				printf("nf: next_proto_id is %u\n", ip_5tuples.proto);
 				
-				if (ip_5tuples[flow_counts].proto == 17){
+				if (ip_5tuples.proto == 17){
 					struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
-					ip_5tuples[flow_counts].port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
-					ip_5tuples[flow_counts].port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
+					ip_5tuples.port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
+					ip_5tuples.port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
+					printf("nf: udp packets! pass!\n");
 				}
-				else if (ip_5tuples[flow_counts].proto == 6){
+				else if (ip_5tuples.proto == 6){
 					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
-					ip_5tuples[flow_counts].port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
-					ip_5tuples[flow_counts].port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
+					ip_5tuples.port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
+					ip_5tuples.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
 					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					if (tcp_hdrs->tcp_flags == 2){
 						printf("nf: recerive a new flow!\n");
-						states[flow_counts].ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
-						setStates(&ip_5tuples[flow_counts], &states[flow_counts]);
-						ip_hdr->dst_addr = rte_cpu_to_be_32(states[flow_counts].ipserver);
-						printf("nf: new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+						struct ipv4_5tuple *ip_5tuple = rte_malloc(NULL, sizeof(*ip_5tuple), 0);
+						if (!ip_5tuple)
+							rte_panic("ip_5tuple malloc failed!");
+						ip_5tuple->ip_src = ip_5tuples.ip_src;
+						ip_5tuple->ip_dst = ip_5tuples.ip_dst;
+						ip_5tuple->proto = ip_5tuples.proto;
+						ip_5tuple->port_dst = ip_5tuples.port_dst;
+						ip_5tuple->port_src = ip_5tuples.port_src;
+						struct nf_states * state = rte_malloc(NULL, sizeof(*state), 0);
+						if (!state)
+							rte_panic("state malloc failed!");
+						state->ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
+						setStates(ip_5tuple, state);
+						ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
+						printf("nf: tcp_syn new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 						rte_pktmbuf_free(bufs[i]);
 						flow_counts ++;
 					}
 					else{
 						struct nf_states *state;
-						int ret =  getStates(&ip_5tuples[flow_counts], &state);
+						int ret =  getStates(&ip_5tuples, &state);
 						//printf("%x\n", state);
 						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 						if (ret == ENOENT){
@@ -254,13 +266,13 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 						else{
 							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
-							printf("nf: new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+							printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 							rte_pktmbuf_free(bufs[i]);
 						}
 						
 					}
-					printf("nf: port_src and port_dst is %u and %u\n", ip_5tuples[flow_counts].port_src, ip_5tuples[flow_counts].port_dst);
+					printf("nf: port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
 				}
 				printf("\n");
 			}
