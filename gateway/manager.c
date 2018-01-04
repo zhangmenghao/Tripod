@@ -29,6 +29,10 @@ struct indexs_5tuple_pair {
     struct nf_indexs indexs;
 };
 
+/*
+ * As manager doesn't need to enqueue 5tuple to nf_manager_ring,
+ * so it need a more simple version of setStates
+ */
 static void 
 managerSetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
@@ -70,8 +74,13 @@ build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
     ip_h->dst_addr=rte_cpu_to_be_32(backup_machine_ip);
     ip_h->version_ihl = (4 << 4) | 5;
     ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct states_5tuple_pair));
-    ip_h->packet_id = rte_cpu_to_be_16(packet_id);/* NO USE */
+    /*
+     * packet_id indicates nf_id: 0 means general state backup, 
+     * other means response for nf's state pull request
+     */
+    ip_h->packet_id = rte_cpu_to_be_16(packet_id);
     ip_h->time_to_live=4;
+    /* In HPSMS, proto 0 indicate this is state backup message */
     ip_h->next_proto_id = 0x0;
     ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
     /* Set the packet payload(5tuple:states) */
@@ -115,8 +124,13 @@ build_pull_packet(uint8_t port, struct nf_indexs* indexs,
     ip_h->dst_addr=rte_cpu_to_be_32(indexs->backupip[0]);
     ip_h->version_ihl = (4 << 4) | 5;
     ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct ipv4_5tuple));
-    ip_h->packet_id = rte_cpu_to_be_16(nf_id);/* NO USE */
+    /*
+     * packet_id indicates nf_id: 0 means general state backup, 
+     * other means response for nf's state pull request
+     */
+    ip_h->packet_id = rte_cpu_to_be_16(nf_id);
     ip_h->time_to_live=4;
+    /* In HPSMS, proto 1 indicate this is state pull message */
     ip_h->next_proto_id = 0x1;
     ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
     /* Set the packet payload(5tuple:states) */
@@ -158,6 +172,7 @@ build_keyset_packet(uint32_t target_ip, struct nf_indexs* indexs,
     ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct indexs_5tuple_pair));
     ip_h->packet_id = 0;/* NO USE */
     ip_h->time_to_live=4;
+    /* In HPSMS, proto 2 indicate this is keyset broadcast message */
     ip_h->next_proto_id = 0x2;
     ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
     /* Set the packet payload(5tuple:states) */
@@ -211,15 +226,15 @@ int
 pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
           struct nf_indexs* target_indexs, struct nf_states** target_states)
 {
-    if (nf_id == 1) {
-        struct rte_mbuf* pull_packet;
-        pull_packet = build_pull_packet(
-            port, target_indexs, nf_id, ip_5tuple
-        );
-        rte_eth_tx_burst(port, 0, &pull_packet, 1);
-        while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0);
-        return 0;
-    }
+    struct rte_mbuf* pull_packet;
+    /* build and send pull request packet */
+    pull_packet = build_pull_packet(
+        port, target_indexs, nf_id, ip_5tuple
+    );
+    rte_eth_tx_burst(port, 0, &pull_packet, 1);
+    /* wait until receive response(specific state backup message) */
+    while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0);
+    return 0;
 }
 
 /*
@@ -279,6 +294,7 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        uint32_t backup_ip1;
    				        uint32_t backup_ip2;
    				        int idx;
+   				        /* Get backup machine ip */
    				        master_receive_probe_reply(
    				            bufs[i], &backup_ip1, &backup_ip2, &ip_5tuple
    				        );
@@ -291,6 +307,7 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        if (!indexs){
    				            rte_panic("indexs malloc failed!");
    				        }
+   				        /* Don's send backup packet to itself */
    				        if (backup_ip1 ==  this_machine->ip) {
    				            indexs->backupip[0] = backup_ip2;
    				            // indexs->backupip[0] = topo[3].ip;
@@ -326,6 +343,7 @@ lcore_manager(__attribute__((unused)) void *arg)
     			 	        );
    				            rte_eth_tx_burst(port, 0, &backup_packet, 1);
    				        }
+   				        /* Broadcast keyset */
    				        for (idx = 0; idx < 4; idx++) {
    				            if (idx == this_machine_index) 
    				                continue;
@@ -344,8 +362,10 @@ lcore_manager(__attribute__((unused)) void *arg)
   				    printf("mg: This is state backup message\n");
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
    				    if (ip_h->packet_id == 0)
+   				        /* General state backup message */
    				        backup_to_machine((struct states_5tuple_pair*)payload);
    				    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1)
+   				        /* Specific state backup message for nf */
    				        rte_ring_enqueue(
     			 	        nf_pull_wait_ring, 
     			 	        backup_to_machine(
@@ -362,6 +382,7 @@ lcore_manager(__attribute__((unused)) void *arg)
    				    uint32_t request_ip;
   				    printf("mg: This is state pull message\n");
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
+  				    /* Get the 5tuple and relevant state, build and send */
    				    ip_5tuple = (struct ipv4_5tuple*)payload;
    				    getStates(ip_5tuple, &request_states);
    				    backup_packet = build_backup_packet(
