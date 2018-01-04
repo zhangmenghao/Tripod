@@ -25,7 +25,6 @@ struct rte_hash *state_hash_table[NB_SOCKETS];
 struct rte_hash *index_hash_table[NB_SOCKETS];
 
 int flow_counts = 0;
-int index_counts = 0;
 
 void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)

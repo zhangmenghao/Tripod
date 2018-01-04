@@ -170,30 +170,25 @@ build_keyset_packet(uint8_t port, struct nf_indexs* indexs,
     return keyset_packet;
 }
 
-/*
 static struct nf_states*
 backup_to_machine(struct states_5tuple_pair* backup_pair)
 {
-	printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_src));
-	printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_dst));
-	printf("mg: port_src is 0x%x\n", backup_pair->l4_5tuple.port_src);
-	printf("mg: port_dst is 0x%x\n", backup_pair->l4_5tuple.port_dst);
-	printf("mg: proto is 0x%x\n", backup_pair->l4_5tuple.proto);
-	printf("mg: ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.ipserver));
-	printf("mg: dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.dip));
-	printf("mg: dport is 0x%x\n", backup_pair->states.dport);
-	printf("mg: dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
-    ip_5tuples[flow_counts].ip_dst = backup_pair->l4_5tuple.ip_dst;
-    ip_5tuples[flow_counts].ip_src = backup_pair->l4_5tuple.ip_src;
-    ip_5tuples[flow_counts].proto = backup_pair->l4_5tuple.proto;
-    ip_5tuples[flow_counts].port_dst = backup_pair->l4_5tuple.port_dst;
-    ip_5tuples[flow_counts].port_src = backup_pair->l4_5tuple.port_src;
-    states[flow_counts].ipserver = backup_pair->states.ipserver;
-    states[flow_counts].dip = backup_pair->states.dip;
-    states[flow_counts].dport = backup_pair->states.dport;
-    states[flow_counts].bip = backup_pair->states.bip;
-    managerSetStates(&(ip_5tuples[flow_counts]), &(states[flow_counts]));
-    return &states[flow_counts++];
+    printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_src));
+    printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_dst));
+    printf("mg: port_src is 0x%x\n", backup_pair->l4_5tuple.port_src);
+    printf("mg: port_dst is 0x%x\n", backup_pair->l4_5tuple.port_dst);
+    printf("mg: proto is 0x%x\n", backup_pair->l4_5tuple.proto);
+    printf("mg: ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.ipserver));
+    printf("mg: dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.dip));
+    printf("mg: dport is 0x%x\n", backup_pair->states.dport);
+    printf("mg: dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
+	struct nf_states* states = rte_malloc(NULL, sizeof(struct nf_states), 0);
+    states->ipserver = backup_pair->states.ipserver;
+    states->dip = backup_pair->states.dip;
+    states->dport = backup_pair->states.dport;
+    states->bip = backup_pair->states.bip;
+    managerSetStates(&(backup_pair->l4_5tuple), states);
+    return states;
 }
 
 static void
@@ -205,16 +200,10 @@ keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
 	printf("mg: port_dst is 0x%x\n", keyset_pair->l4_5tuple.port_dst);
 	printf("mg: proto is 0x%x\n", keyset_pair->l4_5tuple.proto);
 	printf("mg: backup_ip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->indexs.backupip));
-    ip_5tuples[flow_counts].ip_dst = keyset_pair->l4_5tuple.ip_dst;
-    ip_5tuples[flow_counts].ip_src = keyset_pair->l4_5tuple.ip_src;
-    ip_5tuples[flow_counts].proto = keyset_pair->l4_5tuple.proto;
-    ip_5tuples[flow_counts].port_dst = keyset_pair->l4_5tuple.port_dst;
-    ip_5tuples[flow_counts].port_src = keyset_pair->l4_5tuple.port_src;
-    indexs[index_counts].backupip = keyset_pair->indexs.backupip;
-    setIndexs(&(ip_5tuples[flow_counts]), &(indexs[index_counts]));
-    flow_counts += 1;
-    index_counts += 1;
-}*/
+    struct nf_indexs* indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
+    indexs->backupip = keyset_pair->indexs.backupip;
+    setIndexs(&(keyset_pair->l4_5tuple), indexs);
+}
 
 int
 pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
@@ -294,15 +283,15 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        //printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
    				        ip_5tuple->proto = 0x6;
    				        getStates(ip_5tuple, &backup_states);
-
-                  struct nf_indexs *index = rte_malloc(NULL, sizeof(*index), 0);
-                  if (!index){
-                    rte_panic("index malloc failed!");
-                  }
-   				        index->backupip = backup_ip;
+   				        
+   				        struct nf_indexs *index = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
+   				        if (!index){
+   				            rte_panic("index malloc failed!");
+   				        }
+   				        index->backupip = backup_ip1;
    				        setIndexs(ip_5tuple, index);
-                        rte_free(ip_5tuple);
-
+   				        
+   				        rte_free(ip_5tuple);
    				        backup_packet = build_backup_packet(
     			            port, backup_ip1, 0x00, ip_5tuple, backup_states
     			 	    );
@@ -315,7 +304,6 @@ lcore_manager(__attribute__((unused)) void *arg)
     			            port, index, ip_5tuple
     			 	    );
    				        rte_eth_tx_burst(port, 0, &keyset_packet, 1);
-   				        index_counts += 1;
    				    }
   				}
  				else if (ip_proto == 0) {

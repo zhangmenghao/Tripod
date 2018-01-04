@@ -99,7 +99,6 @@ extern int enabled_port_mask;
 extern uint32_t dip_pool[DIP_POOL_SIZE];
 
 extern int flow_counts;
-extern int index_counts;
 
 extern struct nf_states states[10000];
 extern struct nf_indexs indexs[10000];
