@@ -100,7 +100,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
-	printf("ret, EINVAL, ENOENT is %d, %u and %u\n", ret, EINVAL, ENOENT);
+	//printf("ret, EINVAL, ENOENT is %d, %u and %u\n", ret, EINVAL, ENOENT);
 	if (ret == 0){
 		printf("nf: get state success!\n");
 	}
