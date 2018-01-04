@@ -63,10 +63,10 @@ getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index){
 	if (ret == 0){
 		printf("nf: get index success!\n");
 	}
-	if (ret == EINVAL){
+	if (ret == -EINVAL){
 		printf("nf: parameter invalid in getIndexs!\n");
 	}
-	if (ret == ENOENT){
+	if (ret == -ENOENT){
 		printf("nf: key not found in getIndexs!\n");
 		//ask index table
 	}
@@ -100,13 +100,14 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
+	printf("ret, EINVAL, ENOENT is %d, %u and %u\n", ret, EINVAL, ENOENT);
 	if (ret == 0){
 		printf("nf: get state success!\n");
 	}
-	if (ret == EINVAL){
+	if (ret == -EINVAL){
 		printf("nf: parameter invalid in getStates\n");
 	}
-	if (ret == ENOENT){
+	if (ret == -ENOENT){
 		printf("nf: key not found in getStates!\n");
 		//ask index table
 		struct nf_indexs *index;
@@ -114,7 +115,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		if (ret1 == 0){
 			//getRemoteState(index, state);
 		}
-		if (ret1 == ENOENT){
+		if (ret1 == -ENOENT){
 			printf("this is an attack!\n");
 		}
 	}
