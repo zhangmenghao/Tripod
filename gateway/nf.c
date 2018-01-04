@@ -114,6 +114,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		int ret1 =  getIndexs(ip_5tuple, &index);
 		if (ret1 == 0){
 			//getRemoteState(index, state);
+			pullState(1, 0, ip_5tuple, index, state);
 		}
 		if (ret1 == -ENOENT){
 			printf("this is an attack!\n");
