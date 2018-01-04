@@ -55,6 +55,7 @@ struct nf_states{
 
 struct nf_indexs{
 	uint32_t backupip;
+	uint32_t backupip2;
 };
 
 struct ipv4_5tuple {
@@ -100,7 +101,6 @@ extern uint32_t dip_pool[DIP_POOL_SIZE];
 extern int flow_counts;
 extern int index_counts;
 
-extern struct ipv4_5tuple ip_5tuples[10000];
 extern struct nf_states states[10000];
 extern struct nf_indexs indexs[10000];
 extern struct rte_hash *state_hash_table[NB_SOCKETS];
@@ -117,6 +117,8 @@ void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
 int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state);
 void setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index);
 int getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index);
+int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
+          struct nf_indexs* target_indexs, struct nf_states** target_states);
 int port_init(uint8_t port, struct rte_mempool *mbuf_pool, struct rte_mempool *manager_mbuf_pool);
 int parse_args(int argc, char **argv);
 void setup_hash(const int socketid);

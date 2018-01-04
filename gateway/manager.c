@@ -14,6 +14,9 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 #include <rte_hash.h>
+#include <rte_malloc.h>
+#include <rte_debug.h>
+
 #include "main.h"
 
 struct states_5tuple_pair {
@@ -167,6 +170,7 @@ build_keyset_packet(uint8_t port, struct nf_indexs* indexs,
     return keyset_packet;
 }
 
+/*
 static struct nf_states*
 backup_to_machine(struct states_5tuple_pair* backup_pair)
 {
@@ -210,7 +214,7 @@ keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
     setIndexs(&(ip_5tuples[flow_counts]), &(indexs[index_counts]));
     flow_counts += 1;
     index_counts += 1;
-}
+}*/
 
 int
 pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
@@ -290,8 +294,15 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        //printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
    				        ip_5tuple->proto = 0x6;
    				        getStates(ip_5tuple, &backup_states);
-   				        indexs[index_counts].backupip = backup_ip1;
-   				        setIndexs(ip_5tuple, &indexs[index_counts]);
+
+                  struct nf_indexs *index = rte_malloc(NULL, sizeof(*index), 0);
+                  if (!index){
+                    rte_panic("index malloc failed!");
+                  }
+   				        index->backupip = backup_ip;
+   				        setIndexs(ip_5tuple, index);
+                        rte_free(ip_5tuple);
+
    				        backup_packet = build_backup_packet(
     			            port, backup_ip1, 0x00, ip_5tuple, backup_states
     			 	    );
@@ -301,7 +312,7 @@ lcore_manager(__attribute__((unused)) void *arg)
     			 	    );
    				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
    				        keyset_packet = build_keyset_packet(
-    			            port, &indexs[index_counts], ip_5tuple
+    			            port, index, ip_5tuple
     			 	    );
    				        rte_eth_tx_burst(port, 0, &keyset_packet, 1);
    				        index_counts += 1;
@@ -341,20 +352,15 @@ lcore_manager(__attribute__((unused)) void *arg)
   				    /* Control message about keyset broadcast */
   				    printf("mg: This is keyset broadcast message\n");
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
-   				    keyset_to_machine((struct indexs_5tuple_pair*)payload);
+   				    //keyset_to_machine((struct indexs_5tuple_pair*)payload);
   				}
 				printf("\n");
 			}
-			/* Free any unsent packets. */
-			// if (unlikely(nb_tx < nb_rx)) {
-				// uint16_t buf;
-				// for (buf = nb_tx; buf < nb_rx; buf++)
-					// rte_pktmbuf_free(bufs[buf]);
-			// }
 		}
 	}
 	return 0;
 }
+
 int
 lcore_manager_slave(__attribute__((unused)) void *arg)
 {
