@@ -291,7 +291,6 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        index->backupip = backup_ip1;
    				        setIndexs(ip_5tuple, index);
    				        
-   				        rte_free(ip_5tuple);
    				        backup_packet = build_backup_packet(
     			            port, backup_ip1, 0x00, ip_5tuple, backup_states
     			 	    );
@@ -304,6 +303,7 @@ lcore_manager(__attribute__((unused)) void *arg)
     			            port, index, ip_5tuple
     			 	    );
    				        rte_eth_tx_burst(port, 0, &keyset_packet, 1);
+   				        rte_free(ip_5tuple);
    				    }
   				}
  				else if (ip_proto == 0) {
