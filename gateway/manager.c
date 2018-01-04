@@ -170,6 +170,15 @@ build_keyset_packet(uint8_t port, struct nf_indexs* indexs,
 static struct nf_states*
 backup_to_machine(struct states_5tuple_pair* backup_pair)
 {
+	printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_src));
+	printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_dst));
+	printf("mg: port_src is 0x%x\n", backup_pair->l4_5tuple.port_src);
+	printf("mg: port_dst is 0x%x\n", backup_pair->l4_5tuple.port_dst);
+	printf("mg: proto is 0x%x\n", backup_pair->l4_5tuple.proto);
+	printf("mg: ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.ipserver));
+	printf("mg: dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.dip));
+	printf("mg: dport is 0x%x\n", backup_pair->states.dport);
+	printf("mg: dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
     ip_5tuples[flow_counts].ip_dst = backup_pair->l4_5tuple.ip_dst;
     ip_5tuples[flow_counts].ip_src = backup_pair->l4_5tuple.ip_src;
     ip_5tuples[flow_counts].proto = backup_pair->l4_5tuple.proto;
@@ -186,6 +195,12 @@ backup_to_machine(struct states_5tuple_pair* backup_pair)
 static void
 keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
 {
+	printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->l4_5tuple.ip_src));
+	printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->l4_5tuple.ip_dst));
+	printf("mg: port_src is 0x%x\n", keyset_pair->l4_5tuple.port_src);
+	printf("mg: port_dst is 0x%x\n", keyset_pair->l4_5tuple.port_dst);
+	printf("mg: proto is 0x%x\n", keyset_pair->l4_5tuple.proto);
+	printf("mg: backup_ip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->indexs.backupip));
     ip_5tuples[flow_counts].ip_dst = keyset_pair->l4_5tuple.ip_dst;
     ip_5tuples[flow_counts].ip_src = keyset_pair->l4_5tuple.ip_src;
     ip_5tuples[flow_counts].proto = keyset_pair->l4_5tuple.proto;
@@ -241,13 +256,13 @@ lcore_manager(__attribute__((unused)) void *arg)
 			if (unlikely(nb_rx == 0))
 				continue;
 			for (i = 0; i < nb_rx; i ++){
-				printf("packet comes from port %u queue 1\n", port);
+				printf("mg: packet comes from port %u queue 1\n", port);
 				eth_h = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
 				ip_h = (struct ipv4_hdr*)
   				  		((u_char*)eth_h + sizeof(struct ether_hdr));
 				ip_proto = ip_h->next_proto_id;
-				printf("receive ip "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_h->dst_addr));
-				printf("proto: %x\n",ip_proto);
+				printf("mg: dst ip "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_h->dst_addr));
+				printf("mg: proto: %x\n",ip_proto);
  				if (ip_proto == 0x06 || ip_proto == 0x11) {
   				    /* Control message about ECMP */
   				    if ((ip_h->dst_addr & 0x00FF0000) == (0xFD << 16)) {
@@ -255,7 +270,7 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        /* This is ECMP predict request message */
  				        backup_receive_probe_packet(bufs[i]);
   				        rte_eth_tx_burst(port, 0, &probing_packet, 1);
-  				        printf("This is ECMP predict request message\n");
+  				        printf("mg: This is ECMP predict request message\n");
    				    }
   				    // else if ((ip_h->dst_addr & 0x00FF0000) == 0) {
   				    else {
@@ -266,47 +281,38 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        struct rte_mbuf* backup_packet;
    				        struct rte_mbuf* keyset_packet;
    				        struct nf_states* backup_states;
-   				        struct ipv4_5tuple tmp_tuple;
-   				        uint32_t backup_ip;
+   				        uint32_t backup_ip1;
+   				        uint32_t backup_ip2;
    				        master_receive_probe_reply(
-   				            bufs[i], &backup_ip,
-    			 	        &tmp_tuple.ip_src, &tmp_tuple.ip_dst,
-    			 	        &tmp_tuple.port_src, &tmp_tuple.port_dst
+   				            bufs[i], &backup_ip1, &backup_ip2, &ip_5tuple
    				        );
-   				        tmp_tuple.proto = 0x6;
-   				        ip_5tuple = &tmp_tuple;
+   				        printf("mg: This is ECMP pedict reply message\n");
+   				        //printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
+   				        ip_5tuple->proto = 0x6;
    				        getStates(ip_5tuple, &backup_states);
-   				        indexs[index_counts].backupip = backup_ip;
+   				        indexs[index_counts].backupip = backup_ip1;
    				        setIndexs(ip_5tuple, &indexs[index_counts]);
    				        backup_packet = build_backup_packet(
-    			            port, backup_ip, 0x00, ip_5tuple, backup_states
+    			            port, backup_ip1, 0x00, ip_5tuple, backup_states
     			 	    );
+   				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
+   				        backup_packet = build_backup_packet(
+    			            port, backup_ip2, 0x00, ip_5tuple, backup_states
+    			 	    );
+   				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
    				        keyset_packet = build_keyset_packet(
     			            port, &indexs[index_counts], ip_5tuple
     			 	    );
-   				        rte_eth_tx_burst(port, 0, &backup_packet, 1);
    				        rte_eth_tx_burst(port, 0, &keyset_packet, 1);
    				        index_counts += 1;
-   				        printf("This is ECMP pedict reply message\n");
    				    }
   				}
  				else if (ip_proto == 0) {
   				    /* Control message about state backup */
   				    /* Destination ip is 172.16.X.Y */
   				    /* This is state backup message */
-  				    printf("This is state backup message\n");
+  				    printf("mg: This is state backup message\n");
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
-  				    /* 
-				    printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_src));
-				    printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->l4_5tuple.ip_dst));
-				    printf("port_src is 0x%x\n", backup_pair->l4_5tuple.port_src);
-				    printf("port_dst is 0x%x\n", backup_pair->l4_5tuple.port_dst);
-				    printf("proto is 0x%x\n", backup_pair->l4_5tuple.proto);
-				    printf("ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.ipserver));
-				    printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.dip));
-				    printf("dport is 0x%x\n", backup_pair->states.dport);
-				    printf("dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
-  				    */ 
    				    if (ip_h->packet_id == 0)
    				        backup_to_machine((struct states_5tuple_pair*)payload);
    				    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1) {
@@ -320,7 +326,7 @@ lcore_manager(__attribute__((unused)) void *arg)
    				    struct nf_states* request_states;
    				    struct ether_addr self_eth_addr;
    				    uint32_t request_ip;
-  				    printf("This is state pull message\n");
+  				    printf("mg: This is state pull message\n");
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
    				    ip_5tuple = (struct ipv4_5tuple*)payload;
    				    getStates(ip_5tuple, &request_states);
@@ -333,7 +339,7 @@ lcore_manager(__attribute__((unused)) void *arg)
   				}
  				else if (ip_proto == 2) {
   				    /* Control message about keyset broadcast */
-  				    printf("This is keyset broadcast message\n");
+  				    printf("mg: This is keyset broadcast message\n");
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
    				    keyset_to_machine((struct indexs_5tuple_pair*)payload);
   				}
@@ -364,16 +370,14 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
 				continue;
 			}
  			if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
-   			    build_probe_packet(
-    		 	    ip_5tuple->ip_dst, ip_5tuple->ip_src,
-   			        ip_5tuple->port_dst, ip_5tuple->port_src
-   			    );
-  			    printf("Receive backup request from nf\n");
-			    printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
-			    printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
-			    printf("port_src is 0x%x\n", ip_5tuple->port_src);
-			    printf("port_dst is 0x%x\n", ip_5tuple->port_dst);
-			    printf("proto is 0x%x\n", ip_5tuple->proto);
+   				//printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
+   			    build_probe_packet(ip_5tuple);
+  			    printf("mg: Receive backup request from nf\n");
+			    printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
+			    printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
+			    printf("mg: port_src is 0x%x\n", ip_5tuple->port_src);
+			    printf("mg: port_dst is 0x%x\n", ip_5tuple->port_dst);
+			    printf("mg: proto is 0x%x\n", ip_5tuple->proto);
 			    printf("\n");
 			    rte_eth_tx_burst(port, 0, &probing_packet, 1);
   			}

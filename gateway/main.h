@@ -122,9 +122,9 @@ int parse_args(int argc, char **argv);
 void setup_hash(const int socketid);
 void check_all_ports_link_status(uint8_t port_num, uint32_t port_mask);
 
-void build_probe_packet(uint32_t dip,uint32_t sip,uint16_t dport,uint32_t sport);
+void build_probe_packet(struct ipv4_5tuple* ip_5tuple);
 void backup_receive_probe_packet(struct rte_mbuf* mbuf);
-void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip ,uint32_t* sip, uint32_t* dip, uint16_t* sport, uint16_t* dport);
+void master_receive_probe_reply(struct rte_mbuf* mbuf, uint32_t* machine_ip1, uint32_t* machine_ip2, struct ipv4_5tuple** ip_5tuple);
 void ecmp_predict_init(struct rte_mempool * mbuf_pool);
 
 int lcore_nf(__attribute__((unused)) void *arg);
