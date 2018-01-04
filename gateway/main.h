@@ -54,8 +54,7 @@ struct nf_states{
 };
 
 struct nf_indexs{
-	uint32_t backupip;
-	uint32_t backupip2;
+	uint32_t backupip[2];
 };
 
 struct ipv4_5tuple {
@@ -110,6 +109,7 @@ extern struct machine_IP_pair* this_machine;
 extern struct rte_mbuf* probing_packet;
 extern struct ether_addr interface_MAC;
 extern uint32_t broadcast_ip;
+extern uint32_t this_machine_index;
 
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
