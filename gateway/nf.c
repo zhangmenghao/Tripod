@@ -249,6 +249,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 						state->ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
 						setStates(ip_5tuple, state);
 						ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
+						ip_hdr->hdr_checksum = 0;
+						ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
 						printf("nf: tcp_syn new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 						rte_pktmbuf_free(bufs[i]);
@@ -266,6 +268,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 						else{
 							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
+							ip_hdr->hdr_checksum = 0;
+							ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
 							printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 							rte_pktmbuf_free(bufs[i]);
