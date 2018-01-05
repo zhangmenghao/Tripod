@@ -46,7 +46,6 @@ setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index){
 	if (ret == 0)
 	{
 		printf("nf: set index success!\n");
-		//broadcast
 	}
 	else{
 		printf("nf: error found in setIndexs!\n");
@@ -62,12 +61,14 @@ getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index){
 	if (ret == 0){
 		printf("nf: get index success!\n");
 	}
-	if (ret == -EINVAL){
+	else if (ret == -EINVAL){
 		printf("nf: parameter invalid in getIndexs!\n");
 	}
-	if (ret == -ENOENT){
+	else if (ret == -ENOENT){
 		printf("nf: key not found in getIndexs!\n");
-		//ask index table
+	}
+	else{
+		printf("nf: get index error!\n");
 	}
 	return ret;
 }
@@ -105,21 +106,24 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	if (ret == 0){
 		printf("nf: get state success!\n");
 	}
-	if (ret == -EINVAL){
+	else if (ret == -EINVAL){
 		printf("nf: parameter invalid in getStates\n");
 	}
-	if (ret == -ENOENT){
+	else if (ret == -ENOENT){
 		printf("nf: key not found in getStates!\n");
 		//ask index table
 		struct nf_indexs *index;
-		int ret1 =  getIndexs(ip_5tuple, &index);
-		if (ret1 == 0){
+		ret =  getIndexs(ip_5tuple, &index);
+		if (ret == 0){
 			//getRemoteState(index, state);
 			pullState(1, 0, ip_5tuple, index, state);
 		}
-		if (ret1 == -ENOENT){
+		else{
 			printf("this is an attack!\n");
 		}
+	}
+	else{
+		printf("nf: get state error!\n");
 	}
 	return ret;
 }
@@ -263,12 +267,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						int ret =  getStates(&ip_5tuples, &state);
 						//printf("%x\n", state);
 						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
-						if (ret == ENOENT){
-							printf("nf: packet wait, state not found!\n");
-							//getIndex();
-							//if else
-						}
-						else{
+						if (ret == 0){
 							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
 							ip_hdr->hdr_checksum = 0;
 							ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
@@ -278,7 +277,9 @@ lcore_nf(__attribute__((unused)) void *arg)
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 							rte_pktmbuf_free(bufs[i]);
 						}
-						
+						else{
+							printf("nf: state not found!\n");
+						}
 					}
 					printf("nf: port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
 				}

@@ -198,7 +198,7 @@ backup_to_machine(struct states_5tuple_pair* backup_pair)
     printf("mg: dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.dip));
     printf("mg: dport is 0x%x\n", backup_pair->states.dport);
     printf("mg: dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
-	struct nf_states* states = rte_malloc(NULL, sizeof(struct nf_states), 0);
+    struct nf_states* states = rte_malloc(NULL, sizeof(struct nf_states), 0);
     states->ipserver = backup_pair->states.ipserver;
     states->dip = backup_pair->states.dip;
     states->dport = backup_pair->states.dport;
@@ -210,12 +210,12 @@ backup_to_machine(struct states_5tuple_pair* backup_pair)
 static void
 keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
 {
-	printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->l4_5tuple.ip_src));
-	printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->l4_5tuple.ip_dst));
-	printf("mg: port_src is 0x%x\n", keyset_pair->l4_5tuple.port_src);
-	printf("mg: port_dst is 0x%x\n", keyset_pair->l4_5tuple.port_dst);
-	printf("mg: proto is 0x%x\n", keyset_pair->l4_5tuple.proto);
-	printf("mg: backup_ip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->indexs.backupip[0]));
+  	printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->l4_5tuple.ip_src));
+  	printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->l4_5tuple.ip_dst));
+  	printf("mg: port_src is 0x%x\n", keyset_pair->l4_5tuple.port_src);
+  	printf("mg: port_dst is 0x%x\n", keyset_pair->l4_5tuple.port_dst);
+  	printf("mg: proto is 0x%x\n", keyset_pair->l4_5tuple.proto);
+  	printf("mg: backup_ip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->indexs.backupip[0]));
     struct nf_indexs* indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
     indexs->backupip[0] = keyset_pair->indexs.backupip[0];
     indexs->backupip[1] = keyset_pair->indexs.backupip[1];
@@ -243,15 +243,15 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
 int
 lcore_manager(__attribute__((unused)) void *arg)
 {
-	const uint8_t nb_ports = rte_eth_dev_count();
-	uint8_t port;
-	int i;
+  	const uint8_t nb_ports = rte_eth_dev_count();
+  	uint8_t port;
+  	int i;
     struct ether_hdr* eth_h;
     struct ipv4_hdr* ip_h;
-	// uint16_t eth_type;
-	uint8_t ip_proto;
+  	// uint16_t eth_type;
+  	uint8_t ip_proto;
     u_char* payload;
-	printf("\nCore %u manage states in gateway.\n",
+	 printf("\nCore %u manage states in gateway.\n",
 			rte_lcore_id());
 	/* Run until the application is quit or killed. */
 	for (;;) {

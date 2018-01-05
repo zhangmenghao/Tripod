@@ -99,8 +99,6 @@ extern uint32_t dip_pool[DIP_POOL_SIZE];
 
 extern int flow_counts;
 
-extern struct nf_states states[10000];
-extern struct nf_indexs indexs[10000];
 extern struct rte_hash *state_hash_table[NB_SOCKETS];
 extern struct rte_hash *index_hash_table[NB_SOCKETS];
 
