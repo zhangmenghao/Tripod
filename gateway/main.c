@@ -103,10 +103,14 @@ main(int argc, char *argv[])
 
 	/* Initialize all ports. */
 	for (portid = 0; portid < nb_ports; portid++)
-		if (port_init(portid, mbuf_pool, manager_mbuf_pool) == 0)
+		if (port_init(portid, mbuf_pool, manager_mbuf_pool) == 0) {
+			if (debug_mode > 0)
 			printf("Initialize port %u, finshed!\n", portid);
-		else 
+		}
+		else {
+			if (debug_mode > 0)
 			printf("Initialize port %u, failed!\n", portid);
+		}
     
     /* Initialize about ECMP by QiaoYi */
     ecmp_predict_init(manager_mbuf_pool);

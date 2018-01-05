@@ -148,6 +148,8 @@ struct port_param single_port_param;
 
 int enabled_port_mask = 0;
 
+uint8_t debug_mode = 2;
+
 static struct rte_eth_rss_reta_entry64 reta_conf[2];
 
 static uint32_t manager_rx_queue_mask = 0x2;
@@ -219,6 +221,7 @@ setup_hash(const int socketid)
 		rte_exit(EXIT_FAILURE,
 			"Unable to create the hash on socket %d\n",
 			socketid);
+    if (debug_mode > 0)
 	printf("setup hash_table for state and index %s\n", s);
 }
 
@@ -248,6 +251,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
  		struct rte_mempool *manager_mbuf_pool)
 {
 	if ((enabled_port_mask & (1 << port)) == 0) {
+		if (debug_mode > 0)
 		printf("Skipping disabled port %d\n", port);
 		return 1;
 	}
@@ -281,6 +285,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 					rte_eth_dev_socket_id(port), NULL, manager_mbuf_pool);
 		if (retval < 0)
 			return retval;
+		if (debug_mode > 0)
 		printf("Init queue %d for port %d\n", q, port);
 	}
 
@@ -323,6 +328,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
         return retval;
     unsigned int j;
     for (j = 0; j < RTE_FLOW_MASK_ARRAY_SIZE; j++)
+        if (debug_mode > 1)
         printf("flow_types_mask[%d]: %08x\n", j, fdir_info.flow_types_mask[j]);
 
     /* Set hash array of RSS */
@@ -333,6 +339,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 	/* Display the port MAC address. */
 	struct ether_addr addr;
 	rte_eth_macaddr_get(port, &addr);
+    if (debug_mode > 0)
 	printf("Port %u MAC: %02" PRIx8 ":%02" PRIx8 ":%02" PRIx8
 			   ":%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8 "\n",
 			(unsigned)port,
@@ -433,6 +440,7 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 	uint8_t portid, count, all_ports_up, print_flag = 0;
 	struct rte_eth_link link;
 
+    if (debug_mode > 0)
 	printf("\nChecking link status");
 	fflush(stdout);
 	for (count = 0; count <= MAX_CHECK_TIME; count++) {
@@ -444,15 +452,19 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 			rte_eth_link_get_nowait(portid, &link);
 			/* print link status if flag set */
 			if (print_flag == 1) {
-				if (link.link_status)
+				if (link.link_status) {
+					if (debug_mode > 0)
 					printf("Port %d Link Up - speed %u "
 						"Mbps - %s\n", (uint8_t)portid,
 						(unsigned)link.link_speed,
 				(link.link_duplex == ETH_LINK_FULL_DUPLEX) ?
 					("full-duplex") : ("half-duplex\n"));
-				else
+				}
+				else {
+					if (debug_mode > 0)
 					printf("Port %d Link Down\n",
 							(uint8_t)portid);
+				}
 				continue;
 			}
 			/* clear all_ports_up flag if any link down */
@@ -466,6 +478,7 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 			break;
 
 		if (all_ports_up == 0) {
+			if (debug_mode > 0)
 			printf(".");
 			fflush(stdout);
 			rte_delay_ms(CHECK_INTERVAL);
@@ -474,6 +487,7 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 		/* set the print_flag if all ports up or timeout */
 		if (all_ports_up == 1 || count == (MAX_CHECK_TIME - 1)) {
 			print_flag = 1;
+			if (debug_mode > 0)
 			printf("\ndone\n");
 		}
 	}

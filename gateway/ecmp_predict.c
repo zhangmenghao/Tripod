@@ -155,7 +155,8 @@ void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip1 ,uin
                       + sizeof(struct tcp_hdr);
     
     uint32_t index = *((uint32_t*)payload);
-	printf("index: %d\n",index);
+    if (debug_mode > 1)
+    printf("ecmp: index: %d\n",index);
     *machine_ip1 = topo[index].ip;
     *machine_ip2 = topo[index+1].ip;
     *ip_5tuple = *((struct ipv4_5tuple**)(payload+4));
