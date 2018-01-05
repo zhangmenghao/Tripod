@@ -278,7 +278,8 @@ lcore_manager(__attribute__((unused)) void *arg)
   				    if ((ip_h->dst_addr & 0x00FF0000) == (0xFD << 16)) {
   				        /* Destination ip is 172.16.253.X */
   				        /* This is ECMP predict request message */
- 				        backup_receive_probe_packet(bufs[i]);
+ 				        struct rte_mbuf* probing_packet;
+ 				        probing_packet = backup_receive_probe_packet(bufs[i]);
   				        rte_eth_tx_burst(port, 0, &probing_packet, 1);
   				        printf("mg: This is ECMP predict request message\n");
    				    }
@@ -421,7 +422,8 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
 			}
  			if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
    				//printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
-   			    build_probe_packet(ip_5tuple);
+   			    struct rte_mbuf* probing_packet;
+   			    probing_packet = build_probe_packet(ip_5tuple);
   			    printf("mg: Receive backup request from nf\n");
 			    printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
 			    printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));

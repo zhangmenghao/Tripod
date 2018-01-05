@@ -16,14 +16,7 @@
 struct machine_IP_pair topo[N_MACHINE_MAX];
 struct machine_IP_pair* this_machine;
 
-struct rte_mbuf* probing_packet;
-static struct ether_hdr *eth_hdr;
-static struct ipv4_hdr *iph;
-static struct tcp_hdr *tcp_h;
-static struct udp_hdr *udp_h;
-static char* l4_hdr;
-static char* payload;
-static struct ipv4_hdr *iph;
+static struct rte_mempool* ecmp_mbuf_pool;
 struct ether_addr interface_MAC = {
     .addr_bytes[0] = 0x48,
     .addr_bytes[1] = 0x6E,
@@ -75,12 +68,7 @@ static inline void dump_ip_hdr(struct ipv4_hdr* iph_h){
 */
 void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 
-	probing_packet = rte_pktmbuf_alloc(mbuf_pool);
-	eth_hdr = (struct ether_hdr *) rte_pktmbuf_append(probing_packet, sizeof(struct ether_hdr));
-	iph = (struct ipv4_hdr *)rte_pktmbuf_append(probing_packet, sizeof(struct ipv4_hdr));
-	tcp_h = (struct tcp_hdr *) rte_pktmbuf_append(probing_packet,sizeof(struct tcp_hdr));
-	//a packet has minimum size 64B
-	payload = (char*) rte_pktmbuf_append(probing_packet,12);	
+    ecmp_mbuf_pool = mbuf_pool;
 
 	//printf("data len: %d\n",probing_packet->pkt_len);
 
@@ -212,7 +200,18 @@ void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip1 ,uin
 */
 
 
-void build_probe_packet(struct ipv4_5tuple* ip_5tuple){
+struct rte_mbuf* build_probe_packet(struct ipv4_5tuple* ip_5tuple){
+    struct rte_mbuf* probing_packet;
+    struct ether_hdr *eth_hdr;
+    struct ipv4_hdr *iph;
+    struct tcp_hdr *tcp_h;
+    char* payload;
+    probing_packet = rte_pktmbuf_alloc(ecmp_mbuf_pool);
+    eth_hdr = (struct ether_hdr *) rte_pktmbuf_append(probing_packet, sizeof(struct ether_hdr));
+    iph = (struct ipv4_hdr *)rte_pktmbuf_append(probing_packet, sizeof(struct ipv4_hdr));
+    tcp_h = (struct tcp_hdr *) rte_pktmbuf_append(probing_packet,sizeof(struct tcp_hdr));
+    //a packet has minimum size 64B
+    payload = (char*) rte_pktmbuf_append(probing_packet,12);
 	eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
 	//eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_ARP);
 	//eth_hdr->ether_type =  0;
@@ -284,6 +283,7 @@ void build_probe_packet(struct ipv4_5tuple* ip_5tuple){
 
 	rte_pktmbuf_dump(stdout,probing_packet,100);
 */
+    return probing_packet;
 }
 
 
@@ -294,8 +294,20 @@ void build_probe_packet(struct ipv4_5tuple* ip_5tuple){
 
 */
 
-void backup_receive_probe_packet(struct rte_mbuf* mbuf){
+struct rte_mbuf* backup_receive_probe_packet(struct rte_mbuf* mbuf){
 
+
+    struct rte_mbuf* probing_packet;
+    struct ether_hdr *eth_hdr;
+    struct ipv4_hdr *iph;
+    struct tcp_hdr *tcp_h;
+    char* payload;
+    probing_packet = build_probe_packet(0);
+    eth_hdr = rte_pktmbuf_mtod(probing_packet, struct ether_hdr *);
+    iph = (struct ipv4_hdr *)((u_char*)eth_hdr + sizeof(struct ether_hdr));
+    tcp_h = (struct tcp_hdr *)((u_char*)iph + sizeof(struct ipv4_hdr));
+    //a packet has minimum size 64B
+    payload = (char*) rte_pktmbuf_append(probing_packet,12);
 
     struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
 
@@ -306,8 +318,6 @@ void backup_receive_probe_packet(struct rte_mbuf* mbuf){
                     ether_addr_copy(&interface_MAC, &eth_h->d_addr);
                     ether_addr_copy(&addr,&eth_h->s_addr);
 */
-
-    build_probe_packet(0);
 
     struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
 	struct tcp_hdr *tcph = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
@@ -340,6 +350,7 @@ void backup_receive_probe_packet(struct rte_mbuf* mbuf){
 */
 	//rte_pktmbuf_dump(stdout,probing_packet,100);
 
+    return probing_packet;
 
 }
 
