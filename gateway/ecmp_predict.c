@@ -307,7 +307,7 @@ struct rte_mbuf* backup_receive_probe_packet(struct rte_mbuf* mbuf){
     iph = (struct ipv4_hdr *)((u_char*)eth_hdr + sizeof(struct ether_hdr));
     tcp_h = (struct tcp_hdr *)((u_char*)iph + sizeof(struct ipv4_hdr));
     //a packet has minimum size 64B
-    payload = (char*) rte_pktmbuf_append(probing_packet,12);
+    payload = (char*)((u_char*)tcp_h + sizeof(struct tcp_hdr));
 
     struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
 
