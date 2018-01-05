@@ -77,9 +77,7 @@ void
 setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-    printf("debug: setStates: ok here\n");
-	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
-    printf("debug: setStates: ok here, ret is %d\n", ret);
+	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);  
 	if (ret == 0)
 	{
 		printf("nf: set state success!\n");
