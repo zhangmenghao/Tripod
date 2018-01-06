@@ -95,10 +95,11 @@ void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 
 	probing_ip = IPv4(172,16,253,2); 
 
-	reverse_table[1] = 0;;
-	reverse_table[2] = 1;;
-	reverse_table[3] = 2;;
-	reverse_table[4] = 3;;
+	reverse_table[1] = 0;
+	reverse_table[2] = 1;
+	reverse_table[3] = 2;
+	reverse_table[4] = 3;
+	printf("this machine.ip = " IPv4_BYTES_FMT " \n", IPv4_BYTES(this_machine->ip));
 }
 
 /*

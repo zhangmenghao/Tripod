@@ -215,7 +215,8 @@ keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
     printf("mg: port_src is %u\n", keyset_pair->l4_5tuple.port_src);
     printf("mg: port_dst is %u\n", keyset_pair->l4_5tuple.port_dst);
     printf("mg: proto is %u\n", keyset_pair->l4_5tuple.proto);
-    printf("mg: backup_ip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(keyset_pair->indexs.backupip[0]));
+    printf("mg: backup_ip is "IPv4_BYTES_FMT "  and " IPv4_BYTES_FMT "\n", IPv4_BYTES(keyset_pair->indexs.backupip[0]), 
+      IPv4_BYTES(keyset_pair->indexs.backupip[1]));
     struct nf_indexs* indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
     indexs->backupip[0] = keyset_pair->indexs.backupip[0];
     indexs->backupip[1] = keyset_pair->indexs.backupip[1];
@@ -423,12 +424,12 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
           //printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
             struct rte_mbuf* probing_packet;
             probing_packet = build_probe_packet(ip_5tuple);
-            printf("mg: Receive backup request from nf\n");
-          printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
-          printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
-          printf("mg: port_src is %u\n", ip_5tuple->port_src);
-          printf("mg: port_dst is %u\n", ip_5tuple->port_dst);
-          printf("mg: proto is %u\n", ip_5tuple->proto);
+            printf("mg-salve: Receive backup request from nf\n");
+          printf("mg-salve: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
+          printf("mg-salve: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
+          printf("mg-salve: port_src is %u\n", ip_5tuple->port_src);
+          printf("mg-salve: port_dst is %u\n", ip_5tuple->port_dst);
+          printf("mg-salve: proto is %u\n", ip_5tuple->proto);
           printf("\n");
           rte_eth_tx_burst(port, 0, &probing_packet, 1);
         }
