@@ -174,7 +174,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 			
 						
 			for (i = 0; i < nb_rx; i ++){
-				printf("nf: packet comes from %u\n", port);
+				//printf("nf: packet comes from %u\n", port);
 
 				struct ether_hdr *eth_hdr;
 				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
@@ -183,8 +183,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 				struct ether_addr eth_d_addr;
 				eth_d_addr = eth_hdr->d_addr;
 
-				print_ethaddr("eth_s_addr", &eth_s_addr);
-				print_ethaddr("eth_d_addr", &eth_d_addr);
+				//print_ethaddr("eth_s_addr", &eth_s_addr);
+				//print_ethaddr("eth_d_addr", &eth_d_addr);
 
  				if (eth_hdr->ether_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
   				    /* arp message to keep live with switch */
@@ -220,8 +220,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 				ip_5tuples.ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
 				ip_5tuples.proto = ip_hdr->next_proto_id;
 
-				printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_dst));
-				printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_src));
+				//printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_dst));
+				//printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_src));
 				printf("nf: next_proto_id is %u\n", ip_5tuples.proto);
 				
 				if (ip_5tuples.proto == 17){
@@ -279,7 +279,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 							printf("nf: state not found!\n");
 						}
 					}
-					printf("nf: port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
+					printf("nf: this is very important! port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
 				}
 				printf("\n");
 			}
