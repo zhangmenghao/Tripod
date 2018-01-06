@@ -257,7 +257,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						ether_addr_copy(&eth_d_addr,&eth_hdr->s_addr);
 						printf("nf: tcp_syn new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
-						rte_pktmbuf_free(bufs[i]);
+						//rte_pktmbuf_free(bufs[i]);
 						flow_counts ++;
 					}
 					else{
@@ -273,7 +273,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 							ether_addr_copy(&eth_d_addr,&eth_hdr->s_addr);
 							printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
-							rte_pktmbuf_free(bufs[i]);
+							//rte_pktmbuf_free(bufs[i]);
 						}
 						else{
 							printf("nf: state not found!\n");
