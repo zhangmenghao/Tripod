@@ -50,7 +50,9 @@
  * debug output level 2: #define __DEBUG_LV1 
  *                       #define __DEBUG_LV2
  */
- #define __DEBUG_LV1
+
+#define __DEBUG_LV1
+
 
 struct nf_states{
     uint32_t ipserver; //Load Balancer

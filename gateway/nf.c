@@ -43,7 +43,7 @@ setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	int ret =  rte_hash_add_key_data(index_hash_table[0], &newkey, index);
-	if (ret >= 0)
+	if (ret == 0)
 	{
 		#ifdef __DEBUG_LV2
 		printf("nf: set index success!\n");
