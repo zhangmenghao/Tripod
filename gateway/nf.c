@@ -310,7 +310,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 						if (ret >= 0){
 							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
 							ip_hdr->hdr_checksum = 0;
-							ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
 							ether_addr_copy(&eth_s_addr,&eth_hdr->d_addr);
 							ether_addr_copy(&eth_d_addr,&eth_hdr->s_addr);
 							ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
