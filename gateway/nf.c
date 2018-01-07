@@ -252,7 +252,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 				ip_5tuples.ip_src = rte_be_to_cpu_32(ip_hdr->src_addr);
 				ip_5tuples.proto = ip_hdr->next_proto_id;
 
-				#ifdef __DEBUG_LV1
+				#ifdef __DEBUG_LV2
 				printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_dst));
 				printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_src));
 				printf("nf: next_proto_id is %u\n", ip_5tuples.proto);
@@ -323,7 +323,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 							printf("nf: state not found!\n");
 						}
 					}
-					#ifdef __DEBUG_LV2
+					#ifdef __DEBUG_LV1
 					printf("nf: this is very important! port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
 					#endif
 				}
