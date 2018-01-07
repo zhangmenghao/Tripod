@@ -43,6 +43,15 @@
 #define N_MACHINE_MAX 8
 #define N_INTERFACE_MAX 48
 
+/*
+ * Configure debug output level
+ * none debug output: nothing to do
+ * debug output level 1: #define __DEBUG_LV1
+ * debug output level 2: #define __DEBUG_LV1 
+ *                       #define __DEBUG_LV2
+ */
+ #define __DEBUG_LV1
+
 struct nf_states{
     uint32_t ipserver; //Load Balancer
 
@@ -94,6 +103,8 @@ extern struct rte_ring* nf_manager_ring;
 extern struct rte_ring* nf_pull_wait_ring;
 
 extern int enabled_port_mask; 
+
+extern uint8_t debug_mode;
 
 extern uint32_t dip_pool[DIP_POOL_SIZE];
 
