@@ -46,12 +46,13 @@
 #include <rte_byteorder.h>
 #include <rte_cycles.h>
 #include <rte_timer.h>
-#define RX_RING_SIZE 128
+#define RX_RING_SIZE 512
 #define TX_RING_SIZE 512
 
 #define NUM_MBUFS 8191
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
+
 
 #define RTE_BE_TO_CPU_16(be_16_v)  rte_be_to_cpu_16((be_16_v))
 
@@ -63,10 +64,8 @@
 		(uint8_t) (((addr) >> 8) & 0xFF),\
 		(uint8_t) ((addr) & 0xFF)
 #endif
-
-#define N_TEST_FLOWS 10
-struct rte_mbuf* syn_pkts[N_TEST_FLOWS];
-struct rte_mbuf* data_pkts[N_TEST_FLOWS];
+#define TIMER_RESOLUTION_CYCLES 2399987461ULL
+#define N_TEST_FLOWS 50
 
 int arped = 0;
 int count = 0;
@@ -75,7 +74,6 @@ static const struct rte_eth_conf port_conf_default = {
 		    .hw_ip_checksum = 0 }
 };
 
-#define TIMER_RESOLUTION_CYCLES 2399987461ULL
 unsigned long long rx_byte = 0;
 unsigned long long tx_byte = 0;
 unsigned long long last_rx_byte = 0;
@@ -99,52 +97,54 @@ struct ether_addr interface_MAC = {
     .addr_bytes[5] = 0xDB,
 };
 
+struct rte_mbuf* syn_pkts[N_TEST_FLOWS];
+struct rte_mbuf* data_pkts[N_TEST_FLOWS];
+
 
 static void
 timer_cb( __attribute__((unused)) struct rte_timer *tim, __attribute__((unused)) void *arg)
 {
-	printf("rx_throughput: %llu Mbps, tx_throughput: %llu Mbps\n", (rx_byte - last_rx_byte)*8/1024/1024, 
-		(tx_byte-last_tx_byte)*8/1024/1024);
-	printf("rx_pkts_second: %llu, tx_pkts_second: %llu\n",rx_pkts - last_rx_pkts,tx_pkts - last_tx_pkts);
-	printf("rx_byte: %llu, tx_byte: %llu\n",rx_byte ,tx_byte);
-	printf("rx_pkts: %llu, tx_pkts: %llu\n\n",rx_pkts ,tx_pkts);
-	last_rx_pkts = rx_pkts;
-	last_tx_pkts = tx_pkts;
+
+	printf("rx_throughput: %llu Mbps, tx_throughput: %llu Mbps\n",(rx_byte - last_rx_byte)*8/1024/1024,
+		(tx_byte-last_tx_byte)*8/1024/1024);	
+	printf("rx_byte: %llu, tx_byte: %llu\n",rx_byte ,tx_byte);	
+	printf("rx_pkts_sec: %llu, tx_pkt_sec: %llu\n",rx_pkts - last_rx_pkts,tx_pkts-last_tx_pkts);	
+	printf("rx_byte: %llu, tx_byte: %llu\n\n",rx_pkts ,tx_pkts);	
 	last_rx_byte = rx_byte;
 	last_tx_byte = tx_byte;
+	last_rx_pkts = rx_pkts;
+	last_tx_pkts = tx_pkts;
 }
 
 
-static inline void recompute_cksum(struct rte_mbuf* mbuf){
+static inline 
+void recompute_cksum(struct rte_mbuf* mbuf){
 	struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
-
    	struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
-	
 	ip_hdr->hdr_checksum = 0;
 	ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
 }
 
 
-static inline struct ipv4_hdr* get_ip_hdr(struct rte_mbuf* mbuf){
+static inline 
+struct ipv4_hdr* get_ip_hdr(struct rte_mbuf* mbuf){
 	struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
-
    	struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
-
 	return ip_hdr;
 }
 
 
-static inline struct tcp_hdr* get_tcp_hdr(struct rte_mbuf* mbuf){
+static inline 
+struct tcp_hdr* get_tcp_hdr(struct rte_mbuf* mbuf){
 	struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
-
    	struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
-
 	struct tcp_hdr *tcph = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
 	return tcph;
 }
 
 
-static inline void init_pkts(struct rte_mbuf* mbuf,int flags){
+static inline 
+void init_pkts(struct rte_mbuf* mbuf,int flags){
     struct rte_mbuf* probing_packet;
     struct ether_hdr *eth_hdr;
     struct ipv4_hdr *iph;
@@ -178,7 +178,8 @@ static inline void init_pkts(struct rte_mbuf* mbuf,int flags){
 }
 
 
-static inline void pktgen_init(struct rte_mempool* mbuf_pool){
+static inline 
+void pktgen_init(struct rte_mempool* mbuf_pool){
 	printf("initing pkts\n");
 	int i;
 	for(i = 0;i < N_TEST_FLOWS;i++){
@@ -187,12 +188,12 @@ static inline void pktgen_init(struct rte_mempool* mbuf_pool){
 		init_pkts(syn_pkts[i],2);
 		init_pkts(data_pkts[i],0);
 
-		get_ip_hdr(syn_pkts[i])->src_addr = rte_cpu_to_be_32(IPv4(172,17,17,2));
+		get_ip_hdr(syn_pkts[i])->src_addr = rte_cpu_to_be_32(IPv4(172,17,17, 3));
 		get_tcp_hdr(syn_pkts[i])->dst_port = rte_cpu_to_be_16(i);
 		get_tcp_hdr(syn_pkts[i])->src_port = rte_cpu_to_be_16(i);
 		recompute_cksum(syn_pkts[i]);
 
-		get_ip_hdr(data_pkts[i])->src_addr = rte_cpu_to_be_32(IPv4(172,17,17,2));
+		get_ip_hdr(data_pkts[i])->src_addr = rte_cpu_to_be_32(IPv4(172,17,17,3));
 		get_tcp_hdr(data_pkts[i])->dst_port = rte_cpu_to_be_16(i);
 		get_tcp_hdr(data_pkts[i])->src_port = rte_cpu_to_be_16(i);
 		recompute_cksum(data_pkts[i]);
@@ -260,6 +261,7 @@ port_init(uint16_t port, struct rte_mempool *mbuf_pool)
 	return 0;
 }
 
+
 static __attribute__((noreturn)) void
 lcore_main(void)
 {
@@ -289,27 +291,25 @@ lcore_main(void)
 			rte_timer_manage();
 			prev_tsc = cur_tsc;
 		}
-		if(arped == 1 && count == 0){
+		if(arped == 1 && count < 1){
+			//printf("attempting to send a packet\n");
 			int j;
 			for(j = 0;j < N_TEST_FLOWS;j++){
 	 			rte_eth_tx_burst(0, 0, &syn_pkts[j], 1);
-	 			tx_pkts = tx_pkts + 1;
-				usleep(100000);
+				tx_pkts ++;
+				usleep(100);
 				tx_byte += syn_pkts[j]->data_len;
 			}
-			count = 1;
+			count++;
 		}
-		if(arped == 1 && count ==1){
-			int j;
-			for (j = 0; j< N_TEST_FLOWS; j++){
-				rte_eth_tx_burst(0, 0, &data_pkts[j], 1);
-				usleep(100000);
-				tx_pkts = tx_pkts + 1;
-				tx_byte += data_pkts[j]->data_len;
-			}
+		if(arped == 1 && count >=1){
+			
+			rte_eth_tx_burst(0, 0, &data_pkts[count % N_TEST_FLOWS], 1);
+			tx_pkts ++;
+			tx_byte += data_pkts[count%N_TEST_FLOWS]->data_len;
+			count++;
+			
 		}
-
-		
 		for (port = 0; port < 1; port++) {
 
 			/* Get burst of RX packets, from first port of pair. */
@@ -321,23 +321,24 @@ lcore_main(void)
 				continue;
 
             struct ether_hdr* eth_h;
-            int i;
+			int i;
 			for (i = 0;i < nb_rx;i++){
 				struct rte_mbuf *mbuf = bufs[i];
 				//rte_pktmbuf_dump(stdout,bufs[i],100);
 				//printf("data len: %d\n",mbuf->data_len);
-		        eth_h = rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
-				
+	            eth_h = rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
+			
 				if(eth_h->ether_type == rte_cpu_to_be_16(ETHER_TYPE_IPv4)){
-					rx_byte += mbuf->pkt_len;
 					rx_pkts ++;
+					rx_byte += mbuf->data_len;
 				}	
 	            if(eth_h->ether_type == 1544){
-				    if(arped == 0){
+			    	if(arped == 0){
 						arped = 1;
-					   
+				   
 						printf("processing arp request\n");
 						struct arp_hdr * arp_h = (struct arp_hdr *)((char*)eth_h + sizeof(struct ether_hdr));
+
 		                struct ether_addr addr;
 		                rte_eth_macaddr_get(0, &addr);
 
@@ -348,34 +349,44 @@ lcore_main(void)
 						addr.addr_bytes[2], addr.addr_bytes[3],
 						addr.addr_bytes[4], addr.addr_bytes[5]);
 
-		                ether_addr_copy(&eth_h->s_addr, &eth_h->d_addr);
-		                //ether_addr_copy(&eth_h->s_addr, &interface_MAC);
-		                /* Set source MAC address with MAC address of TX port */
-		                ether_addr_copy(&addr, &eth_h->s_addr);
+	                    ether_addr_copy(&eth_h->s_addr, &eth_h->d_addr);
+	                    //ether_addr_copy(&eth_h->s_addr, &interface_MAC);
+	                    /* Set source MAC address with MAC address of TX port */
+	                    ether_addr_copy(&addr, &eth_h->s_addr);
 
-		                arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
-		                ether_addr_copy(&arp_h->arp_data.arp_sha, &arp_h->arp_data.arp_tha);
-		                ether_addr_copy(&eth_h->s_addr, &arp_h->arp_data.arp_sha);
+	                    arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
+	                    ether_addr_copy(&arp_h->arp_data.arp_sha, &arp_h->arp_data.arp_tha);
+	                    ether_addr_copy(&eth_h->s_addr, &arp_h->arp_data.arp_sha);
 
-		                /* Swap IP addresses in ARP payload */
-		                uint32_t ip_addr = arp_h->arp_data.arp_sip;
-		                arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
-		                arp_h->arp_data.arp_tip = ip_addr;
+	                    /* Swap IP addresses in ARP payload */
+	                    uint32_t ip_addr = arp_h->arp_data.arp_sip;
+	                    arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
+	                    arp_h->arp_data.arp_tip = ip_addr;
+						uint32_t ipv4_addr = arp_h->arp_data.arp_sip;
+	                    printf("%d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,
+	                                (ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,
+	                                ipv4_addr & 0xFF);
 
-			        	const uint16_t nb_tx = rte_eth_tx_burst(0, 0,
-		                                           mbuf, 1);
-		            	printf("end processing arp: %d\n",nb_tx);
+						ipv4_addr = ip_addr;
+	                    printf("%d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,
+	                                (ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,
+	                                ipv4_addr & 0xFF);
+
+		                const uint16_t nb_tx = rte_eth_tx_burst(0, 0,
+	                                           bufs, nb_rx);
+	                    printf("end processing arp: %d\n",nb_tx);
 					}
 				}
-			}	               
+			}                
+			int kk = 0;
+			for (kk = 0; kk< nb_rx; kk ++){
+				rte_pktmbuf_free(bufs[kk]);
+			}
 		}
 	}
 }
 
-/*
- * The main function, which does initialization and calls the per-lcore
- * functions.
- */
+
 int
 main(int argc, char *argv[])
 {
