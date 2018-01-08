@@ -87,31 +87,16 @@ getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index){
 
 void 
 setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
-	union ipv4_5tuple_host newkey;
-	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
-	if (ret == 0)
-	{
+	//communicate with Manager
+	if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0) {
 		#ifdef __DEBUG_LV2
-		printf("nf: set state success!\n");
+		printf("nf: enqueue success in setStates!\n");
 		#endif
-		//communicate with Manager
-		if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0) {
-			#ifdef __DEBUG_LV2
-			printf("nf: enqueue success in setStates!\n");
-			#endif
-		}
-		else{
-			#ifdef __DEBUG_LV1
-			printf("nf: enqueue failed in setStates!!!\n");
-			#endif
-		}
 	}
 	else{
 		#ifdef __DEBUG_LV1
-		printf("nf: error found in setStates!\n");
+		printf("nf: enqueue failed in setStates!!!\n");
 		#endif
-		return;
 	}
 }
 
