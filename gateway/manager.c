@@ -432,6 +432,7 @@ lcore_manager(__attribute__((unused)) void *arg)
 				printf("\n");
   				#endif
 			}
+			rte_pktmbuf_free(bufs[i]);
 		}
 	}
 	return 0;
