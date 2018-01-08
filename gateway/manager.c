@@ -443,6 +443,7 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
   const uint8_t nb_ports = rte_eth_dev_count();
   uint8_t port;
     struct ipv4_5tuple* ip_5tuple;
+    struct nf_states* state;
     #ifdef __DEBUG_LV1
 	printf("\nCore %u process request from nf\n",
 			rte_lcore_id());
@@ -456,7 +457,8 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
  			if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
    				//printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
    			    struct rte_mbuf* probing_packet;
-   			    probing_packet = build_probe_packet(ip_5tuple);
+   			    rte_ring_dequeue(nf_manager_ring, (void**)&state);
+   			    probing_packet = build_probe_packet(ip_5tuple, state);
   			    #ifdef __DEBUG_LV1
   			     printf("mg-salve: Receive backup request from nf\n");
           printf("mg-salve: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));

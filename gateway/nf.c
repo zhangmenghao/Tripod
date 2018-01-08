@@ -88,7 +88,8 @@ getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index){
 void 
 setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	//communicate with Manager
-	if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0) {
+	if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0 &&
+        rte_ring_enqueue(nf_manager_ring, state) == 0) {
 		#ifdef __DEBUG_LV2
 		printf("nf: enqueue success in setStates!\n");
 		#endif
