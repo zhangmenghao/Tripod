@@ -304,7 +304,6 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        printf("mg: This is ECMP predict request message\n");
   				        #endif
    				    }
-  				    // else if ((ip_h->dst_addr & 0x00FF0000) == 0) {
   				    else {
   				        /* Destination ip is 172.16.X.Y */
   				        /* This is ECMP predict reply message */
@@ -431,8 +430,8 @@ lcore_manager(__attribute__((unused)) void *arg)
   				#ifdef __DEBUG_LV1
 				printf("\n");
   				#endif
+  				rte_pktmbuf_free(bufs[i]);
 			}
-			rte_pktmbuf_free(bufs[i]);
 		}
 	}
 	return 0;
