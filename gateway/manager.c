@@ -490,22 +490,6 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
 			    printf("\n");
   			    #endif
 			    rte_eth_tx_burst(port, 0, &backup_packet, 1);
-   				struct nf_indexs *indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
-   				if (!indexs){
-   				    rte_panic("indexs malloc failed!");
-   				}
-   				indexs->backupip[0] = statelessBackupIP;
-   				indexs->backupip[1] = 0;
-   				setIndexs(ip_5tuple, indexs);
-   				/* Broadcast keyset */
-   				for (idx = 0; idx < 4; idx++) {
-   				    if (idx == this_machine_index) 
-   				        continue;
-   				    keyset_packet = build_keyset_packet(
-   				        topo[idx].ip, indexs, port, ip_5tuple
-    			 	);
-    			 	rte_eth_tx_burst(port, 0, &keyset_packet, 1);
-   				}
    				rte_free(ip_5tuple);
   			}
 		}
