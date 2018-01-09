@@ -127,8 +127,7 @@ void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
 int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state);
 void setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index);
 int getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index);
-int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
-          struct nf_indexs* target_indexs, struct nf_states** target_states);
+int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, struct nf_states** target_states);
 int port_init(uint8_t port, struct rte_mempool *mbuf_pool, struct rte_mempool *manager_mbuf_pool);
 int parse_args(int argc, char **argv);
 void setup_hash(const int socketid);

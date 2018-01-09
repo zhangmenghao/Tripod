@@ -103,39 +103,16 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 
 int
 getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
-	union ipv4_5tuple_host newkey;
-	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
-	//printf("ret, EINVAL, ENOENT is %d, %u and %u\n", ret, EINVAL, ENOENT);
-	if (ret >= 0){
-		#ifdef __DEBUG_LV2
-		printf("nf: get state success!\n");
-		#endif
-	}
-	else if (ret == -EINVAL){
+	int ret = pullState(1, 0, ip_5tuple, state);
+	if (ret == 0){
 		#ifdef __DEBUG_LV1
-		printf("nf: parameter invalid in getStates\n");
+		printf("nf: getStates(pullState) success!\n");
 		#endif
 	}
-	else if (ret == -ENOENT){
+	else {
 		#ifdef __DEBUG_LV1
-		printf("nf: key not found in getStates!\n");
+		printf("nf: getStates(pullState) fail!!!\n");
 		#endif
-		//ask index table
-		struct nf_indexs *index;
-		ret =  getIndexs(ip_5tuple, &index);
-		if (ret >= 0){
-			//getRemoteState(index, state);
-			pullState(1, 0, ip_5tuple, index, state);
-		}
-		else{
-			#ifdef __DEBUG_LV1
-			printf("this is an attack!\n");
-			#endif
-		}
-	}
-	else{
-		printf("nf: get state error!\n");
 	}
 	return ret;
 }

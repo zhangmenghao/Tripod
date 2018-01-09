@@ -102,8 +102,7 @@ build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
 }
 
 static struct rte_mbuf*
-build_pull_packet(uint8_t port, struct nf_indexs* indexs, 
-            uint16_t nf_id, struct ipv4_5tuple* ip_5tuple)
+build_pull_packet(uint8_t port, uint16_t nf_id, struct ipv4_5tuple* ip_5tuple)
 {
     struct rte_mbuf* pull_packet;
     struct ether_hdr* eth_h;
@@ -126,7 +125,7 @@ build_pull_packet(uint8_t port, struct nf_indexs* indexs,
     /* Set the packet ip header */
     memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
     ip_h->src_addr=rte_cpu_to_be_32(this_machine->ip);
-    ip_h->dst_addr=rte_cpu_to_be_32(indexs->backupip[0]);
+    ip_h->dst_addr=rte_cpu_to_be_32(statelessBackupIP);
     ip_h->version_ihl = (4 << 4) | 5;
     ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct ipv4_5tuple));
     /*
@@ -237,13 +236,11 @@ keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
 
 int
 pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
-          struct nf_indexs* target_indexs, struct nf_states** target_states)
+          struct nf_states** target_states)
 {
     struct rte_mbuf* pull_packet;
     /* build and send pull request packet */
-    pull_packet = build_pull_packet(
-        port, target_indexs, nf_id, ip_5tuple
-    );
+    pull_packet = build_pull_packet(port, nf_id, ip_5tuple);
     rte_eth_tx_burst(port, 0, &pull_packet, 1);
     /* wait until receive response(specific state backup message) */
     while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0);
