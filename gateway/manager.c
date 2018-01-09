@@ -317,14 +317,14 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        int idx;
    				        /* Get backup machine ip */
    				        master_receive_probe_reply(
-   				            bufs[i], &backup_ip1, &backup_ip2, &ip_5tuple
+   				            bufs[i], &backup_ip1, &backup_ip2,
+   				            &ip_5tuple, &backup_states
    				        );
   				        #ifdef __DEBUG_LV1
    				        printf("mg: This is ECMP pedict reply message\n");
   				        #endif
    				        //printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
    				        ip_5tuple->proto = 0x6;
-   				        getStates(ip_5tuple, &backup_states);
    				        
    				        struct nf_indexs *indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
    				        if (!indexs){

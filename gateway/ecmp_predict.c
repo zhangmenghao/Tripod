@@ -137,7 +137,7 @@ ipv4_hdr_cksum(struct ipv4_hdr *ip_h)
 
 
 */
-void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip1 ,uint32_t* machine_ip2, struct ipv4_5tuple** ip_5tuple){
+void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip1 ,uint32_t* machine_ip2, struct ipv4_5tuple** ip_5tuple, struct nf_states** state){
 
 
 	struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
@@ -162,6 +162,7 @@ void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip1 ,uin
     *machine_ip1 = topo[index].ip;
     *machine_ip2 = topo[index+1].ip;
     *ip_5tuple = *((struct ipv4_5tuple**)(payload+4));
+    *state = *((struct nf_states**)(payload+12));
 	//printf("debug: test%x\n", *((uint32_t*)(payload+4)));
 
 	// uint32_t backup_port_N = *((uint32_t*)payload);
@@ -257,14 +258,14 @@ struct rte_mbuf* build_probe_packet(struct ipv4_5tuple* ip_5tuple, struct nf_sta
         tcp_h->src_port = rte_cpu_to_be_16(0);
         tcp_h->dst_port = rte_cpu_to_be_16(0);
 	    *((struct ipv4_5tuple**)(payload+4)) = 0;
-	    *((struct ipv4_5tuple**)(payload+12)) = 0;
+	    *((struct nf_states**)(payload+12)) = 0;
     }
     else {
         iph->src_addr=rte_cpu_to_be_32(ip_5tuple->ip_src);
         tcp_h->src_port = rte_cpu_to_be_16(ip_5tuple->port_src);
         tcp_h->dst_port = rte_cpu_to_be_16(ip_5tuple->port_dst);
 	    *((struct ipv4_5tuple**)(payload+4)) = ip_5tuple;
-	    *((struct ipv4_5tuple**)(payload+12)) = state;
+	    *((struct nf_states**)(payload+12)) = state;
     }
 
 	iph->hdr_checksum = 0;
@@ -307,7 +308,7 @@ struct rte_mbuf* backup_receive_probe_packet(struct rte_mbuf* mbuf){
     struct ipv4_hdr *iph;
     struct tcp_hdr *tcp_h;
     char* payload;
-    probing_packet = build_probe_packet(0);
+    probing_packet = build_probe_packet(0, 0);
     eth_hdr = rte_pktmbuf_mtod(probing_packet, struct ether_hdr *);
     iph = (struct ipv4_hdr *)((u_char*)eth_hdr + sizeof(struct ether_hdr));
     tcp_h = (struct tcp_hdr *)((u_char*)iph + sizeof(struct ipv4_hdr));
@@ -342,7 +343,7 @@ struct rte_mbuf* backup_receive_probe_packet(struct rte_mbuf* mbuf){
     *((uint32_t*)payload) = this_machine_index;
 	//printf("debug: %lx\n", *((uint64_t*)(payload22+4)));
     *((struct ipv4_5tuple**)(payload+4)) = *((struct ipv4_5tuple**)(payload22+4));
-    *((struct ipv4_5tuple**)(payload+12)) = *((struct ipv4_5tuple**)(payload22+12));
+    *((struct nf_states**)(payload+12)) = *((struct nf_states**)(payload22+12));
     uint32_t ipv4_addr = dst_ip;
 
 	//printf("debug: test brp %x\n", *((uint32_t*)(payload+4)));

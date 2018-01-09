@@ -136,7 +136,7 @@ void check_all_ports_link_status(uint8_t port_num, uint32_t port_mask);
 
 struct rte_mbuf* build_probe_packet(struct ipv4_5tuple* ip_5tuple, struct nf_states* state);
 struct rte_mbuf* backup_receive_probe_packet(struct rte_mbuf* mbuf);
-void master_receive_probe_reply(struct rte_mbuf* mbuf, uint32_t* machine_ip1, uint32_t* machine_ip2, struct ipv4_5tuple** ip_5tuple);
+void master_receive_probe_reply(struct rte_mbuf* mbuf, uint32_t* machine_ip1, uint32_t* machine_ip2, struct ipv4_5tuple** ip_5tuple, struct nf_states** state);
 void ecmp_predict_init(struct rte_mempool * mbuf_pool);
 
 int lcore_nf(__attribute__((unused)) void *arg);
