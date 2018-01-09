@@ -192,9 +192,12 @@ delStates(struct ipv4_5tuple *ip_5tuple){
 		#endif
 
 		//del remote state and index
+		clearRemote(0, ip_5tuple);
 
 		if (delIndexs(ip_5tuple) <= 0){//del local index
+			#ifdef __DEBUG_LV2
 			printf("nf: error in delindex\n");
+			#endif
 		}
 		
 	}
