@@ -194,7 +194,7 @@ delStates(struct ipv4_5tuple *ip_5tuple){
 		//del remote state and index
 		clearRemote(0, ip_5tuple);
 
-		if (delIndexs(ip_5tuple) <= 0){//del local index
+		if (delIndexs(ip_5tuple) < 0){//del local index
 			#ifdef __DEBUG_LV2
 			printf("nf: error in delindex\n");
 			#endif
@@ -388,7 +388,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 							ip_5tuple->proto = ip_5tuples.proto;
 							ip_5tuple->port_dst = ip_5tuples.port_dst;
 							ip_5tuple->port_src = ip_5tuples.port_src;
-							if (delStates(ip_5tuple) <= 0){
+							if (delStates(ip_5tuple) < 0){
 								printf("nf: delete state error!\n");
 							}
 						}
