@@ -456,9 +456,11 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
 			}
  			if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
    				//printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
-   			    struct rte_mbuf* probing_packet;
+                struct rte_mbuf* backup_packet;
    			    rte_ring_dequeue(nf_manager_ring, (void**)&state);
-   			    probing_packet = build_probe_packet(ip_5tuple, state);
+   			    backup_packet = build_backup_packet(
+                    port, statelessBackupIP, 0x00, ip_5tuple, state
+                );
   			    #ifdef __DEBUG_LV1
   			     printf("mg-salve: Receive backup request from nf\n");
           printf("mg-salve: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
@@ -472,7 +474,7 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
   			    #ifdef __DEBUG_LV1
 			    printf("\n");
   			    #endif
-			    rte_eth_tx_burst(port, 0, &probing_packet, 1);
+			    rte_eth_tx_burst(port, 0, &backup_packet, 1);
   			}
 		}
 	}

@@ -119,7 +119,7 @@ extern struct machine_IP_pair topo[N_MACHINE_MAX];
 extern struct machine_IP_pair* this_machine;
 extern struct rte_mbuf* probing_packet;
 extern struct ether_addr interface_MAC;
-extern uint32_t broadcast_ip;
+extern uint32_t statelessBackupIP;
 extern uint32_t this_machine_index;
 
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
