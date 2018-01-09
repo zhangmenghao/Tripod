@@ -51,6 +51,22 @@ managerSetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	}
 }
 
+static int
+managerGetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
+	union ipv4_5tuple_host newkey;
+	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
+	if (ret >= 0){
+		#ifdef __DEBUG_LV2
+		printf("mg: get state success!\n");
+		#endif
+	}
+	else{
+		printf("mg: get state error!\n");
+	}
+	return ret;
+}
+
 static struct rte_mbuf*
 build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
           struct ipv4_5tuple* ip_5tuple, struct nf_states* states)
@@ -408,7 +424,7 @@ lcore_manager(__attribute__((unused)) void *arg)
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
   				    /* Get the 5tuple and relevant state, build and send */
    				    ip_5tuple = (struct ipv4_5tuple*)payload;
-   				    getStates(ip_5tuple, &request_states);
+   				    managerGetStates(ip_5tuple, &request_states);
    				    backup_packet = build_backup_packet(
     			        port, rte_be_to_cpu_32(ip_h->src_addr),  
     			        rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
