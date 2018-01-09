@@ -457,24 +457,43 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
  			if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
    				//printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
                 struct rte_mbuf* backup_packet;
+                struct rte_mbuf* keyset_packet;
+                int idx;
    			    rte_ring_dequeue(nf_manager_ring, (void**)&state);
    			    backup_packet = build_backup_packet(
                     port, statelessBackupIP, 0x00, ip_5tuple, state
                 );
   			    #ifdef __DEBUG_LV1
-  			     printf("mg-salve: Receive backup request from nf\n");
-          printf("mg-salve: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
-          printf("mg-salve: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
+  			    printf("mg-salve: Receive backup request from nf\n");
+                printf("mg-salve: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
+                printf("mg-salve: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
   			    #endif
   			    #ifdef __DEBUG_LV2
 			    printf("mg-salve: port_src is %u\n", ip_5tuple->port_src);
-          printf("mg-salve: port_dst is %u\n", ip_5tuple->port_dst);
-          printf("mg-salve: proto is %u\n", ip_5tuple->proto);
+                printf("mg-salve: port_dst is %u\n", ip_5tuple->port_dst);
+                printf("mg-salve: proto is %u\n", ip_5tuple->proto);
   			    #endif
   			    #ifdef __DEBUG_LV1
 			    printf("\n");
   			    #endif
 			    rte_eth_tx_burst(port, 0, &backup_packet, 1);
+   				struct nf_indexs *indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
+   				if (!indexs){
+   				    rte_panic("indexs malloc failed!");
+   				}
+   				indexs->backupip[0] = statelessBackupIP;
+   				indexs->backupip[1] = 0;
+   				setIndexs(ip_5tuple, indexs);
+   				/* Broadcast keyset */
+   				for (idx = 0; idx < 4; idx++) {
+   				    if (idx == this_machine_index) 
+   				        continue;
+   				    keyset_packet = build_keyset_packet(
+   				        topo[idx].ip, indexs, port, ip_5tuple
+    			 	);
+    			 	rte_eth_tx_burst(port, 0, &keyset_packet, 1);
+   				}
+   				rte_free(ip_5tuple);
   			}
 		}
 	}
