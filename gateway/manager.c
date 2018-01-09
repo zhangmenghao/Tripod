@@ -472,7 +472,7 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
                 struct rte_mbuf* backup_packet;
                 struct rte_mbuf* keyset_packet;
                 int idx;
-   			    rte_ring_dequeue(nf_manager_ring, (void**)&state);
+   			    while (rte_ring_dequeue(nf_manager_ring, (void**)&state) != 0);
    			    backup_packet = build_backup_packet(
                     port, statelessBackupIP, 0x00, ip_5tuple, state
                 );
