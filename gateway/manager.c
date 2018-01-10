@@ -305,93 +305,7 @@ lcore_manager(__attribute__((unused)) void *arg)
 				printf("mg: dst ip "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_h->dst_addr));
 				printf("mg: proto: %x\n",ip_proto);
 				#endif
- 				if (ip_proto == 0x06 || ip_proto == 0x11) {
-  				    /* Control message about ECMP */
-  				    if ((ip_h->dst_addr & 0x00FF0000) == (0xFD << 16)) {
-  				        /* Destination ip is 172.16.253.X */
-  				        /* This is ECMP predict request message */
- 				        struct rte_mbuf* probing_packet;
- 				        probing_packet = backup_receive_probe_packet(bufs[i]);
-  				        rte_eth_tx_burst(port, 0, &probing_packet, 1);
-  				        #ifdef __DEBUG_LV1
-  				        printf("mg: This is ECMP predict request message\n");
-  				        #endif
-   				    }
-  				    else {
-  				        /* Destination ip is 172.16.X.Y */
-  				        /* This is ECMP predict reply message */
-  				        // ecmp_receive_reply(bufs[i]);
-   				        struct ipv4_5tuple* ip_5tuple;
-   				        struct rte_mbuf* backup_packet;
-   				        struct nf_states* backup_states;
-   				        struct rte_mbuf* keyset_packet;
-   				        uint32_t backup_ip1;
-   				        uint32_t backup_ip2;
-   				        int idx;
-   				        /* Get backup machine ip */
-   				        master_receive_probe_reply(
-   				            bufs[i], &backup_ip1, &backup_ip2,
-   				            &ip_5tuple, &backup_states
-   				        );
-  				        #ifdef __DEBUG_LV1
-   				        printf("mg: This is ECMP pedict reply message\n");
-  				        #endif
-   				        //printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
-   				        ip_5tuple->proto = 0x6;
-   				        
-   				        struct nf_indexs *indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
-   				        if (!indexs){
-   				            rte_panic("indexs malloc failed!");
-   				        }
-   				        /* Don's send backup packet to itself */
-   				        if (backup_ip1 ==  this_machine->ip) {
-   				            indexs->backupip[0] = backup_ip2;
-   				            // indexs->backupip[0] = topo[3].ip;
-   				            indexs->backupip[1] = 0;
-   				            setIndexs(ip_5tuple, indexs);
-   				            backup_packet = build_backup_packet(
-    			                port, backup_ip2, 0x00, ip_5tuple, backup_states
-    			 	        );
-   				            // backup_packet = build_backup_packet(
-    			            //     port, topo[3].ip, 0x00, ip_5tuple, backup_states
-    			 	        // );
-   				            rte_eth_tx_burst(port, 0, &backup_packet, 1);
-   				        }
-   				        else if (backup_ip2 ==  this_machine->ip) {
-   				            indexs->backupip[0] = backup_ip1;
-   				            indexs->backupip[1] = 0;
-   				            setIndexs(ip_5tuple, indexs);
-   				            backup_packet = build_backup_packet(
-    			                port, backup_ip1, 0x00, ip_5tuple, backup_states
-    			 	        );
-   				            rte_eth_tx_burst(port, 0, &backup_packet, 1);
-   				        }
-   				        else {
-   				            indexs->backupip[0] = backup_ip1;
-   				            indexs->backupip[1] = backup_ip2;
-   				            setIndexs(ip_5tuple, indexs);
-   				            backup_packet = build_backup_packet(
-    			                port, backup_ip1, 0x00, ip_5tuple, backup_states
-    			 	        );
-   				            rte_eth_tx_burst(port, 0, &backup_packet, 1);
-   				            backup_packet = build_backup_packet(
-    			                port, backup_ip2, 0x00, ip_5tuple, backup_states
-    			 	        );
-   				            rte_eth_tx_burst(port, 0, &backup_packet, 1);
-   				        }
-   				        /* Broadcast keyset */
-   				        for (idx = 0; idx < 4; idx++) {
-   				            if (idx == this_machine_index) 
-   				                continue;
-   				            keyset_packet = build_keyset_packet(
-   				                topo[idx].ip, indexs, port, ip_5tuple
-    			 	        );
-    			 	        rte_eth_tx_burst(port, 0, &keyset_packet, 1);
-   				        }
-   				        rte_free(ip_5tuple);
-   				    }
-  				}
- 				else if (ip_proto == 0) {
+ 				if (ip_proto == 0) {
   				    /* Control message about state backup */
   				    /* Destination ip is 172.16.X.Y */
   				    /* This is state backup message */
@@ -432,20 +346,15 @@ lcore_manager(__attribute__((unused)) void *arg)
   				    printf("mg: proto is %u\n", ip_5tuple->proto);
   				    #endif
    				    managerGetStates(ip_5tuple, &request_states);
+  				    #ifdef __DEBUG_LV1
+  				    printf("mg: ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(request_states->ipserver));
+  				    #endif
    				    backup_packet = build_backup_packet(
     			        port, rte_be_to_cpu_32(ip_h->src_addr),  
     			        rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
     			        request_states 
     			 	);
    				    rte_eth_tx_burst(port, 0, &backup_packet, 1);
-  				}
- 				else if (ip_proto == 2) {
-  				    /* Control message about keyset broadcast */
-  				    #ifdef __DEBUG_LV1
-  				    printf("mg: This is keyset broadcast message\n");
-  				    #endif
-   				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
-   				    keyset_to_machine((struct indexs_5tuple_pair*)payload);
   				}
   				#ifdef __DEBUG_LV1
 				printf("\n");
