@@ -418,12 +418,19 @@ lcore_manager(__attribute__((unused)) void *arg)
    				    struct nf_states* request_states;
    				    struct ether_addr self_eth_addr;
    				    uint32_t request_ip;
-  				    #ifdef __DEBUG_LV1
-  				    printf("mg: This is state pull message\n");
-  				    #endif
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
   				    /* Get the 5tuple and relevant state, build and send */
    				    ip_5tuple = (struct ipv4_5tuple*)payload;
+  				    #ifdef __DEBUG_LV1
+  				    printf("mg: This is state pull message\n");
+  				    printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
+  				    printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
+  				    #endif
+  				    #ifdef __DEBUG_LV2
+  				    printf("mg: port_src is %u\n", ip_5tuple->port_src);
+  				    printf("mg: port_dst is %u\n", ip_5tuple->port_dst);
+  				    printf("mg: proto is %u\n", ip_5tuple->proto);
+  				    #endif
    				    managerGetStates(ip_5tuple, &request_states);
    				    backup_packet = build_backup_packet(
     			        port, rte_be_to_cpu_32(ip_h->src_addr),  

@@ -235,6 +235,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					ip_5tuples.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
 					#ifdef __DEBUG_LV1
 					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
+					printf("nf: this is very important! port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
 					#endif
 					if (tcp_hdrs->tcp_flags == 2){
 						#ifdef __DEBUG_LV1
@@ -285,9 +286,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 							printf("nf: state not found!\n");
 						}
 					}
-					#ifdef __DEBUG_LV1
-					printf("nf: this is very important! port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
-					#endif
 				}
 				#ifdef __DEBUG_LV1
 				printf("\n");
