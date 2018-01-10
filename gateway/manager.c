@@ -255,11 +255,22 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
           struct nf_states** target_states)
 {
     struct rte_mbuf* pull_packet;
+    uint64_t prev_tsc, cur_tsc, diff_tsc;
     /* build and send pull request packet */
     pull_packet = build_pull_packet(port, nf_id, ip_5tuple);
     rte_eth_tx_burst(port, 0, &pull_packet, 1);
     /* wait until receive response(specific state backup message) */
-    while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0);
+	prev_tsc = rte_rdtsc();
+    while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0) {
+		cur_tsc = rte_rdtsc();
+		diff_tsc = cur_tsc - prev_tsc;
+		if (diff_tsc > TIMER_RESOLUTION_CYCLES/100) {
+			#ifdef __DEBUG_LV1
+			printf("mg: timeout in pullState\n");
+			#endif
+			return -1;
+		}
+    }
     return 0;
 }
 
