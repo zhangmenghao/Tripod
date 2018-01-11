@@ -94,10 +94,18 @@ build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
     payload->l4_5tuple.port_dst = ip_5tuple->port_dst;
     payload->l4_5tuple.port_src = ip_5tuple->port_src;
     payload->l4_5tuple.proto = ip_5tuple->proto;
-    payload->states.ipserver = states->ipserver;
-    payload->states.dip = states->dip;
-    payload->states.dport = states->dport;
-    payload->states.bip = states->bip;
+    if (states != NULL) {
+      payload->states.ipserver = states->ipserver;
+      payload->states.dip = states->dip;
+      payload->states.dport = states->dport;
+      payload->states.bip = states->bip;      
+    }
+    else {
+      payload->states.ipserver = 0;
+      payload->states.dip = 0;
+      payload->states.dport = 0;
+      payload->states.bip = 0;
+    }
     return backup_packet;
 }
 
@@ -324,8 +332,9 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        #endif
    				        //printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
    				        ip_5tuple->proto = 0x6;
-   				        getStates(ip_5tuple, &backup_states);
-   				        
+   				        int ret = getStates(ip_5tuple, &backup_states);
+   				        if (ret < 0)
+                    printf("debug: can't get state\n");
    				        struct nf_indexs *indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
    				        if (!indexs){
    				            rte_panic("indexs malloc failed!");
@@ -405,18 +414,27 @@ lcore_manager(__attribute__((unused)) void *arg)
    				    struct nf_states* request_states;
    				    struct ether_addr self_eth_addr;
    				    uint32_t request_ip;
-  				    #ifdef __DEBUG_LV1
+              #ifdef __DEBUG_LV1
   				    printf("mg: This is state pull message\n");
   				    #endif
    				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
   				    /* Get the 5tuple and relevant state, build and send */
    				    ip_5tuple = (struct ipv4_5tuple*)payload;
-   				    getStates(ip_5tuple, &request_states);
-   				    backup_packet = build_backup_packet(
-    			        port, rte_be_to_cpu_32(ip_h->src_addr),  
-    			        rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
-    			        request_states 
-    			 	);
+   				    int ret = getStates(ip_5tuple, &request_states);
+              if (ret < 0) {
+   				       backup_packet = build_backup_packet(
+    			         port, rte_be_to_cpu_32(ip_h->src_addr),  
+    			         rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
+    			         NULL 
+    			 	    );
+              }
+              else {
+                backup_packet = build_backup_packet(
+                  port, rte_be_to_cpu_32(ip_h->src_addr),  
+                  rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
+                  request_states
+                );
+              }
    				    rte_eth_tx_burst(port, 0, &backup_packet, 1);
   				}
  				else if (ip_proto == 2) {
