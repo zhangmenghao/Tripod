@@ -65,7 +65,7 @@
 		(uint8_t) ((addr) & 0xFF)
 #endif
 #define TIMER_RESOLUTION_CYCLES 2399987461ULL
-#define N_TEST_FLOWS 50
+#define N_TEST_FLOWS 2
 
 int arped = 0;
 int count = 0;
@@ -109,7 +109,7 @@ timer_cb( __attribute__((unused)) struct rte_timer *tim, __attribute__((unused))
 		(tx_byte-last_tx_byte)*8/1024/1024);	
 	printf("rx_byte: %llu, tx_byte: %llu\n",rx_byte ,tx_byte);	
 	printf("rx_pkts_sec: %llu, tx_pkt_sec: %llu\n",rx_pkts - last_rx_pkts,tx_pkts-last_tx_pkts);	
-	printf("rx_byte: %llu, tx_byte: %llu\n\n",rx_pkts ,tx_pkts);	
+	printf("rx_pkts: %llu, tx_pkts: %llu\n\n",rx_pkts ,tx_pkts);	
 	last_rx_byte = rx_byte;
 	last_tx_byte = tx_byte;
 	last_rx_pkts = rx_pkts;
@@ -297,7 +297,7 @@ lcore_main(void)
 			for(j = 0;j < N_TEST_FLOWS;j++){
 	 			rte_eth_tx_burst(0, 0, &syn_pkts[j], 1);
 				tx_pkts ++;
-				usleep(100);
+				usleep(1000000);
 				tx_byte += syn_pkts[j]->data_len;
 			}
 			count++;
@@ -306,6 +306,7 @@ lcore_main(void)
 			
 			rte_eth_tx_burst(0, 0, &data_pkts[count % N_TEST_FLOWS], 1);
 			tx_pkts ++;
+			usleep(1000000);
 			tx_byte += data_pkts[count%N_TEST_FLOWS]->data_len;
 			count++;
 			
