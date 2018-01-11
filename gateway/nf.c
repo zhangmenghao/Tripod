@@ -143,9 +143,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 			pullState(1, 0, ip_5tuple, index, state);
 		}
 		else{
-			#ifdef __DEBUG_LV1
 			printf("this is an attack!\n");
-			#endif
 		}
 	}
 	else{
