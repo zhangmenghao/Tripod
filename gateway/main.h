@@ -110,8 +110,6 @@ extern uint8_t debug_mode;
 
 extern uint32_t dip_pool[DIP_POOL_SIZE];
 
-extern int flow_counts;
-
 extern struct rte_hash *state_hash_table[NB_SOCKETS];
 extern struct rte_hash *index_hash_table[NB_SOCKETS];
 
