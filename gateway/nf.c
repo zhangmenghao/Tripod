@@ -50,9 +50,7 @@ setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index){
 		#endif
 	}
 	else{
-		#ifdef __DEBUG_LV1
 		printf("nf: error found in setIndexs!\n");
-		#endif
 		return;
 	}
 }
@@ -108,9 +106,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 		}
 	}
 	else{
-		#ifdef __DEBUG_LV1
 		printf("nf: error found in setStates!\n");
-		#endif
 		return;
 	}
 }
@@ -143,7 +139,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 			pullState(1, 0, ip_5tuple, index, state);
 		}
 		else{
-			printf("this is an attack! %llu\n", flow_counts);
+			printf("nf: this is an attack! %llu\n", flow_counts);
 		}
 	}
 	else{
@@ -277,7 +273,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						#endif
 						struct ipv4_5tuple *ip_5tuple = rte_malloc(NULL, sizeof(*ip_5tuple), 0);
 						if (!ip_5tuple)
-							rte_panic("ip_5tuple malloc failed!");
+							rte_panic("nf: ip_5tuple malloc failed!");
 						ip_5tuple->ip_src = ip_5tuples.ip_src;
 						ip_5tuple->ip_dst = ip_5tuples.ip_dst;
 						ip_5tuple->proto = ip_5tuples.proto;
@@ -285,7 +281,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						ip_5tuple->port_src = ip_5tuples.port_src;
 						struct nf_states * state = rte_malloc(NULL, sizeof(*state), 0);
 						if (!state)
-							rte_panic("state malloc failed!");
+							rte_panic("nf: state malloc failed!");
 						state->ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
 						setStates(ip_5tuple, state);
 						ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);

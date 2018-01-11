@@ -43,10 +43,8 @@ managerSetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 		printf("mg: set state success!\n");
 		#endif
 	}
-	else {
-		#ifdef __DEBUG_LV1
+	else {		
 		printf("mg: error found in setStates!\n");
-		#endif
 		return;
 	}
 }
@@ -215,7 +213,10 @@ backup_to_machine(struct states_5tuple_pair* backup_pair)
     printf("mg: dport is 0x%x\n", backup_pair->states.dport);
     printf("mg: dip is "IPv4_BYTES_FMT " \n", IPv4_BYTES(backup_pair->states.bip));
     #endif
-	 struct nf_states* states = rte_malloc(NULL, sizeof(struct nf_states), 0);
+	  struct nf_states* states = rte_malloc(NULL, sizeof(struct nf_states), 0);
+    if (!states){
+      rte_panic("mg: states malloc failed!");
+    }
     states->ipserver = backup_pair->states.ipserver;
     states->dip = backup_pair->states.dip;
     states->dport = backup_pair->states.dport;
@@ -238,6 +239,9 @@ keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
 	printf("mg: proto is 0x%x\n", keyset_pair->l4_5tuple.proto);
     #endif
     struct nf_indexs* indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
+     if (!indexs){
+      rte_panic("mg: indexs malloc failed!");
+    }
     indexs->backupip[0] = keyset_pair->indexs.backupip[0];
     indexs->backupip[1] = keyset_pair->indexs.backupip[1];
     setIndexs(&(keyset_pair->l4_5tuple), indexs);
@@ -337,7 +341,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                     printf("debug: can't get state\n");
    				        struct nf_indexs *indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
    				        if (!indexs){
-   				            rte_panic("indexs malloc failed!");
+   				            rte_panic("mg: indexs malloc failed!");
    				        }
    				        /* Don's send backup packet to itself */
    				        if (backup_ip1 ==  this_machine->ip) {
@@ -422,6 +426,7 @@ lcore_manager(__attribute__((unused)) void *arg)
    				    ip_5tuple = (struct ipv4_5tuple*)payload;
    				    int ret = getStates(ip_5tuple, &request_states);
               if (ret < 0) {
+                printf("mg: state not found for remote machine!\n");
    				       backup_packet = build_backup_packet(
     			         port, rte_be_to_cpu_32(ip_h->src_addr),  
     			         rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
