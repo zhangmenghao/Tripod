@@ -43,6 +43,8 @@
 #define N_MACHINE_MAX 8
 #define N_INTERFACE_MAX 48
 
+#define TIMER_RESOLUTION_CYCLES 2399987461ULL
+
 /*
  * Configure debug output level
  * none debug output: nothing to do

@@ -136,7 +136,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		ret =  getIndexs(ip_5tuple, &index);
 		if (ret >= 0){
 			//getRemoteState(index, state);
-			pullState(1, 0, ip_5tuple, index, state);
+			ret = pullState(1, 0, ip_5tuple, index, state);
 		}
 		else{
 			printf("nf: this is an attack! %llu\n", flow_counts);
