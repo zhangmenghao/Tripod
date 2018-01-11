@@ -428,7 +428,7 @@ lcore_manager(__attribute__((unused)) void *arg)
    				    keyset_to_machine((struct indexs_5tuple_pair*)payload);
   				}
   				#ifdef __DEBUG_LV1
-				printf("\n");
+				  printf("\n");
   				#endif
   				rte_pktmbuf_free(bufs[i]);
 			}
