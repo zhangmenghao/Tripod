@@ -103,7 +103,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 
 int
 getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
-	int ret = pullState(1, 0, ip_5tuple, state);
+	int ret = pullState(1, 1, ip_5tuple, state);
 	if (ret == 0){
 		#ifdef __DEBUG_LV1
 		printf("nf: getStates(pullState) success!\n");
