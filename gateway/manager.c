@@ -280,8 +280,8 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
 int
 lcore_manager(__attribute__((unused)) void *arg)
 {
-    const uint8_t nb_ports = rte_eth_dev_count();
-    uint8_t port;
+    uint8_t port = 1;
+    uint16_t queue = 0;
     int i;
     struct ether_hdr* eth_h;
     struct ipv4_hdr* ip_h;
@@ -294,84 +294,81 @@ lcore_manager(__attribute__((unused)) void *arg)
 	#endif
 	/* Run until the application is quit or killed. */
 	for (;;) {
-		for (port = 0; port < nb_ports; port++) {
-			if ((enabled_port_mask & (1 << port)) == 0) {
-				//printf("Skipping %u\n", port);
-				continue;
-			}
-			struct rte_mbuf *bufs[BURST_SIZE];
-			const uint16_t nb_rx = rte_eth_rx_burst(port, 1,
-					bufs, BURST_SIZE);
-			if (unlikely(nb_rx == 0))
-				continue;
-			for (i = 0; i < nb_rx; i ++){
-				#ifdef __DEBUG_LV1
-				printf("mg: packet comes from port %u queue 1\n", port);
-				#endif
-				eth_h = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
-				ip_h = (struct ipv4_hdr*)
-  				  		((u_char*)eth_h + sizeof(struct ether_hdr));
-				ip_proto = ip_h->next_proto_id;
-				#ifdef __DEBUG_LV1
-				printf("mg: dst ip "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_h->dst_addr));
-				printf("mg: proto: %x\n",ip_proto);
-				#endif
- 				if (ip_proto == 0) {
-  				    /* Control message about state backup */
-  				    /* Destination ip is 172.16.X.Y */
-  				    /* This is state backup message */
-  				    #ifdef __DEBUG_LV1
-  				    printf("mg: This is state backup message\n");
-  				    #endif
-   				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
-   				    if (ip_h->packet_id == 0)
-   				        /* General state backup message */
-   				        backup_to_machine((struct states_5tuple_pair*)payload);
-   				    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1)
-   				        /* Specific state backup message for nf */
-   				        rte_ring_enqueue(
-    			 	        nf_pull_wait_ring, 
-    			 	        backup_to_machine(
-    			 	            (struct states_5tuple_pair*)payload
-    			 	        )
-   				        );
-  				}
- 				else if (ip_proto == 1) {
-  				    /* Control message about state pull */
-   				    struct ipv4_5tuple* ip_5tuple;
-   				    struct rte_mbuf* backup_packet;
-   				    struct nf_states* request_states;
-   				    struct ether_addr self_eth_addr;
-   				    uint32_t request_ip;
-   				    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
-  				    /* Get the 5tuple and relevant state, build and send */
-   				    ip_5tuple = (struct ipv4_5tuple*)payload;
-  				    #ifdef __DEBUG_LV1
-  				    printf("mg: This is state pull message\n");
-  				    printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
-  				    printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
-  				    #endif
-  				    #ifdef __DEBUG_LV2
-  				    printf("mg: port_src is %u\n", ip_5tuple->port_src);
-  				    printf("mg: port_dst is %u\n", ip_5tuple->port_dst);
-  				    printf("mg: proto is %u\n", ip_5tuple->proto);
-  				    #endif
-   				    managerGetStates(ip_5tuple, &request_states);
-  				    #ifdef __DEBUG_LV1
-  				    printf("mg: ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(request_states->ipserver));
-  				    #endif
-   				    backup_packet = build_backup_packet(
-    			        port, rte_be_to_cpu_32(ip_h->src_addr),  
-    			        rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
-    			        request_states 
-    			 	);
-   				    rte_eth_tx_burst(port, 0, &backup_packet, 1);
-  				}
-  				#ifdef __DEBUG_LV1
-				printf("\n");
-  				#endif
-  				rte_pktmbuf_free(bufs[i]);
-			}
+		if ((enabled_port_mask & (1 << port)) == 0) {
+			//printf("Skipping %u\n", port);
+			continue;
+		}
+		struct rte_mbuf *bufs[BURST_SIZE];
+		const uint16_t nb_rx = rte_eth_rx_burst(port, queue, bufs, BURST_SIZE);
+		if (unlikely(nb_rx == 0))
+			continue;
+		for (i = 0; i < nb_rx; i ++){
+			#ifdef __DEBUG_LV1
+			printf("mg: packet comes from port %u queue %u\n", port, queue);
+			#endif
+			eth_h = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
+			ip_h = (struct ipv4_hdr*)
+  				  	((u_char*)eth_h + sizeof(struct ether_hdr));
+			ip_proto = ip_h->next_proto_id;
+			#ifdef __DEBUG_LV1
+			printf("mg: dst ip "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_h->dst_addr));
+			printf("mg: proto: %x\n",ip_proto);
+			#endif
+ 			if (ip_proto == 0) {
+  			    /* Control message about state backup */
+  			    /* Destination ip is 172.16.X.Y */
+  			    /* This is state backup message */
+  			    #ifdef __DEBUG_LV1
+  			    printf("mg: This is state backup message\n");
+  			    #endif
+   			    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
+   			    if (ip_h->packet_id == 0)
+   			        /* General state backup message */
+   			        backup_to_machine((struct states_5tuple_pair*)payload);
+   			    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1)
+   			        /* Specific state backup message for nf */
+   			        rte_ring_enqueue(
+    		 	        nf_pull_wait_ring, 
+    		 	        backup_to_machine(
+    		 	            (struct states_5tuple_pair*)payload
+    		 	        )
+   			        );
+  			}
+ 			else if (ip_proto == 1) {
+  			    /* Control message about state pull */
+   			    struct ipv4_5tuple* ip_5tuple;
+   			    struct rte_mbuf* backup_packet;
+   			    struct nf_states* request_states;
+   			    struct ether_addr self_eth_addr;
+   			    uint32_t request_ip;
+   			    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
+  			    /* Get the 5tuple and relevant state, build and send */
+   			    ip_5tuple = (struct ipv4_5tuple*)payload;
+  			    #ifdef __DEBUG_LV1
+  			    printf("mg: This is state pull message\n");
+  			    printf("mg: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
+  			    printf("mg: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
+  			    #endif
+  			    #ifdef __DEBUG_LV2
+  			    printf("mg: port_src is %u\n", ip_5tuple->port_src);
+  			    printf("mg: port_dst is %u\n", ip_5tuple->port_dst);
+  			    printf("mg: proto is %u\n", ip_5tuple->proto);
+  			    #endif
+   			    managerGetStates(ip_5tuple, &request_states);
+  			    #ifdef __DEBUG_LV1
+  			    printf("mg: ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(request_states->ipserver));
+  			    #endif
+   			    backup_packet = build_backup_packet(
+    		        port, rte_be_to_cpu_32(ip_h->src_addr),  
+    		        rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
+    		        request_states 
+    		 	);
+   			    rte_eth_tx_burst(port, 0, &backup_packet, 1);
+  			}
+  			#ifdef __DEBUG_LV1
+			printf("\n");
+  			#endif
+  			rte_pktmbuf_free(bufs[i]);
 		}
 	}
 	return 0;
@@ -380,8 +377,7 @@ lcore_manager(__attribute__((unused)) void *arg)
 int
 lcore_manager_slave(__attribute__((unused)) void *arg)
 {
-  const uint8_t nb_ports = rte_eth_dev_count();
-  uint8_t port;
+  uint8_t port = 1;
     struct ipv4_5tuple* ip_5tuple;
     struct nf_states* state;
     #ifdef __DEBUG_LV1
@@ -389,36 +385,30 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
 			rte_lcore_id());
     #endif
 	for (;;) {
-		for (port = 0; port < nb_ports; port++) {
-			if ((enabled_port_mask & (1 << port)) == 0) {
-				//printf("Skipping %u\n", port);
-				continue;
-			}
- 			if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
-   				//printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
-                struct rte_mbuf* backup_packet;
-                struct rte_mbuf* keyset_packet;
-                int idx;
-   			    while (rte_ring_dequeue(nf_manager_ring, (void**)&state) != 0);
-   			    backup_packet = build_backup_packet(
-                    port, statelessBackupIP, 0x00, ip_5tuple, state
-                );
-  			    #ifdef __DEBUG_LV1
-  			    printf("mg-salve: Receive backup request from nf\n");
-                printf("mg-salve: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
-                printf("mg-salve: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
-  			    #endif
-  			    #ifdef __DEBUG_LV2
-			    printf("mg-salve: port_src is %u\n", ip_5tuple->port_src);
-                printf("mg-salve: port_dst is %u\n", ip_5tuple->port_dst);
-                printf("mg-salve: proto is %u\n", ip_5tuple->proto);
-  			    #endif
-  			    #ifdef __DEBUG_LV1
-			    printf("\n");
-  			    #endif
-			    rte_eth_tx_burst(port, 0, &backup_packet, 1);
-   				rte_free(ip_5tuple);
-  			}
+ 		if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
+   			//printf("debug: size %d ip_5tuple %lx\n", sizeof(ip_5tuple), ip_5tuple);
+            struct rte_mbuf* backup_packet;
+            struct rte_mbuf* keyset_packet;
+            int idx;
+   		    while (rte_ring_dequeue(nf_manager_ring, (void**)&state) != 0);
+   		    backup_packet = build_backup_packet(
+                port, statelessBackupIP, 0x00, ip_5tuple, state
+            );
+  		    #ifdef __DEBUG_LV1
+  		    printf("mg-salve: Receive backup request from nf\n");
+            printf("mg-salve: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_dst));
+            printf("mg-salve: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuple->ip_src));
+  		    #endif
+  		    #ifdef __DEBUG_LV2
+		    printf("mg-salve: port_src is %u\n", ip_5tuple->port_src);
+            printf("mg-salve: port_dst is %u\n", ip_5tuple->port_dst);
+            printf("mg-salve: proto is %u\n", ip_5tuple->proto);
+  		    #endif
+  		    #ifdef __DEBUG_LV1
+		    printf("\n");
+  		    #endif
+		    rte_eth_tx_burst(port, 0, &backup_packet, 1);
+   			rte_free(ip_5tuple);
 		}
 	}
 	return 0;

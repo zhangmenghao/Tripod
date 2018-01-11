@@ -29,107 +29,6 @@ static const struct rte_eth_conf port_conf_default = {
             .rss_hf = ETH_RSS_IP | ETH_RSS_UDP | ETH_RSS_TCP | ETH_RSS_SCTP,
         }
     },
-    .fdir_conf = {
-        .mode = RTE_FDIR_MODE_PERFECT,
-        .pballoc = RTE_FDIR_PBALLOC_64K,
-        .status = RTE_FDIR_REPORT_STATUS,
-        .mask = {
-            .vlan_tci_mask = 0x0,
-            .ipv4_mask = {
-                // .src_ip = 0x0000FFFF,
-                .dst_ip = 0x0000FFFF,
-            },
-            // .ipv6_mask = {
-                // .src_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
-                // .dst_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
-            // },
-            // .src_port_mask = 0xFFFF,
-            // .dst_port_mask = 0xFFFF,
-            // .mac_addr_byte_mask = 0xFF,
-            // .tunnel_type_mask = 1,
-            // .tunnel_id_mask = 0xFFFFFFFF,
-        },
-        .drop_queue = 127,
-    },
-};
-
-static struct rte_eth_fdir_filter fdir_filter_state = {
-    .soft_id = 1,
-    .input = {
-        .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_OTHER,
-        .flow = {
-            .ip4_flow = {
-                // .dst_ip = 0x000010AC,
-                .dst_ip = IPv4(0, 0, 16, 172),
-            }
-        }
-    },
-    .action = {
-        .rx_queue = 1,
-        .behavior = RTE_ETH_FDIR_ACCEPT,
-        .report_status = RTE_ETH_FDIR_REPORT_ID,
-    }
-};
-
-static struct rte_eth_fdir_filter fdir_filter_ecmp_tcp = {
-    .soft_id = 2,
-    .input = {
-        .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_TCP,
-        .flow = {
-            .tcp4_flow = {
-                .ip = {
-                    // .src_ip = 0x0000000A, 
-                    .dst_ip = IPv4(0, 0, 16, 172),
-                },
-                // .src_port = rte_cpu_to_be_16(1024),
-                // .dst_port = rte_cpu_to_be_16(1024),
-            }
-        }
-    },
-    .action = {
-        .rx_queue = 1,
-        .behavior = RTE_ETH_FDIR_ACCEPT,
-        .report_status = RTE_ETH_FDIR_REPORT_ID,
-    }
-};
-
-static struct rte_eth_fdir_filter fdir_filter_ecmp_udp = {
-    .soft_id = 3,
-    .input = {
-        .flow_type = RTE_ETH_FLOW_NONFRAG_IPV4_UDP,
-        .flow = {
-            .udp4_flow = {
-                .ip = {
-                    // .src_ip = 0x0000000A, 
-                    .dst_ip = IPv4(0, 0, 16, 172),
-                },
-                // .src_port = rte_cpu_to_be_16(1024),
-                // .dst_port = rte_cpu_to_be_16(1024),
-            }
-        }
-    },
-    .action = {
-        .rx_queue = 1,
-        .behavior = RTE_ETH_FDIR_ACCEPT,
-        .report_status = RTE_ETH_FDIR_REPORT_ID,
-    }
-};
-
-static struct rte_eth_fdir_filter fdir_filter_arp = {
-    .soft_id = 4,
-    .input = {
-        .flow_type = RTE_ETH_FLOW_RAW,
-        .flow = {
-            .l2_flow = {
-                .ether_type = 0x0608,
-            }
-        }
-    },
-    .action = {
-        .rx_queue = 1,
-        .behavior = RTE_ETH_FDIR_ACCEPT,
-        .report_status = RTE_ETH_FDIR_REPORT_ID,
-    }
 };
 
 //configurations
@@ -150,7 +49,7 @@ int enabled_port_mask = 0;
 
 static struct rte_eth_rss_reta_entry64 reta_conf[2];
 
-static uint32_t manager_rx_queue_mask = 0x2;
+static uint32_t manager_port_mask = 0x2;
 
 uint32_t statelessBackupIP = IPv4(172,16,3,2);
 
@@ -257,7 +156,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 	}
 
 	struct rte_eth_conf port_conf = port_conf_default;
-	const uint16_t rx_rings = 2, tx_rings = 1;
+	const uint16_t rx_rings = 1, tx_rings = 1;
 	uint16_t nb_rxd = RX_RING_SIZE;
 	uint16_t nb_txd = TX_RING_SIZE;
 	int retval;
@@ -277,7 +176,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 
 	/* Allocate and set up 2 RX queue per Ethernet port. */
 	for (q = 0; q < rx_rings; q++) {
-		if (((manager_rx_queue_mask >> q) & 1) == 1)
+		if (((manager_port_mask >> port) & 1) == 1)
 			retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
 					rte_eth_dev_socket_id(port), NULL, mbuf_pool);
 		else
@@ -302,36 +201,6 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 	retval = rte_eth_dev_start(port);
 	if (retval < 0)
 		return retval;
-
-    /* Set FlowDirector flow filter on port */
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
-                                       RTE_ETH_FILTER_ADD, &fdir_filter_state);
-    if (retval < 0)
-        return retval;
-    // fdir_filter_ecmp.input.flow.tcp4_flow.src_port = rte_cpu_to_be_16(0),
-    // fdir_filter_ecmp.input.flow.tcp4_flow.dst_port = rte_cpu_to_be_16(0),
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
-                                        RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_tcp);
-    if (retval < 0)
-        return retval;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
-                                        RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_udp);
-    if (retval < 0)
-        return retval;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
-  					 				 RTE_ETH_FILTER_ADD, &fdir_filter_arp);
-    if (retval < 0)
-        return retval;
-    struct rte_eth_fdir_info fdir_info;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
-  					 				 RTE_ETH_FILTER_INFO, &fdir_info);
-    if (retval < 0)
-        return retval;
-    unsigned int j;
-    for (j = 0; j < RTE_FLOW_MASK_ARRAY_SIZE; j++)
-        #ifdef __DEBUG_LV2
-        printf("flow_types_mask[%d]: %08x\n", j, fdir_info.flow_types_mask[j]);
-        #endif
 
     /* Set hash array of RSS */
     retval = rss_hash_set(1, port);
