@@ -24,7 +24,7 @@
 struct rte_hash *state_hash_table[NB_SOCKETS];
 struct rte_hash *index_hash_table[NB_SOCKETS];
 
-int flow_counts = 0;
+unsigned long long flow_counts = 0;
 
 void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
@@ -143,11 +143,11 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 			pullState(1, 0, ip_5tuple, index, state);
 		}
 		else{
-			printf("this is an attack!\n");
+			printf("this is an attack! %llu\n", flow_counts);
 		}
 	}
 	else{
-		printf("nf: get state error!\n");
+		printf("nf: get state error!%llu\n", flow_counts);
 	}
 	return ret;
 }
@@ -317,7 +317,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 						}
 						else{
-							printf("nf: state not found!\n");
+							printf("nf: state not found!%llu\n", flow_counts);
 						}
 					}
 					#ifdef __DEBUG_LV1
