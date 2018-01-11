@@ -375,7 +375,7 @@ lcore_manager(__attribute__((unused)) void *arg)
     			 	        );
     			 	        rte_eth_tx_burst(port, 0, &keyset_packet, 1);
    				        }
-   				        rte_free(ip_5tuple);
+   				        //rte_free(ip_5tuple);
    				    }
   				}
  				else if (ip_proto == 0) {
