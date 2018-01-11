@@ -411,17 +411,18 @@ lcore_manager(__attribute__((unused)) void *arg)
    				    if (ip_h->packet_id == 0)
    				        /* General state backup message */
    				        backup_to_machine((struct states_5tuple_pair*)payload);
-   				    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1)
-   				        /* Specific state backup message for nf */
-   				        int ret = rte_ring_enqueue(
-    			 	        nf_pull_wait_ring, 
-    			 	        backup_to_machine(
-    			 	            (struct states_5tuple_pair*)payload
-    			 	        )
-   				        );
+   				    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1){
+                /* Specific state backup message for nf */
+                  int ret = rte_ring_enqueue(
+                    nf_pull_wait_ring, 
+                    backup_to_machine(
+                        (struct states_5tuple_pair*)payload
+                    )
+                  );
                 if (ret < 0){
                   printf("mg: enqueue failed!\n");
                 }
+              }
   				}
  				else if (ip_proto == 1) {
   				    /* Control message about state pull */
