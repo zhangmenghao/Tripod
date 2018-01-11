@@ -118,13 +118,13 @@ main(int argc, char *argv[])
     ecmp_predict_init(manager_mbuf_pool);
 
     /* Create and initialize ring between nf and manager */
-    nf_manager_ring = rte_ring_create("NF_MANAGER_RING", RX_RING_SIZE, 
+    nf_manager_ring = rte_ring_create("NF_MANAGER_RING", 1024, 
      				   				  rte_socket_id(), 
       				   				  RING_F_SP_ENQ | RING_F_SC_DEQ);
 	if (nf_manager_ring == NULL)
 		rte_exit(EXIT_FAILURE, "Cannot create ring between nf and manager\n");
     /* Create and initialize ring for nf to wait pull state */
-    nf_pull_wait_ring = rte_ring_create("NF_PULL_WAIT_RING", RX_RING_SIZE, 
+    nf_pull_wait_ring = rte_ring_create("NF_PULL_WAIT_RING", 1024, 
      				   				  rte_socket_id(), 
       				   				  RING_F_SP_ENQ | RING_F_SC_DEQ);
 	if (nf_pull_wait_ring == NULL)

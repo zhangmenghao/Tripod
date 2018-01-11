@@ -263,10 +263,8 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
     while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0) {
         cur_tsc = rte_rdtsc();
         diff_tsc = cur_tsc - prev_tsc;
-        if (diff_tsc > TIMER_RESOLUTION_CYCLES/100) {
-            #ifdef __DEBUG_LV1
+        if (diff_tsc > TIMER_RESOLUTION_CYCLES/200) {
             printf("mg: timeout in pullState\n");
-            #endif
             return -1;
         }
     }
@@ -415,12 +413,15 @@ lcore_manager(__attribute__((unused)) void *arg)
    				        backup_to_machine((struct states_5tuple_pair*)payload);
    				    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1)
    				        /* Specific state backup message for nf */
-   				        rte_ring_enqueue(
+   				        int ret = rte_ring_enqueue(
     			 	        nf_pull_wait_ring, 
     			 	        backup_to_machine(
     			 	            (struct states_5tuple_pair*)payload
     			 	        )
    				        );
+                if (ret < 0){
+                  printf("mg: enqueue failed!\n");
+                }
   				}
  				else if (ip_proto == 1) {
   				    /* Control message about state pull */
