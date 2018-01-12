@@ -289,7 +289,7 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
     pull_packet = build_pull_packet(
         port, target_indexs, nf_id, ip_5tuple
     );
-    rte_eth_tx_burst(port, 0, &pull_packet, 1);
+    rte_eth_tx_burst(port, 2, &pull_packet, 1);
     /* wait until receive response(specific state backup message) */
     prev_tsc = rte_rdtsc();
     while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0) {
@@ -357,7 +357,7 @@ lcore_manager(__attribute__((unused)) void *arg)
   				        /* This is ECMP predict request message */
  				        struct rte_mbuf* probing_packet;
  				        probing_packet = backup_receive_probe_packet(bufs[i]);
-  				        rte_eth_tx_burst(port, 0, &probing_packet, 1);
+  				        rte_eth_tx_burst(port, 2, &probing_packet, 1);
   				        #ifdef __DEBUG_LV1
   				        printf("mg: This is ECMP predict request message\n");
   				        #endif
@@ -403,7 +403,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                           // backup_packet = build_backup_packet(
                           //     port, topo[3].ip, 0x00, ip_5tuple, backup_states
                         // );
-                          rte_eth_tx_burst(port, 0, &backup_packet, 1);
+                          rte_eth_tx_burst(port, 2, &backup_packet, 1);
                       }
                       else if (backup_ip2 ==  this_machine->ip) {
                           indexs->backupip[0] = backup_ip1;
@@ -412,7 +412,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                           backup_packet = build_backup_packet(
                               port, backup_ip1, 0x00, ip_5tuple, backup_states
                         );
-                          rte_eth_tx_burst(port, 0, &backup_packet, 1);
+                          rte_eth_tx_burst(port, 2, &backup_packet, 1);
                       }
                       else {
                           indexs->backupip[0] = backup_ip1;
@@ -421,11 +421,11 @@ lcore_manager(__attribute__((unused)) void *arg)
                           backup_packet = build_backup_packet(
                               port, backup_ip1, 0x00, ip_5tuple, backup_states
                         );
-                          rte_eth_tx_burst(port, 0, &backup_packet, 1);
+                          rte_eth_tx_burst(port, 2, &backup_packet, 1);
                           backup_packet = build_backup_packet(
                               port, backup_ip2, 0x00, ip_5tuple, backup_states
                         );
-                          rte_eth_tx_burst(port, 0, &backup_packet, 1);
+                          rte_eth_tx_burst(port, 2, &backup_packet, 1);
                       }
 
                       for (idx = 0; idx < 4; idx++) {
@@ -434,7 +434,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                           keyset_packet = build_keyset_packet(
                               topo[idx].ip, indexs, port, ip_5tuple
                         );
-                        rte_eth_tx_burst(port, 0, &keyset_packet, 1);
+                        rte_eth_tx_burst(port, 2, &keyset_packet, 1);
                       }
 
                   }
@@ -493,7 +493,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                   request_states
                 );
               }
-   				    rte_eth_tx_burst(port, 0, &backup_packet, 1);
+   				    rte_eth_tx_burst(port, 2, &backup_packet, 1);
   				}
  				else if (ip_proto == 2) {
   				    /* Control message about keyset broadcast */
@@ -548,9 +548,7 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
 			    if (rte_eth_tx_burst(port, 1, &probing_packet, 1) != 1){
             printf("mg-slave: tx probing_packet failed!\n");
             rte_pktmbuf_free(probing_packet);
-          }
-          
-          
+          }  
   			}
 
 		}
