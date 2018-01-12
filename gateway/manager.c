@@ -333,6 +333,11 @@ lcore_manager(__attribute__((unused)) void *arg)
 					bufs, BURST_SIZE);
 			if (unlikely(nb_rx == 0))
 				continue;
+      for (i = 0; i < nb_rx; i++){
+        rte_pktmbuf_free(bufs[i]);
+      }
+      continue;
+      
 			for (i = 0; i < nb_rx; i ++){
 				#ifdef __DEBUG_LV1
 				printf("mg: packet comes from port %u queue 1\n", port);
@@ -539,7 +544,13 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
   			    #ifdef __DEBUG_LV1
 			    printf("\n");
   			    #endif
-			    rte_eth_tx_burst(port, 0, &probing_packet, 1);
+          
+			    if (rte_eth_tx_burst(port, 1, &probing_packet, 1) != 1){
+            printf("mg-slave: tx probing_packet failed!\n");
+            rte_pktmbuf_free(probing_packet);
+          }
+          
+          
   			}
 
 		}

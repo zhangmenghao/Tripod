@@ -251,9 +251,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
 					ip_5tuples.port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
 					ip_5tuples.port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
-					#ifdef __DEBUG_LV1
-					printf("nf: udp packets! pass!\n");
-					#endif
+					printf("nf: udp packets! pass!\n");	
 				}
 				else if (ip_5tuples.proto == 6){
 					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
@@ -287,7 +285,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 						#ifdef __DEBUG_LV1
 						printf("nf: tcp_syn new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						#endif
-						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
+						if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1){
+							rte_pktmbuf_free(bufs[i]);
+							printf("nf: error in tx packets\n");
+						}
 						//rte_pktmbuf_free(bufs[i]);
 						flow_counts ++;
 					}
@@ -305,9 +306,13 @@ lcore_nf(__attribute__((unused)) void *arg)
 							#ifdef __DEBUG_LV1
 							printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							#endif
-							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
+							if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1){
+								rte_pktmbuf_free(bufs[i]);
+								printf("nf: error in tx packets\n");
+							}
 						}
 						else{
+							rte_pktmbuf_free(bufs[i]);
 							malicious_packet_counts ++;
 							printf("nf: state not found!%d %d\n",flow_counts ,malicious_packet_counts);
 						}
@@ -315,6 +320,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 					#ifdef __DEBUG_LV1
 					printf("nf: this is very important! port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
 					#endif
+				}
+				else{
+					printf("nf: not tcp and udp packets!\n");
+					rte_pktmbuf_free(bufs[i]);
 				}
 				#ifdef __DEBUG_LV1
 				printf("\n");
