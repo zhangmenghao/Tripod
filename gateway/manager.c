@@ -393,7 +393,7 @@ clearRemote(uint8_t port, struct ipv4_5tuple* ip_5tuple)
     int idx;
     int ret = getIndexs(ip_5tuple, &indexs);
     if (ret < 0) {
-        printf("mg: get index in clearRemote failed!\n");
+        printf("mg-slave: get index in clearRemote failed!\n");
         return -1;
     }
     for (idx = 0; idx < 4; idx++) {
@@ -412,12 +412,12 @@ clearRemote(uint8_t port, struct ipv4_5tuple* ip_5tuple)
                 port, topo[idx].ip, 0, ip_5tuple
             );
         if (rte_eth_tx_burst(port, 1, &clear_packet, 1) != 1) {
-            printf("mg: tx clear_packet failed!\n");
+            printf("mg-slave: tx clear_packet failed!\n");
             rte_pktmbuf_free(clear_packet);
         }
     }
     if (delIndexs(ip_5tuple) < 0){//del local index
-        printf("mg: error in delindex\n");
+        printf("mg-slave: error in delindex\n");
     }
     return 0;
 }

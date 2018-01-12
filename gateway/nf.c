@@ -143,14 +143,10 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		#endif
 	}
 	else if (ret == -EINVAL){
-		#ifdef __DEBUG_LV1
 		printf("nf: parameter invalid in getStates\n");
-		#endif
 	}
 	else if (ret == -ENOENT){
-		#ifdef __DEBUG_LV1
 		printf("nf: key not found in getStates!\n");
-		#endif
 		//ask index table
 		struct nf_indexs *index;
 		ret =  getIndexs(ip_5tuple, &index);
@@ -179,14 +175,17 @@ delStates(struct ipv4_5tuple *ip_5tuple){
 		#endif
 
 		//del remote state and index
-		if (rte_ring_enqueue(nf_manager_ring_del, ip_5tuple) == 0) {
+		/*if (rte_ring_enqueue(nf_manager_ring_del, ip_5tuple) == 0) {
 			#ifdef __DEBUG_LV2
 			printf("nf: enqueue success in setStates!\n");
 			#endif
 		}
 		else{
 			printf("nf: enqueue failed in setStates!!!\n");
-		}
+		}*/
+        if (delIndexs(ip_5tuple) < 0){//del local index
+            printf("nf: delindex failed!\n");
+        }
 		
 	}
 	else if (ret == -EINVAL){
@@ -322,7 +321,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					#ifdef __DEBUG_LV1
 					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					#endif
-					if (tcp_hdrs->tcp_flags == 2){
+					if (tcp_hdrs->tcp_flags == 2){//SYN
 						#ifdef __DEBUG_LV1
 						printf("nf: recerive a new flow!\n");
 						#endif
@@ -387,10 +386,12 @@ lcore_nf(__attribute__((unused)) void *arg)
 							}
 						}
 						else{
-							printf("nf: state not found!\n");
+                            rte_pktmbuf_free(bufs[i]);
+                            malicious_packet_counts ++;
+							printf("nf: state not found!%d %d FIN flooding\n",flow_counts ,malicious_packet_counts);
 						}
 					}
-					else{
+					else{//data packets
 						struct nf_states *state;
 						int ret =  getStates(&ip_5tuples, &state);
 						if (ret >= 0){
@@ -410,7 +411,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						else{
 							rte_pktmbuf_free(bufs[i]);
 							malicious_packet_counts ++;
-							printf("nf: state not found!%d %d\n",flow_counts ,malicious_packet_counts);
+							printf("nf: state not found!%d %d data flooding\n",flow_counts ,malicious_packet_counts);
 						}
 					}
 					#ifdef __DEBUG_LV1
