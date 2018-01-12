@@ -210,6 +210,9 @@ struct rte_mbuf* build_probe_packet(struct ipv4_5tuple* ip_5tuple){
     struct tcp_hdr *tcp_h;
     char* payload;
     probing_packet = rte_pktmbuf_alloc(ecmp_mbuf_pool);
+    if (!probing_packet){
+    	printf("ecmp: probing_packet alloc failed!\n");
+    }
     eth_hdr = (struct ether_hdr *) rte_pktmbuf_append(probing_packet, sizeof(struct ether_hdr));
     iph = (struct ipv4_hdr *)rte_pktmbuf_append(probing_packet, sizeof(struct ipv4_hdr));
     tcp_h = (struct tcp_hdr *) rte_pktmbuf_append(probing_packet,sizeof(struct tcp_hdr));

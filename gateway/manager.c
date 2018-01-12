@@ -83,6 +83,9 @@ build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
     struct ether_addr self_eth_addr;
     /* Allocate space */
     backup_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
+    if (backup_packet == NULL) {
+      printf("mg: backup_packet alloc failed\n");
+    }
     eth_h = (struct ether_hdr *)
       rte_pktmbuf_append(backup_packet, sizeof(struct ether_hdr));
     ip_h = (struct ipv4_hdr *)
@@ -141,6 +144,9 @@ build_pull_packet(uint8_t port, struct nf_indexs* indexs,
     struct ether_addr self_eth_addr;
     /* Allocate space */
     pull_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
+    if (pull_packet == NULL) {
+      printf("mg: pull_packet alloc failed\n");
+    }
     eth_h = (struct ether_hdr *)
       rte_pktmbuf_append(pull_packet, sizeof(struct ether_hdr));
     ip_h = (struct ipv4_hdr *)
@@ -187,6 +193,9 @@ build_keyset_packet(uint32_t target_ip, struct nf_indexs* indexs,
     struct ether_addr self_eth_addr;
     /* Allocate space */
     keyset_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
+    if (keyset_packet == NULL) {
+      printf("mg: keyset_packet alloc failed\n");
+    }
     eth_h = (struct ether_hdr *)
       rte_pktmbuf_append(keyset_packet, sizeof(struct ether_hdr));
     ip_h = (struct ipv4_hdr *)
@@ -505,10 +514,8 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
   const uint8_t nb_ports = rte_eth_dev_count();
   uint8_t port;
     struct ipv4_5tuple* ip_5tuple;
-    #ifdef __DEBUG_LV1
 	printf("\nCore %u process request from nf\n",
 			rte_lcore_id());
-    #endif
 	for (;;) {
 		for (port = 0; port < nb_ports; port++) {
 			if ((enabled_port_mask & (1 << port)) == 0) {

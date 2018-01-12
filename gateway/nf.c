@@ -24,7 +24,8 @@
 struct rte_hash *state_hash_table[NB_SOCKETS];
 struct rte_hash *index_hash_table[NB_SOCKETS];
 
-unsigned long long flow_counts = 0;
+int flow_counts = 0;
+int malicious_packet_counts = 0;
 
 void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
@@ -66,10 +67,14 @@ getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index){
 		#endif
 	}
 	else if (ret == -EINVAL){
+		#ifdef __DEBUG_LV1
 		printf("nf: parameter invalid in getIndexs!\n");
+		#endif
 	}
 	else if (ret == -ENOENT){
+		#ifdef __DEBUG_LV1
 		printf("nf: key not found in getIndexs!\n");
+		#endif
 	}
 	else{
 		printf("nf: get index error!\n");
@@ -88,14 +93,14 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 		printf("nf: set state success!\n");
 		#endif
 		//communicate with Manager
-		if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0) {
+		/*if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0) {
 			#ifdef __DEBUG_LV2
 			printf("nf: enqueue success in setStates!\n");
 			#endif
 		}
 		else{
 			printf("nf: enqueue failed in setStates!!!\n");
-		}
+		}*/
 	}
 	else{
 		printf("nf: error found in setStates!\n");
@@ -115,10 +120,14 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		#endif
 	}
 	else if (ret == -EINVAL){
+		#ifdef __DEBUG_LV1
 		printf("nf: parameter invalid in getStates\n");
+		#endif
 	}
 	else if (ret == -ENOENT){
+		#ifdef __DEBUG_LV1
 		printf("nf: key not found in getStates!\n");
+		#endif
 		//ask index table
 		struct nf_indexs *index;
 		ret =  getIndexs(ip_5tuple, &index);
@@ -127,11 +136,11 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 			ret = pullState(1, 0, ip_5tuple, index, state);
 		}
 		else{
-			printf("nf: this is an attack! %llu\n", flow_counts);
+			printf("nf: this is an attack!\n");
 		}
 	}
 	else{
-		printf("nf: get state error!%llu\n", flow_counts);
+		printf("nf: get state error!\nn");
 	}
 	return ret;
 }
@@ -299,7 +308,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
 						}
 						else{
-							printf("nf: state not found!%llu\n", flow_counts);
+							malicious_packet_counts ++;
+							printf("nf: state not found!%d %d\n",flow_counts ,malicious_packet_counts);
 						}
 					}
 					#ifdef __DEBUG_LV1
