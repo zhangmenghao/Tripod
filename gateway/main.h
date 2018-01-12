@@ -105,6 +105,7 @@ extern struct port_param single_port_param;
 
 extern struct rte_ring* nf_manager_ring;
 extern struct rte_ring* nf_pull_wait_ring;
+extern struct rte_ring* nf_manager_ring_del;
 
 extern int enabled_port_mask; 
 
@@ -131,7 +132,6 @@ int getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index);
 int delIndexs(struct ipv4_5tuple *ip_5tuple);
 int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
           struct nf_indexs* target_indexs, struct nf_states** target_states);
-int clearRemote(uint8_t port, struct ipv4_5tuple* ip_5tuple);
 int port_init(uint8_t port, struct rte_mempool *mbuf_pool, struct rte_mempool *manager_mbuf_pool);
 int parse_args(int argc, char **argv);
 void setup_hash(const int socketid);

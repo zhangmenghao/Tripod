@@ -72,23 +72,25 @@ managerGetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state)
         printf("mg: get state error!\n");
     }
     return ret;
+}
 
 static int
-managerDelStates(struct ipv4_5tuple *ip_5tuple) {
-	union ipv4_5tuple_host newkey;
-	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	int ret =  rte_hash_del_key(state_hash_table[0], &newkey);
-	if (ret >= 0) {
-		#ifdef __DEBUG_LV2
-		printf("mg: del state success!\n");
-		#endif
-	}
-	else {
-		#ifdef __DEBUG_LV1
-		printf("mg: error found in delStates!\n");
-		#endif
-	}
-	return ret;
+managerDelStates(struct ipv4_5tuple *ip_5tuple)
+{
+    union ipv4_5tuple_host newkey;
+    convert_ipv4_5tuple(ip_5tuple, &newkey);
+    int ret =  rte_hash_del_key(state_hash_table[0], &newkey);
+    if (ret >= 0) {
+        #ifdef __DEBUG_LV2
+        printf("mg: del state success!\n");
+        #endif
+    }
+    else {
+        #ifdef __DEBUG_LV1
+        printf("mg: error found in delStates!\n");
+        #endif
+    }
+    return ret;
 }
 
 static struct rte_mbuf*
@@ -380,7 +382,7 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
     return 0;
 }
 
-int
+static int
 clearRemote(uint8_t port, struct ipv4_5tuple* ip_5tuple)
 {
     struct rte_mbuf* clear_packet;
@@ -402,7 +404,10 @@ clearRemote(uint8_t port, struct ipv4_5tuple* ip_5tuple)
             clear_packet = build_clear_packet(
                 port, topo[idx].ip, 0, ip_5tuple
             );
-        rte_eth_tx_burst(port, 0, &clear_packet, 1);
+        if (rte_eth_tx_burst(port, 0, &clear_packet, 1) != 1) {
+            printf("mg: tx clear_packet failed!\n");
+            rte_pktmbuf_free(clear_packet);
+        }
     }
     return 0;
 }
@@ -661,7 +666,6 @@ lcore_manager(__attribute__((unused)) void *arg)
                 rte_pktmbuf_free(bufs[i]);
             }
         }
-        }
 	}
 	return 0;
 }
@@ -703,6 +707,26 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
                     printf("mg-slave: tx probing_packet failed!\n");
                     rte_pktmbuf_free(probing_packet);
                 }
+            }
+            if (rte_ring_dequeue(nf_manager_ring_del,(void**)&ip_5tuple) == 0) {
+                // printf("debug: size %d ip_5tuple %lx\n",
+                       // sizeof(ip_5tuple), ip_5tuple);
+                #ifdef __DEBUG_LV1
+                printf("mg-salve: Receive delete request from nf\n");
+                printf("mg-salve: ip_dst is "IPv4_BYTES_FMT " \n",
+                       IPv4_BYTES(ip_5tuple->ip_dst));
+                printf("mg-salve: ip_src is "IPv4_BYTES_FMT " \n",
+                       IPv4_BYTES(ip_5tuple->ip_src));
+                #endif
+                #ifdef __DEBUG_LV2
+                printf("mg-salve: port_src is %u\n", ip_5tuple->port_src);
+                printf("mg-salve: port_dst is %u\n", ip_5tuple->port_dst);
+                printf("mg-salve: proto is %u\n", ip_5tuple->proto);
+                #endif
+                #ifdef __DEBUG_LV1
+                printf("\n");
+                #endif
+                clearRemote(1, ip_5tuple);
             }
         }
     }

@@ -22,7 +22,7 @@ static const struct rte_eth_conf port_conf_default = {
 	.rxmode = {
         .max_rx_pkt_len = ETHER_MAX_LEN, //1518
         .mq_mode = ETH_MQ_RX_RSS,
-    }, 
+    },
     .rx_adv_conf = {
         .rss_conf = {
             .rss_key = NULL,
@@ -78,7 +78,7 @@ static struct rte_eth_fdir_filter fdir_filter_ecmp_tcp = {
         .flow = {
             .tcp4_flow = {
                 .ip = {
-                    // .src_ip = 0x0000000A, 
+                    // .src_ip = 0x0000000A,
                     .dst_ip = IPv4(0, 0, 16, 172),
                 },
                 // .src_port = rte_cpu_to_be_16(1024),
@@ -100,7 +100,7 @@ static struct rte_eth_fdir_filter fdir_filter_ecmp_udp = {
         .flow = {
             .udp4_flow = {
                 .ip = {
-                    // .src_ip = 0x0000000A, 
+                    // .src_ip = 0x0000000A,
                     .dst_ip = IPv4(0, 0, 16, 172),
                 },
                 // .src_port = rte_cpu_to_be_16(1024),
@@ -142,6 +142,7 @@ uint32_t dip_pool[DIP_POOL_SIZE] = {
 };
 
 struct rte_ring* nf_manager_ring;
+struct rte_ring* nf_manager_ring_del;
 struct rte_ring* nf_pull_wait_ring;
 
 struct port_param single_port_param;
@@ -244,7 +245,7 @@ rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
  * coming from the mbuf_pool passed as a parameter.
  */
 int
-port_init(uint8_t port, struct rte_mempool *mbuf_pool, 
+port_init(uint8_t port, struct rte_mempool *mbuf_pool,
  		struct rte_mempool *manager_mbuf_pool)
 {
     if ((enabled_port_mask & (1 << port)) == 0) {
@@ -298,26 +299,26 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
         return retval;
 
     /* Set FlowDirector flow filter on port */
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
                                        RTE_ETH_FILTER_ADD, &fdir_filter_state);
     if (retval < 0)
         return retval;
     // fdir_filter_ecmp.input.flow.tcp4_flow.src_port = rte_cpu_to_be_16(0),
     // fdir_filter_ecmp.input.flow.tcp4_flow.dst_port = rte_cpu_to_be_16(0),
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
                                         RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_tcp);
     if (retval < 0)
         return retval;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
                                         RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_udp);
     if (retval < 0)
         return retval;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
                                      RTE_ETH_FILTER_ADD, &fdir_filter_arp);
     if (retval < 0)
         return retval;
     struct rte_eth_fdir_info fdir_info;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
                                      RTE_ETH_FILTER_INFO, &fdir_info);
     if (retval < 0)
         return retval;
@@ -482,7 +483,7 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
     }
 }
 
-int 
+int
 lcore_main_loop(__attribute__((unused)) void *arg)
 {
     unsigned lcore;
