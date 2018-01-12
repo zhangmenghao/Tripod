@@ -93,14 +93,14 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 		printf("nf: set state success!\n");
 		#endif
 		//communicate with Manager
-		/*if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0) {
+		if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0) {
 			#ifdef __DEBUG_LV2
 			printf("nf: enqueue success in setStates!\n");
 			#endif
 		}
 		else{
 			printf("nf: enqueue failed in setStates!!!\n");
-		}*/
+		}
 	}
 	else{
 		printf("nf: error found in setStates!\n");
