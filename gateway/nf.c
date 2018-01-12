@@ -142,7 +142,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		}
 	}
 	else{
-		printf("nf: get state error!\nn");
+		printf("nf: get state error!\n");
 	}
 	return ret;
 }
