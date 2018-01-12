@@ -1,36 +1,3 @@
-/*-
- *   BSD LICENSE
- *
- *   Copyright(c) 2010-2015 Intel Corporation. All rights reserved.
- *   All rights reserved.
- *
- *   Redistribution and use in source and binary forms, with or without
- *   modification, are permitted provided that the following conditions
- *   are met:
- *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in
- *       the documentation and/or other materials provided with the
- *       distribution.
- *     * Neither the name of Intel Corporation nor the names of its
- *       contributors may be used to endorse or promote products derived
- *       from this software without specific prior written permission.
- *
- *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- *   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- *   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- *   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- *   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 #include <stdint.h>
 #include <inttypes.h>
 #include <rte_eal.h>
@@ -46,7 +13,7 @@
 #include <rte_tcp.h>
 #include <rte_arp.h>
 
-#define RX_RING_SIZE 128
+#define RX_RING_SIZE 512
 #define TX_RING_SIZE 512
 
 #define NUM_MBUFS 8191
@@ -61,6 +28,13 @@
 		(uint8_t) (((addr) >> 8) & 0xFF),\
 		(uint8_t) ((addr) & 0xFF)
 #endif
+
+#define TIMER_RESOLUTION_CYCLES 2399987461ULL
+
+static struct rte_timer timer;
+static uint64_t prev_tsc = 0, cur_tsc , diff_tsc;
+
+//#define __DEBUG_LV1
 
 static const struct rte_eth_conf port_conf_default = {
 	.rxmode = { .max_rx_pkt_len = ETHER_MAX_LEN }
@@ -84,6 +58,27 @@ unsigned long long rx_pkts = 0;
 unsigned long long tx_pkts = 0;
 unsigned long long last_rx_pkts = 0;
 unsigned long long last_tx_pkts = 0;
+
+unsigned long long rx_new_flow = 0;
+unsigned long long last_rx_new_flow = 0;
+
+static void
+timer_cb( __attribute__((unused)) struct rte_timer *tim, __attribute__((unused)) void *arg)
+{
+
+	printf("rx_throughput: %llu Mbps, tx_throughput: %llu Mbps\n",(rx_byte - last_rx_byte)*8/1024/1024,
+		(tx_byte-last_tx_byte)*8/1024/1024);	
+	printf("rx_byte: %llu, tx_byte: %llu\n",rx_byte ,tx_byte);	
+	printf("rx_pkts_sec: %llu, tx_pkt_sec: %llu\n",rx_pkts - last_rx_pkts,tx_pkts - last_tx_pkts);	
+	printf("rx_pkts: %llu, tx_pkts: %llu\n",rx_pkts ,tx_pkts);	
+	printf("rx_new_flow_sec: %llu, rx_new_flow_now: %llu\n", rx_new_flow - last_rx_new_flow, rx_new_flow);
+	printf("\n");
+	last_rx_byte = rx_byte;
+	last_tx_byte = tx_byte;
+	last_rx_pkts = rx_pkts;
+	last_tx_pkts = tx_pkts;
+	last_rx_new_flow = rx_new_flow;
+}
 
 /* basicfwd.c: Basic DPDK skeleton forwarding example. */
 
@@ -186,6 +181,12 @@ lcore_main(void)
 
 	/* Run until the application is quit or killed. */
 	for (;;) {
+		cur_tsc = rte_rdtsc();
+		diff_tsc = cur_tsc - prev_tsc;
+		if (diff_tsc > TIMER_RESOLUTION_CYCLES/100) {
+			rte_timer_manage();
+			prev_tsc = cur_tsc;
+		}
 		/*
 		 * Receive packets on a port and forward them on the paired
 		 * port. The mapping is 0 -> 1, 1 -> 0, 2 -> 3, 3 -> 2, etc.
@@ -203,14 +204,25 @@ lcore_main(void)
 				for (i = 0; i < nb_rx; i ++){
 					struct ether_hdr *eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
 					if(eth_hdr->ether_type == rte_cpu_to_be_16(ETHER_TYPE_IPv4)){
+						struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
+						if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 100 ){
+							rx_pkts ++;
+							rx_byte += bufs[i]->data_len;
+						}
+						#ifdef __DEBUG_LV1
 						printf("packet comes from %u\n", port);
-						rx_pkts ++;
-						rx_byte += bufs[i]->data_len;
-						printf("packet size is %u\n", bufs[i]->data_len);
+						#endif
+						
+						#ifdef __DEBUG_LV1
+						printf("packet size is %u\n\n", bufs[i]->data_len);
+						#endif
+						rte_pktmbuf_free(bufs[i]);
 					}
 	 				else if (eth_hdr->ether_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
 	  				    /* arp message to keep live with switch */
+	  				    //#ifdef __DEBUG_LV1
 	  				    printf("processing arp request\n");
+	  				    //#endif
 	   				    struct arp_hdr* arp_h;
 	   				    struct ether_addr self_eth_addr;
 	   				    uint32_t ip_addr;
@@ -218,22 +230,24 @@ lcore_main(void)
 	  				    arp_h = (struct arp_hdr*)
 	  				    		((u_char*)eth_hdr + sizeof(struct ether_hdr));
 	  				    rte_eth_macaddr_get(port, &self_eth_addr);
+	  				    #ifdef __DEBUG_LV1
 	  				    printf("Network Card Port %u MAC: %02" PRIx8 " %02" PRIx8 " %02" PRIx8
 						   " %02" PRIx8 " %02" PRIx8 " %02" PRIx8 "\n",
 						1,
 						self_eth_addr.addr_bytes[0], self_eth_addr.addr_bytes[1],
 						self_eth_addr.addr_bytes[2], self_eth_addr.addr_bytes[3],
 						self_eth_addr.addr_bytes[4], self_eth_addr.addr_bytes[5]);
-
+	  				    #endif
 	  				    ether_addr_copy(&(eth_hdr->s_addr), &(eth_hdr->d_addr));
+	  				    #ifdef __DEBUG_LV1
 	  				    printf("Switch %u MAC: %02" PRIx8 " %02" PRIx8 " %02" PRIx8
 						   " %02" PRIx8 " %02" PRIx8 " %02" PRIx8 "\n",
 						1,
 						(eth_hdr->d_addr).addr_bytes[0], (eth_hdr->d_addr).addr_bytes[1],
 						(eth_hdr->d_addr).addr_bytes[2], (eth_hdr->d_addr).addr_bytes[3],
 						(eth_hdr->d_addr).addr_bytes[4], (eth_hdr->d_addr).addr_bytes[5]);
-	  				    //ether_addr_copy(&(eth_hdr->s_addr), &interface_MAC);
-	  				    /* Set source MAC address with MAC of TX Port */
+						#endif
+
 	  				    ether_addr_copy(&self_eth_addr, &(eth_hdr->s_addr));
 	  				    arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
 	  				    ether_addr_copy(&(arp_h->arp_data.arp_sha)
@@ -245,6 +259,7 @@ lcore_main(void)
 	  				    arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
 	  				    arp_h->arp_data.arp_tip = ip_addr;
 
+	  				    //#ifdef __DEBUG_LV1
 	  				    uint32_t ipv4_addr = arp_h->arp_data.arp_sip;
 	                    printf("%d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,
 	                                (ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,
@@ -255,51 +270,69 @@ lcore_main(void)
 	                                (ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,
 	                                ipv4_addr & 0xFF);
 	  				    rte_eth_tx_burst(port, 0, &bufs[i], 1);
-	  					 printf("processing arp request end!\n");
-					    
+	  					printf("processing arp request end!\n");
+	  					//#endif
+		    
 	  				}
 	  				else{
 	  					rte_pktmbuf_free(bufs[i]);
 	  				}
-	  				printf("\n");
+	  				//printf("\n");
 	  			}
 
 			}
 			else{
 				
 				for (i = 0; i < nb_rx; i ++){
+					#ifdef __DEBUG_LV1
 					printf("packet comes from %u\n", port);
+					#endif
 					struct ether_hdr *eth_hdr;
 					eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
 					ether_addr_copy(&interface_MAC, &eth_hdr->d_addr);
 					struct ether_addr addr;
 					rte_eth_macaddr_get(port^1, &addr);
 					ether_addr_copy(&addr, &eth_hdr->s_addr);
+					#ifdef __DEBUG_LV1
 					print_ethaddr("eth_s_addr", &(eth_hdr->s_addr));
 					print_ethaddr("eth_d_addr", &(eth_hdr->d_addr));
-
+					#endif
 					struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
 					ip_hdr->dst_addr = rte_cpu_to_be_32(IPv4(172,17,17,2));
 					ip_hdr->hdr_checksum = 0;
 					uint16_t ck1 = rte_ipv4_cksum(ip_hdr);
     				ip_hdr->hdr_checksum = ck1;
+    				#ifdef __DEBUG_LV1
 					printf("ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->src_addr)));
 					printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 					printf("nf: next_proto_id is %u\n", ip_hdr->next_proto_id);
+					#endif
 					if (ip_hdr->next_proto_id == 6){
 						struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+						if (tcp_hdrs->tcp_flags == 2){
+							rx_new_flow ++;
+						}
+
+						#ifdef __DEBUG_LV1
 						printf("nf: this is very important! port_src and port_dst is %u and %u\n", 
 							rte_be_to_cpu_16(tcp_hdrs->src_port), rte_be_to_cpu_16(tcp_hdrs->dst_port));
 						printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
+						#endif
 					}
-					tx_pkts ++;
-					tx_byte += bufs[i]->data_len;
+					if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 172){
+						tx_pkts ++;
+						tx_byte += bufs[i]->data_len;
+					}
+					#ifdef __DEBUG_LV1
 					printf("packet size is %u\n", bufs[i]->data_len);
+					#endif
 				}
 				/* Send burst of TX packets, to second port of pair. */
 				const uint16_t nb_tx = rte_eth_tx_burst(port ^ 1, 0,
 						bufs, nb_rx);
+				#ifdef __DEBUG_LV1
 				printf("send packet to port %u\n\n", port^1);
+				#endif
 
 				/* Free any unsent packets. */
 				if (unlikely(nb_tx < nb_rx)) {
@@ -349,6 +382,14 @@ main(int argc, char *argv[])
 			rte_exit(EXIT_FAILURE, "Cannot init port %"PRIu8 "\n",
 					portid);
 
+	rte_timer_subsystem_init();
+	rte_timer_init(&timer);
+	uint64_t hz;	
+	unsigned lcore_id;
+	hz = rte_get_timer_hz();
+	lcore_id = rte_lcore_id();
+	printf("hz: %llu, lcore: %u\n",hz,lcore_id);
+	rte_timer_reset(&timer,hz,PERIODICAL,lcore_id,timer_cb,NULL);
 	if (rte_lcore_count() > 1)
 		printf("\nWARNING: Too many lcores enabled. Only 1 used.\n");
 
