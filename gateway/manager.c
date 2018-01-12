@@ -261,6 +261,9 @@ build_clear_packet(uint8_t port, uint32_t target_ip,
     struct ether_addr self_eth_addr;
     /* Allocate space */
     clear_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
+    if (clear_packet == NULL) {
+        printf("mg: clear_packet alloc failed\n");
+    }
     eth_h = (struct ether_hdr *)
       rte_pktmbuf_append(clear_packet, sizeof(struct ether_hdr));
     ip_h = (struct ipv4_hdr *)
