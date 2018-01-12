@@ -84,6 +84,34 @@ getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index){
 	return ret;
 }
 
+int
+delIndexs(struct ipv4_5tuple *ip_5tuple){
+	union ipv4_5tuple_host newkey;
+	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	int ret = rte_hash_del_key(index_hash_table[0], &newkey);
+	if (ret >= 0){
+		#ifdef __DEBUG_LV2
+		printf("nf: del index success!\n");
+		#endif
+	}
+	else if (ret == -EINVAL){
+		#ifdef __DEBUG_LV1
+		printf("nf: parameter invalid in delIndexs!\n");
+		#endif
+	}
+	else if (ret == -ENOENT){
+		#ifdef __DEBUG_LV1
+		printf("nf: key not found in delIndexs!\n");
+		#endif
+	}
+	else{
+		#ifdef __DEBUG_LV1
+		printf("nf: del index error!\n");
+		#endif
+	}
+	return ret;
+}
+
 void 
 setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
@@ -115,7 +143,6 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
 	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
-	//printf("ret, EINVAL, ENOENT is %d, %u and %u\n", ret, EINVAL, ENOENT);
 	if (ret >= 0){
 		#ifdef __DEBUG_LV2
 		printf("nf: get state success!\n");
@@ -147,6 +174,41 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	return ret;
 }
 
+int
+delStates(struct ipv4_5tuple *ip_5tuple){
+	union ipv4_5tuple_host newkey;
+	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	int ret = rte_hash_del_key(state_hash_table[0], &newkey);//del local state
+	if (ret >= 0){
+		#ifdef __DEBUG_LV2
+		printf("nf: del state success!\n");
+		#endif
+
+		//del remote state and index
+		clearRemote(0, ip_5tuple);
+
+		if (delIndexs(ip_5tuple) < 0){//del local index
+			#ifdef __DEBUG_LV2
+			printf("nf: error in delindex\n");
+			#endif
+		}
+		
+	}
+	else if (ret == -EINVAL){
+		#ifdef __DEBUG_LV1
+		printf("nf: parameter invalid in delStates\n");
+		#endif
+	}
+	else if (ret == -ENOENT){
+		#ifdef __DEBUG_LV1
+		printf("nf: key not found in delStates!\n");
+		#endif
+	}
+	else{
+		printf("nf: del state error!\n");
+	}
+	return ret;
+}
 
 static void
 print_ethaddr(const char *name, struct ether_addr *eth_addr)
@@ -301,11 +363,42 @@ lcore_nf(__attribute__((unused)) void *arg)
 						//rte_pktmbuf_free(bufs[i]);
 						flow_counts ++;
 					}
+					else if (tcp_hdrs->tcp_flags == 0x11 || tcp_hdrs->tcp_flags == 0x4){//FIN+ACK or RST
+						struct nf_states *state;
+						int ret =  getStates(&ip_5tuples, &state);
+						if (ret >= 0){
+							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
+							ip_hdr->hdr_checksum = 0;
+							ether_addr_copy(&eth_s_addr,&eth_hdr->d_addr);
+							ether_addr_copy(&eth_d_addr,&eth_hdr->s_addr);
+							ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
+							#ifdef __DEBUG_LV1
+							printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+							#endif
+							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
+
+							#ifdef __DEBUG_LV1
+							printf("nf: delete the existing flow!\n");
+							#endif
+							struct ipv4_5tuple *ip_5tuple = rte_malloc(NULL, sizeof(*ip_5tuple), 0);
+							if (!ip_5tuple)
+								rte_panic("ip_5tuple malloc failed!");
+							ip_5tuple->ip_src = ip_5tuples.ip_src;
+							ip_5tuple->ip_dst = ip_5tuples.ip_dst;
+							ip_5tuple->proto = ip_5tuples.proto;
+							ip_5tuple->port_dst = ip_5tuples.port_dst;
+							ip_5tuple->port_src = ip_5tuples.port_src;
+							if (delStates(ip_5tuple) < 0){
+								printf("nf: delete state error!\n");
+							}
+						}
+						else{
+							printf("nf: state not found!\n");
+						}
+					}
 					else{
 						struct nf_states *state;
 						int ret =  getStates(&ip_5tuples, &state);
-						//printf("%x\n", state);
-						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 						if (ret >= 0){
 							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
 							ip_hdr->hdr_checksum = 0;

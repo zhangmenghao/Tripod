@@ -72,6 +72,23 @@ managerGetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state)
         printf("mg: get state error!\n");
     }
     return ret;
+
+static int
+managerDelStates(struct ipv4_5tuple *ip_5tuple) {
+	union ipv4_5tuple_host newkey;
+	convert_ipv4_5tuple(ip_5tuple, &newkey);
+	int ret =  rte_hash_del_key(state_hash_table[0], &newkey);
+	if (ret >= 0) {
+		#ifdef __DEBUG_LV2
+		printf("mg: del state success!\n");
+		#endif
+	}
+	else {
+		#ifdef __DEBUG_LV1
+		printf("mg: error found in delStates!\n");
+		#endif
+	}
+	return ret;
 }
 
 static struct rte_mbuf*
@@ -231,6 +248,52 @@ build_keyset_packet(uint32_t target_ip, struct nf_indexs* indexs,
     return keyset_packet;
 }
 
+static struct rte_mbuf*
+build_clear_packet(uint8_t port, uint32_t target_ip,
+                   uint16_t type, struct ipv4_5tuple* ip_5tuple)
+{
+    struct rte_mbuf* clear_packet;
+    struct ether_hdr* eth_h;
+    struct ipv4_hdr* ip_h;
+    struct ipv4_5tuple* payload;
+    struct ether_addr self_eth_addr;
+    /* Allocate space */
+    clear_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
+    eth_h = (struct ether_hdr *)
+      rte_pktmbuf_append(clear_packet, sizeof(struct ether_hdr));
+    ip_h = (struct ipv4_hdr *)
+        rte_pktmbuf_append(clear_packet, sizeof(struct ipv4_hdr));
+    payload = (struct ipv4_5tuple*)
+      rte_pktmbuf_append(clear_packet, sizeof(struct ipv4_5tuple));
+    /* Set the packet ether header */
+    eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
+    ether_addr_copy(&interface_MAC, &(eth_h->d_addr));
+    rte_eth_macaddr_get(port, &self_eth_addr);
+    ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
+    /* Set the packet ip header */
+    memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
+    ip_h->src_addr=rte_cpu_to_be_32(this_machine->ip);
+    ip_h->dst_addr=rte_cpu_to_be_32(target_ip);
+    ip_h->version_ihl = (4 << 4) | 5;
+    ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct ipv4_5tuple));
+    /*
+     * packet_id indicates type to clear: 0 means only keyset,
+     * and 1 means state and keyset
+     */
+    ip_h->packet_id = rte_cpu_to_be_16(type);
+    ip_h->time_to_live=4;
+    /* In HPSMS, proto 1 indicate this is state pull message */
+    ip_h->next_proto_id = 0x3;
+    ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
+    /* Set the packet payload(5tuple:states) */
+    payload->ip_dst = ip_5tuple->ip_dst;
+    payload->ip_src = ip_5tuple->ip_src;
+    payload->port_dst = ip_5tuple->port_dst;
+    payload->port_src = ip_5tuple->port_src;
+    payload->proto = ip_5tuple->proto;
+    return clear_packet;
+}
+
 static struct nf_states*
 backup_to_machine(struct states_5tuple_pair* backup_pair)
 {
@@ -313,6 +376,33 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
             printf("mg: timeout in pullState\n");
             return -1;
         }
+    }
+    return 0;
+}
+
+int
+clearRemote(uint8_t port, struct ipv4_5tuple* ip_5tuple)
+{
+    struct rte_mbuf* clear_packet;
+    struct nf_indexs* indexs;
+    int idx;
+    getIndexs(ip_5tuple, &indexs);
+    for (idx = 0; idx < 4; idx++) {
+        if (idx == this_machine_index)
+            continue;
+        if (topo[idx].ip == indexs->backupip[0])
+            clear_packet = build_clear_packet(
+                port, indexs->backupip[0], 1, ip_5tuple
+            );
+        else if (topo[idx].ip == indexs->backupip[1])
+            clear_packet = build_clear_packet(
+                port, indexs->backupip[1], 1, ip_5tuple
+            );
+        else
+            clear_packet = build_clear_packet(
+                port, topo[idx].ip, 0, ip_5tuple
+            );
+        rte_eth_tx_burst(port, 0, &clear_packet, 1);
     }
     return 0;
 }
@@ -547,11 +637,30 @@ lcore_manager(__attribute__((unused)) void *arg)
                     payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
                     keyset_to_machine((struct indexs_5tuple_pair*)payload);
                 }
+                else if (ip_proto == 3) {
+                    /* Control message about keyset broadcast */
+                    struct ipv4_5tuple* ip_5tuple;
+                    #ifdef __DEBUG_LV1
+                    printf("mg: This is state and keyset clear message\n");
+                    #endif
+                    payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
+                    /* Get the 5tuple and relevant state, build and send */
+                    ip_5tuple = (struct ipv4_5tuple*)payload;
+                    if (ip_h->packet_id == 0)
+                        /* Just clear keyset in machine */
+                        delIndexs(ip_5tuple);
+                    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1) {
+                        /* Clear keyset and state in machine */
+                        managerDelStates(ip_5tuple);
+                        delIndexs(ip_5tuple);
+                    }
+                }
                 #ifdef __DEBUG_LV1
                 printf("\n");
                 #endif
                 rte_pktmbuf_free(bufs[i]);
             }
+        }
         }
 	}
 	return 0;

@@ -125,10 +125,13 @@ extern uint32_t this_machine_index;
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
 int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state);
+int delStates(struct ipv4_5tuple *ip_5tuple);
 void setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index);
 int getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index);
+int delIndexs(struct ipv4_5tuple *ip_5tuple);
 int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
           struct nf_indexs* target_indexs, struct nf_states** target_states);
+int clearRemote(uint8_t port, struct ipv4_5tuple* ip_5tuple);
 int port_init(uint8_t port, struct rte_mempool *mbuf_pool, struct rte_mempool *manager_mbuf_pool);
 int parse_args(int argc, char **argv);
 void setup_hash(const int socketid);
