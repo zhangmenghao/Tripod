@@ -62,6 +62,9 @@ unsigned long long last_tx_pkts = 0;
 unsigned long long rx_new_flow = 0;
 unsigned long long last_rx_new_flow = 0;
 
+unsigned long long rx_new_flow2 = 0;
+unsigned long long last_rx_new_flow2 = 0;
+
 static void
 timer_cb( __attribute__((unused)) struct rte_timer *tim, __attribute__((unused)) void *arg)
 {
@@ -72,12 +75,14 @@ timer_cb( __attribute__((unused)) struct rte_timer *tim, __attribute__((unused))
 	printf("rx_pkts_sec: %llu, tx_pkt_sec: %llu\n",rx_pkts - last_rx_pkts,tx_pkts - last_tx_pkts);	
 	printf("rx_pkts: %llu, tx_pkts: %llu\n",rx_pkts ,tx_pkts);	
 	printf("rx_new_flow_sec: %llu, rx_new_flow_now: %llu\n", rx_new_flow - last_rx_new_flow, rx_new_flow);
+	printf("2rx_new_flow_sec: %llu, 2rx_new_flow_now: %llu\n", rx_new_flow2 - last_rx_new_flow2, rx_new_flow2);
 	printf("\n");
 	last_rx_byte = rx_byte;
 	last_tx_byte = tx_byte;
 	last_rx_pkts = rx_pkts;
 	last_tx_pkts = tx_pkts;
 	last_rx_new_flow = rx_new_flow;
+	last_rx_new_flow2 = rx_new_flow2;
 }
 
 /* basicfwd.c: Basic DPDK skeleton forwarding example. */
@@ -206,8 +211,15 @@ lcore_main(void)
 					if(eth_hdr->ether_type == rte_cpu_to_be_16(ETHER_TYPE_IPv4)){
 						struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
 						if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 100 ){
-							rx_pkts ++;
-							rx_byte += bufs[i]->data_len;
+							if (ip_hdr->next_proto_id == 6){
+								struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+								if (tcp_hdrs->tcp_flags == 2){
+									rx_new_flow2 ++;
+								}
+								rx_pkts ++;
+								rx_byte += bufs[i]->data_len;
+							}
+							
 						}
 						#ifdef __DEBUG_LV1
 						printf("packet comes from %u\n", port);
@@ -247,7 +259,7 @@ lcore_main(void)
 						(eth_hdr->d_addr).addr_bytes[2], (eth_hdr->d_addr).addr_bytes[3],
 						(eth_hdr->d_addr).addr_bytes[4], (eth_hdr->d_addr).addr_bytes[5]);
 						#endif
-
+                        
 	  				    ether_addr_copy(&self_eth_addr, &(eth_hdr->s_addr));
 	  				    arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
 	  				    ether_addr_copy(&(arp_h->arp_data.arp_sha)
@@ -281,7 +293,7 @@ lcore_main(void)
 	  			}
 
 			}
-			else{
+			else{//port 0
 				
 				for (i = 0; i < nb_rx; i ++){
 					#ifdef __DEBUG_LV1
@@ -307,21 +319,22 @@ lcore_main(void)
 					printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 					printf("nf: next_proto_id is %u\n", ip_hdr->next_proto_id);
 					#endif
-					if (ip_hdr->next_proto_id == 6){
-						struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
-						if (tcp_hdrs->tcp_flags == 2){
-							rx_new_flow ++;
-						}
-						if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 172){
+					if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 172){
+						if (ip_hdr->next_proto_id == 6){
+							struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+							if (tcp_hdrs->tcp_flags == 2){
+								rx_new_flow ++;
+							}
+							
 							tx_pkts ++;
 							tx_byte += bufs[i]->data_len;
-						}
 
-						#ifdef __DEBUG_LV1
-						printf("nf: this is very important! port_src and port_dst is %u and %u\n", 
-							rte_be_to_cpu_16(tcp_hdrs->src_port), rte_be_to_cpu_16(tcp_hdrs->dst_port));
-						printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
-						#endif
+							#ifdef __DEBUG_LV1
+							printf("nf: this is very important! port_src and port_dst is %u and %u\n", 
+								rte_be_to_cpu_16(tcp_hdrs->src_port), rte_be_to_cpu_16(tcp_hdrs->dst_port));
+							printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
+							#endif
+						}
 					}
 					
 					#ifdef __DEBUG_LV1
