@@ -66,19 +66,13 @@ getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index){
 		#endif
 	}
 	else if (ret == -EINVAL){
-		#ifdef __DEBUG_LV1
 		printf("nf: parameter invalid in getIndexs!\n");
-		#endif
 	}
 	else if (ret == -ENOENT){
-		#ifdef __DEBUG_LV1
 		printf("nf: key not found in getIndexs!\n");
-		#endif
 	}
 	else{
-		#ifdef __DEBUG_LV1
 		printf("nf: get index error!\n");
-		#endif
 	}
 	return ret;
 }
@@ -121,14 +115,10 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		#endif
 	}
 	else if (ret == -EINVAL){
-		#ifdef __DEBUG_LV1
 		printf("nf: parameter invalid in getStates\n");
-		#endif
 	}
 	else if (ret == -ENOENT){
-		#ifdef __DEBUG_LV1
 		printf("nf: key not found in getStates!\n");
-		#endif
 		//ask index table
 		struct nf_indexs *index;
 		ret =  getIndexs(ip_5tuple, &index);
@@ -176,10 +166,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 					"polling thread.\n\tPerformance will "
 					"not be optimal.\n", port);
 
-	#ifdef __DEBUG_LV1
 	printf("\nCore %u processing packets.\n",
 			rte_lcore_id());
-	#endif
 
 	/* Run until the application is quit or killed. */
 	for (;;) {
