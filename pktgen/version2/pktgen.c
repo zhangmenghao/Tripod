@@ -219,7 +219,6 @@ lcore_main(void)
 								rx_pkts ++;
 								rx_byte += bufs[i]->data_len;
 							}
-							
 						}
 						#ifdef __DEBUG_LV1
 						printf("packet comes from %u\n", port);
@@ -283,13 +282,11 @@ lcore_main(void)
 	                                ipv4_addr & 0xFF);
 	  				    rte_eth_tx_burst(port, 0, &bufs[i], 1);
 	  					printf("processing arp request end!\n");
-	  					//#endif
-		    
+	  					//#endif		    
 	  				}
 	  				else{
 	  					rte_pktmbuf_free(bufs[i]);
 	  				}
-	  				//printf("\n");
 	  			}
 
 			}
@@ -325,10 +322,8 @@ lcore_main(void)
 							if (tcp_hdrs->tcp_flags == 2){
 								rx_new_flow ++;
 							}
-							
 							tx_pkts ++;
 							tx_byte += bufs[i]->data_len;
-
 							#ifdef __DEBUG_LV1
 							printf("nf: this is very important! port_src and port_dst is %u and %u\n", 
 								rte_be_to_cpu_16(tcp_hdrs->src_port), rte_be_to_cpu_16(tcp_hdrs->dst_port));
