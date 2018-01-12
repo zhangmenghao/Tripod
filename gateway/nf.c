@@ -187,12 +187,6 @@ delStates(struct ipv4_5tuple *ip_5tuple){
 		else{
 			printf("nf: enqueue failed in setStates!!!\n");
 		}
-
-		if (delIndexs(ip_5tuple) < 0){//del local index
-			#ifdef __DEBUG_LV2
-			printf("nf: error in delindex\n");
-			#endif
-		}
 		
 	}
 	else if (ret == -EINVAL){

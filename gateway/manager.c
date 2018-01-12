@@ -416,6 +416,9 @@ clearRemote(uint8_t port, struct ipv4_5tuple* ip_5tuple)
             rte_pktmbuf_free(clear_packet);
         }
     }
+    if (delIndexs(ip_5tuple) < 0){//del local index
+        printf("mg: error in delindex\n");
+    }
     return 0;
 }
 
