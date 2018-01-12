@@ -57,15 +57,15 @@ managerGetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state)
     convert_ipv4_5tuple(ip_5tuple, &newkey);
     int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
     //printf("ret, EINVAL, ENOENT is %d, %u and %u\n", ret, EINVAL, ENOENT);
-    if (ret >= 0){
+    if (ret >= 0) {
         #ifdef __DEBUG_LV2
         printf("mg: get state success!\n");
         #endif
     }
-    else if (ret == -EINVAL){
+    else if (ret == -EINVAL) {
         printf("mg: parameter invalid in getStates\n");
     }
-    else if (ret == -ENOENT){
+    else if (ret == -ENOENT) {
         printf("mg: key not found in getStates!\n");
     }
     else{
@@ -253,7 +253,7 @@ backup_to_machine(struct states_5tuple_pair* backup_pair)
            IPv4_BYTES(backup_pair->states.bip));
     #endif
     struct nf_states* states = rte_malloc(NULL, sizeof(struct nf_states), 0);
-    if (!states){
+    if (!states) {
         rte_panic("mg: states malloc failed!");
     }
     states->ipserver = backup_pair->states.ipserver;
@@ -281,7 +281,7 @@ keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
     printf("mg: proto is 0x%x\n", keyset_pair->l4_5tuple.proto);
     #endif
     struct nf_indexs* indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
-    if (!indexs){
+    if (!indexs) {
         rte_panic("mg: indexs malloc failed!");
     }
     indexs->backupip[0] = keyset_pair->indexs.backupip[0];
@@ -300,7 +300,7 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
         port, target_indexs, nf_id, ip_5tuple
     );
 
-    if (rte_eth_tx_burst(port, 2, &pull_packet, 1) != 1){
+    if (rte_eth_tx_burst(port, 2, &pull_packet, 1) != 1) {
         printf("mg: tx pullState failed!\n");
         rte_pktmbuf_free(pull_packet);
     }
