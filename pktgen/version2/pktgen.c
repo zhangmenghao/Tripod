@@ -312,6 +312,10 @@ lcore_main(void)
 						if (tcp_hdrs->tcp_flags == 2){
 							rx_new_flow ++;
 						}
+						if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 172){
+							tx_pkts ++;
+							tx_byte += bufs[i]->data_len;
+						}
 
 						#ifdef __DEBUG_LV1
 						printf("nf: this is very important! port_src and port_dst is %u and %u\n", 
@@ -319,10 +323,7 @@ lcore_main(void)
 						printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 						#endif
 					}
-					if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 172){
-						tx_pkts ++;
-						tx_byte += bufs[i]->data_len;
-					}
+					
 					#ifdef __DEBUG_LV1
 					printf("packet size is %u\n", bufs[i]->data_len);
 					#endif
@@ -336,6 +337,7 @@ lcore_main(void)
 
 				/* Free any unsent packets. */
 				if (unlikely(nb_tx < nb_rx)) {
+					printf("nb_tx less than nb_rx, tx failed!\n");
 					uint16_t buf;
 					for (buf = nb_tx; buf < nb_rx; buf++)
 						rte_pktmbuf_free(bufs[buf]);
