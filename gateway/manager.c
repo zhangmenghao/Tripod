@@ -391,7 +391,11 @@ clearRemote(uint8_t port, struct ipv4_5tuple* ip_5tuple)
     struct rte_mbuf* clear_packet;
     struct nf_indexs* indexs;
     int idx;
-    getIndexs(ip_5tuple, &indexs);
+    int ret = getIndexs(ip_5tuple, &indexs);
+    if (ret < 0) {
+        printf("mg: get index in clearRemote failed!\n");
+        return -1;
+    }
     for (idx = 0; idx < 4; idx++) {
         if (idx == this_machine_index)
             continue;
@@ -729,7 +733,11 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
                 #ifdef __DEBUG_LV1
                 printf("\n");
                 #endif
-                clearRemote(1, ip_5tuple);
+                if (clearRemote(1, ip_5tuple) < 0) {
+                    #ifdef __DEBUG_LV1
+                    printf("mg-slave: clear remote state failed!\n");
+                    #endif
+                }
             }
         }
     }
