@@ -411,7 +411,7 @@ clearRemote(uint8_t port, struct ipv4_5tuple* ip_5tuple)
             clear_packet = build_clear_packet(
                 port, topo[idx].ip, 0, ip_5tuple
             );
-        if (rte_eth_tx_burst(port, 0, &clear_packet, 1) != 1) {
+        if (rte_eth_tx_burst(port, 1, &clear_packet, 1) != 1) {
             printf("mg: tx clear_packet failed!\n");
             rte_pktmbuf_free(clear_packet);
         }
@@ -736,10 +736,8 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
                 #ifdef __DEBUG_LV1
                 printf("\n");
                 #endif
-                if (clearRemote(1, ip_5tuple) < 0) {
-                    #ifdef __DEBUG_LV1
+                if (clearRemote(0, ip_5tuple) < 0) {
                     printf("mg-slave: clear remote state failed!\n");
-                    #endif
                 }
             }
         }

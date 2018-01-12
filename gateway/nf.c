@@ -190,14 +190,10 @@ delStates(struct ipv4_5tuple *ip_5tuple){
 		
 	}
 	else if (ret == -EINVAL){
-		#ifdef __DEBUG_LV1
 		printf("nf: parameter invalid in delStates\n");
-		#endif
 	}
 	else if (ret == -ENOENT){
-		#ifdef __DEBUG_LV1
 		printf("nf: key not found in delStates!\n");
-		#endif
 	}
 	else{
 		printf("nf: del state error!\n");
@@ -370,7 +366,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 							#ifdef __DEBUG_LV1
 							printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							#endif
-							const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
+							if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1){
+                                rte_pktmbuf_free(bufs[i]);
+                                printf("nf: tx error in delStates!\n");
+                            }
 
 							#ifdef __DEBUG_LV1
 							printf("nf: delete the existing flow!\n");
