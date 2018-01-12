@@ -95,19 +95,13 @@ delIndexs(struct ipv4_5tuple *ip_5tuple){
 		#endif
 	}
 	else if (ret == -EINVAL){
-		#ifdef __DEBUG_LV1
 		printf("nf: parameter invalid in delIndexs!\n");
-		#endif
 	}
 	else if (ret == -ENOENT){
-		#ifdef __DEBUG_LV1
 		printf("nf: key not found in delIndexs!\n");
-		#endif
 	}
 	else{
-		#ifdef __DEBUG_LV1
 		printf("nf: del index error!\n");
-		#endif
 	}
 	return ret;
 }
