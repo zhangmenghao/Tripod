@@ -311,9 +311,13 @@ lcore_main(void)
 					#endif
 					struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
 					//ip_hdr->dst_addr = rte_cpu_to_be_32(IPv4(172,17,17,2));
+/*
 					if ((rte_be_to_cpu_32(ip_hdr->src_addr) >> 24) >= 224 && (rte_be_to_cpu_32(ip_hdr->src_addr) >> 24) < 240){
 						continue;
 					}
+*/
+					ip_hdr->src_addr = ((ip_hdr->src_addr & 0xffffff00) | 166);
+
 					ip_hdr->hdr_checksum = 0;
 					uint16_t ck1 = rte_ipv4_cksum(ip_hdr);
     				ip_hdr->hdr_checksum = ck1;
