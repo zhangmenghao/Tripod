@@ -64,7 +64,8 @@ unsigned long long last_rx_new_flow = 0;
 
 unsigned long long rx_new_flow2 = 0;
 unsigned long long last_rx_new_flow2 = 0;
-
+uint32_t ip_count = 0;
+uint64_t time_record[1000000];
 static void
 timer_cb( __attribute__((unused)) struct rte_timer *tim, __attribute__((unused)) void *arg)
 {
@@ -213,6 +214,8 @@ lcore_main(void)
 						if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 100 ){
 							if (ip_hdr->next_proto_id == 6){
 								struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+								time_record[tcp_hdrs->sent_seq] = rte_rdtsc() - time_record[tcp_hdrs->sent_seq];
+								//printf("ip_count: %d, rtt: %llu\n", tcp_hdrs->sent_seq,time_record[tcp_hdrs->sent_seq]);
 								if (tcp_hdrs->tcp_flags == 2){
 									rx_new_flow2 ++;
 								}
@@ -307,7 +310,10 @@ lcore_main(void)
 					print_ethaddr("eth_d_addr", &(eth_hdr->d_addr));
 					#endif
 					struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
-					ip_hdr->dst_addr = rte_cpu_to_be_32(IPv4(172,17,17,2));
+					//ip_hdr->dst_addr = rte_cpu_to_be_32(IPv4(172,17,17,2));
+					if ((rte_be_to_cpu_32(ip_hdr->src_addr) >> 24) >= 224 && (rte_be_to_cpu_32(ip_hdr->src_addr) >> 24) < 240){
+						continue;
+					}
 					ip_hdr->hdr_checksum = 0;
 					uint16_t ck1 = rte_ipv4_cksum(ip_hdr);
     				ip_hdr->hdr_checksum = ck1;
@@ -316,9 +322,20 @@ lcore_main(void)
 					printf("ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 					printf("nf: next_proto_id is %u\n", ip_hdr->next_proto_id);
 					#endif
-					if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 172){
+					if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 173){
 						if (ip_hdr->next_proto_id == 6){
 							struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+							tcp_hdrs->sent_seq = ip_count;
+							int64_t tsc = rte_rdtsc();	
+							time_record[ip_count] = tsc;
+							ip_count++;
+							//printf("ip_count: %u, time_record:%llu\n",ip_count-1,time_record[ip_count-1]); 
+
+
+//							rte_pktmbuf_dump(stdout,bufs[i],100);
+		    				uint32_t ipv4_addr = rte_be_to_cpu_32(ip_hdr->src_addr);
+							//printf("%d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,(ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,ipv4_addr & 0xFF);
+
 							if (tcp_hdrs->tcp_flags == 2){
 								rx_new_flow ++;
 							}
