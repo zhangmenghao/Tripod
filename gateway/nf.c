@@ -110,7 +110,9 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		#endif
 	}
 	else {
+		#ifdef __DEBUG_LV1
 		printf("nf: getStates(pullState) fail!!!\n");
+		#endif
 	}
 	return ret;
 }
@@ -283,7 +285,9 @@ lcore_nf(__attribute__((unused)) void *arg)
 					    }
 					}
 					else{
+						#ifdef __DEBUG_LV1
 						printf("nf: state not found!\n");
+						#endif
 					}
 				}
 			}

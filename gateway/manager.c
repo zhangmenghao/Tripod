@@ -282,7 +282,7 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
     while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0) {
 		cur_tsc = rte_rdtsc();
 		diff_tsc = cur_tsc - prev_tsc;
-		if (diff_tsc > TIMER_RESOLUTION_CYCLES/100) {
+		if (diff_tsc > TIMER_RESOLUTION_CYCLES/10000) {
 			#ifdef __DEBUG_LV1
 			printf("mg: timeout in pullState\n");
 			#endif
