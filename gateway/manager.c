@@ -62,7 +62,9 @@ managerGetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		#endif
 	}
 	else{
+		#ifdef __DEBUG_LV2
 		printf("mg: get state error!\n");
+		#endif
 	}
 	return ret;
 }
@@ -381,19 +383,21 @@ lcore_manager(__attribute__((unused)) void *arg)
   			    printf("mg: ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(request_states->ipserver));
   			    #endif
    			    if (ret < 0) {
+				#ifdef __DEBUG_LV1
   			        printf("mg: state not found for remote machine!\n");
-    		 	}
+  			    	#endif
+    		 	    }
    			    else {
    			        backup_packet = build_backup_packet(
-    		            port, rte_be_to_cpu_32(ip_h->src_addr),  
-    		            rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
-    		            request_states 
-    		 	    );
-    		 	}
+    		                    port, rte_be_to_cpu_32(ip_h->src_addr),  
+    		            	    rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
+    		            	    request_states 
+    		 	        );
+    		 	    }
    			    if (rte_eth_tx_burst(port, 1, &backup_packet, 1) != 1) {
   			        printf("mg: tx backup_packet failed!\n");
   			        rte_pktmbuf_free(backup_packet);
-    		 	}
+    		 	    }
   			}
   			#ifdef __DEBUG_LV1
 			printf("\n");
