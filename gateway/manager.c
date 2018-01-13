@@ -16,6 +16,7 @@
 #include <rte_hash.h>
 #include <rte_malloc.h>
 #include <rte_debug.h>
+#include <rte_timer.h>
 
 #include "main.h"
 
@@ -28,6 +29,25 @@ struct indexs_5tuple_pair {
     struct ipv4_5tuple l4_5tuple;
     struct nf_indexs indexs;
 };
+
+static struct rte_timer manager_timer;
+static unsigned long long ctrl_bytes = 0;
+static unsigned long long last_ctrl_bytes = 0;
+static unsigned long long ctrl_pkts = 0;
+static unsigned long long last_ctrl_pkts = 0;
+
+static void
+manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
+         __attribute__((unused)) void *arg)
+{
+    printf("ctrl_throughput: %llu Mbps\n",
+        (ctrl_bytes - last_ctrl_bytes) * 8 / 1024 / 1024);
+    printf("ctrl_bytes: %llu\n", ctrl_bytes);
+    printf("ctrl_pkts_sec: %llu\n", ctrl_pkts - last_ctrl_pkts);
+    printf("ctrl_pkts: %llu\n\n", ctrl_pkts);
+    last_ctrl_bytes = ctrl_bytes;
+    last_ctrl_pkts = ctrl_pkts;
+}
 
 /*
  * As manager doesn't need to enqueue 5tuple to nf_manager_ring,
@@ -334,8 +354,22 @@ lcore_manager(__attribute__((unused)) void *arg)
 
     printf("\nCore %u manage states in gateway.\n", rte_lcore_id());
 
+	rte_timer_subsystem_init();
+	rte_timer_init(&manager_timer);
+	rte_timer_reset(
+        &manager_timer, rte_get_timer_hz(), PERIODICAL,
+        rte_lcore_id(), manager_timer_cb, NULL
+    );
+
 	/* Run until the application is quit or killed. */
     for (;;) {
+        uint64_t prev_tsc = 0, cur_tsc , diff_tsc;
+        cur_tsc = rte_rdtsc();
+        diff_tsc = cur_tsc - prev_tsc;
+        if (diff_tsc > TIMER_RESOLUTION_CYCLES/100) {
+            rte_timer_manage();
+            prev_tsc = cur_tsc;
+        }
         for (port = 0; port < nb_ports; port++) {
             if ((enabled_port_mask & (1 << port)) == 0) {
                 //printf("Skipping %u\n", port);
@@ -366,6 +400,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                 printf("mg: proto: %x\n",ip_proto);
                 #endif
                 if (ip_proto == 0x06 || ip_proto == 0x11) {
+                    ctrl_pkts += 1;
+                    ctrl_bytes += bufs[i]->data_len;
                     /* Control message about ECMP */
                     if ((ip_h->dst_addr & 0x00FF0000) == (0xFD << 16)) {
                         /* Destination ip is 172.16.253.X */
@@ -485,6 +521,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                     /* Control message about state backup */
                     /* Destination ip is 172.16.X.Y */
                     /* This is state backup message */
+                    ctrl_pkts += 1;
+                    ctrl_bytes += bufs[i]->data_len;
                     #ifdef __DEBUG_LV1
                     printf("mg: This is state backup message\n");
                     #endif
@@ -513,6 +551,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                     struct nf_states* request_states;
                     struct ether_addr self_eth_addr;
                     uint32_t request_ip;
+                    ctrl_pkts += 1;
+                    ctrl_bytes += bufs[i]->data_len;
                     #ifdef __DEBUG_LV1
                     printf("mg: This is state pull message\n");
                     #endif
@@ -541,6 +581,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                 }
                 else if (ip_proto == 2) {
                     /* Control message about keyset broadcast */
+                    ctrl_pkts += 1;
+                    ctrl_bytes += bufs[i]->data_len;
                     #ifdef __DEBUG_LV1
                     printf("mg: This is keyset broadcast message\n");
                     #endif
