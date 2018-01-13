@@ -110,9 +110,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		#endif
 	}
 	else {
-		#ifdef __DEBUG_LV1
 		printf("nf: getStates(pullState) fail!!!\n");
-		#endif
 	}
 	return ret;
 }
@@ -193,7 +191,10 @@ lcore_nf(__attribute__((unused)) void *arg)
   			    ip_addr = arp_h->arp_data.arp_sip;
   			    arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
   			    arp_h->arp_data.arp_tip = ip_addr;
-  			    rte_eth_tx_burst(port, 0, &bufs[i], 1);
+  			    if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1) {
+			        printf("nf: tx failed in arp!\n");
+			        rte_pktmbuf_free(bufs[i]);
+  			    }
   			    #ifdef __DEBUG_LV1
 			    printf("This is arp request message\n");
 			    printf("\n");
@@ -255,7 +256,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 					#ifdef __DEBUG_LV1
 					printf("nf: tcp_syn new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 					#endif
-					const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
+					if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1) {
+						printf("nf: tx burst in syn!\n");
+						rte_pktmbuf_free(bufs[i]);
+					}
 					//rte_pktmbuf_free(bufs[i]);
 					flow_counts ++;
 				}
@@ -273,7 +277,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 						#ifdef __DEBUG_LV1
 						printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						#endif
-						const uint16_t nb_tx = rte_eth_tx_burst(port, 0, &bufs[i], 1);
+						if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1) {
+						    printf("nf: tx burst in data!\n");
+						    rte_pktmbuf_free(bufs[i]);
+					    }
 					}
 					else{
 						printf("nf: state not found!\n");

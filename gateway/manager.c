@@ -273,7 +273,10 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
     uint64_t prev_tsc, cur_tsc, diff_tsc;
     /* build and send pull request packet */
     pull_packet = build_pull_packet(port, nf_id, ip_5tuple);
-    rte_eth_tx_burst(port, 1, &pull_packet, 1);
+    if (rte_eth_tx_burst(port, 1, &pull_packet, 1) != 1) {
+        printf("mg: tx pullState failed!\n");
+        rte_pktmbuf_free(pull_packet);
+    }
     /* wait until receive response(specific state backup message) */
 	prev_tsc = rte_rdtsc();
     while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0) {
@@ -340,14 +343,18 @@ lcore_manager(__attribute__((unused)) void *arg)
    			    if (ip_h->packet_id == 0)
    			        /* General state backup message */
    			        backup_to_machine((struct states_5tuple_pair*)payload);
-   			    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1)
+   			    else if (rte_be_to_cpu_16(ip_h->packet_id) == 1) {
    			        /* Specific state backup message for nf */
-   			        rte_ring_enqueue(
+   			        int ret = rte_ring_enqueue(
     		 	        nf_pull_wait_ring, 
     		 	        backup_to_machine(
     		 	            (struct states_5tuple_pair*)payload
     		 	        )
    			        );
+   			        if (ret < 0) {
+  			            printf("mg: enqueue failed\n");
+   			        }
+   			    }
   			}
  			else if (ip_proto == 1) {
   			    /* Control message about state pull */
@@ -369,16 +376,24 @@ lcore_manager(__attribute__((unused)) void *arg)
   			    printf("mg: port_dst is %u\n", ip_5tuple->port_dst);
   			    printf("mg: proto is %u\n", ip_5tuple->proto);
   			    #endif
-   			    managerGetStates(ip_5tuple, &request_states);
+   			    int ret = managerGetStates(ip_5tuple, &request_states);
   			    #ifdef __DEBUG_LV1
   			    printf("mg: ip_server is "IPv4_BYTES_FMT " \n", IPv4_BYTES(request_states->ipserver));
   			    #endif
-   			    backup_packet = build_backup_packet(
-    		        port, rte_be_to_cpu_32(ip_h->src_addr),  
-    		        rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
-    		        request_states 
-    		 	);
-   			    rte_eth_tx_burst(port, 1, &backup_packet, 1);
+   			    if (ret < 0) {
+  			        printf("mg: state not found for remote machine!\n");
+    		 	}
+   			    else {
+   			        backup_packet = build_backup_packet(
+    		            port, rte_be_to_cpu_32(ip_h->src_addr),  
+    		            rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
+    		            request_states 
+    		 	    );
+    		 	}
+   			    if (rte_eth_tx_burst(port, 1, &backup_packet, 1) != 1) {
+  			        printf("mg: tx backup_packet failed!\n");
+  			        rte_pktmbuf_free(backup_packet);
+    		 	}
   			}
   			#ifdef __DEBUG_LV1
 			printf("\n");
@@ -422,7 +437,10 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
   		    #ifdef __DEBUG_LV1
 		    printf("\n");
   		    #endif
-		    rte_eth_tx_burst(port, 0, &backup_packet, 1);
+            if (rte_eth_tx_burst(port, 0, &backup_packet, 1) != 1) {
+                printf("mg-slave: tx backup_packet failed!\n");
+                rte_pktmbuf_free(backup_packet);
+            }
    			rte_free(ip_5tuple);
 		}
 	}
