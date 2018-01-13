@@ -393,10 +393,10 @@ lcore_manager(__attribute__((unused)) void *arg)
     		            	    rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, 
     		            	    request_states 
     		 	        );
-    		 	    }
-   			    if (rte_eth_tx_burst(port, 1, &backup_packet, 1) != 1) {
-  			        printf("mg: tx backup_packet failed!\n");
-  			        rte_pktmbuf_free(backup_packet);
+   			        if (rte_eth_tx_burst(port, 1, &backup_packet, 1) != 1) {
+  			            printf("mg: tx backup_packet failed!\n");
+  			            rte_pktmbuf_free(backup_packet);
+    		 	        }
     		 	    }
   			}
   			#ifdef __DEBUG_LV1
