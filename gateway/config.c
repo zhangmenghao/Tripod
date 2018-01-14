@@ -219,9 +219,7 @@ setup_hash(const int socketid)
 		rte_exit(EXIT_FAILURE,
 			"Unable to create the hash on socket %d\n",
 			socketid);
-    #ifdef __DEBUG_LV1
 	printf("setup hash_table for state and index %s\n", s);
-    #endif
 }
 
 static inline int
@@ -250,14 +248,12 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
  		struct rte_mempool *manager_mbuf_pool)
 {
 	if ((enabled_port_mask & (1 << port)) == 0) {
-		#ifdef __DEBUG_LV1
 		printf("Skipping disabled port %d\n", port);
-		#endif
 		return 1;
 	}
 
 	struct rte_eth_conf port_conf = port_conf_default;
-	const uint16_t rx_rings = 2, tx_rings = 1;
+	const uint16_t rx_rings = 2, tx_rings = 3;
 	uint16_t nb_rxd = RX_RING_SIZE;
 	uint16_t nb_txd = TX_RING_SIZE;
 	int retval;
@@ -285,9 +281,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 					rte_eth_dev_socket_id(port), NULL, manager_mbuf_pool);
 		if (retval < 0)
 			return retval;
-		#ifdef __DEBUG_LV1
 		printf("Init queue %d for port %d\n", q, port);
-		#endif
 	}
 
 	/* Allocate and set up 1 TX queue per Ethernet port. */
@@ -329,9 +323,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
         return retval;
     unsigned int j;
     for (j = 0; j < RTE_FLOW_MASK_ARRAY_SIZE; j++)
-        #ifdef __DEBUG_LV2
         printf("flow_types_mask[%d]: %08x\n", j, fdir_info.flow_types_mask[j]);
-        #endif
 
     /* Set hash array of RSS */
     retval = rss_hash_set(1, port);
@@ -341,14 +333,12 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 	/* Display the port MAC address. */
 	struct ether_addr addr;
 	rte_eth_macaddr_get(port, &addr);
-    #ifdef __DEBUG_LV1
 	printf("Port %u MAC: %02" PRIx8 ":%02" PRIx8 ":%02" PRIx8
 			   ":%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8 "\n",
 			(unsigned)port,
 			addr.addr_bytes[0], addr.addr_bytes[1],
 			addr.addr_bytes[2], addr.addr_bytes[3],
 			addr.addr_bytes[4], addr.addr_bytes[5]);
-    #endif
 
 	/* Enable RX in promiscuous mode for the Ethernet device. */
 	rte_eth_promiscuous_enable(port);
@@ -442,11 +432,9 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 #define MAX_CHECK_TIME 90 /* 9s (90 * 100ms) in total */
 	uint8_t portid, count, all_ports_up, print_flag = 0;
 	struct rte_eth_link link;
-
-    #ifdef __DEBUG_LV1
+   
 	printf("\nChecking link status");
 	fflush(stdout);
-    #endif
 	for (count = 0; count <= MAX_CHECK_TIME; count++) {
 		all_ports_up = 1;
 		for (portid = 0; portid < port_num; portid++) {
@@ -457,19 +445,15 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 			/* print link status if flag set */
 			if (print_flag == 1) {
 				if (link.link_status) {
-					#ifdef __DEBUG_LV1
 					printf("Port %d Link Up - speed %u "
 						"Mbps - %s\n", (uint8_t)portid,
 						(unsigned)link.link_speed,
 				(link.link_duplex == ETH_LINK_FULL_DUPLEX) ?
 					("full-duplex") : ("half-duplex\n"));
-					#endif
 				}
 				else {
-					#ifdef __DEBUG_LV1
 					printf("Port %d Link Down\n",
 							(uint8_t)portid);
-					#endif
 				}
 				continue;
 			}
@@ -484,19 +468,16 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 			break;
 
 		if (all_ports_up == 0) {
-			#ifdef __DEBUG_LV1
 			printf(".");
 			fflush(stdout);
-			#endif
 			rte_delay_ms(CHECK_INTERVAL);
 		}
 
 		/* set the print_flag if all ports up or timeout */
 		if (all_ports_up == 1 || count == (MAX_CHECK_TIME - 1)) {
 			print_flag = 1;
-			#ifdef __DEBUG_LV1
+
 			printf("\ndone\n");
-			#endif
 		}
 	}
 }

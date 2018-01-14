@@ -188,8 +188,6 @@ void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip1 ,uin
         // *dport = rte_be_to_cpu_16(tcph->dst_port);
 	// printf("dport: %x\n",*dport);
 	// printf("sport: %x\n",*sport);
-
-
 }
 
 
@@ -201,8 +199,6 @@ void master_receive_probe_reply(struct rte_mbuf* mbuf,uint32_t* machine_ip1 ,uin
 	(2) build a new mbuf for every packet
 
 */
-
-
 struct rte_mbuf* build_probe_packet(struct ipv4_5tuple* ip_5tuple){
     struct rte_mbuf* probing_packet;
     struct ether_hdr *eth_hdr;
@@ -210,6 +206,9 @@ struct rte_mbuf* build_probe_packet(struct ipv4_5tuple* ip_5tuple){
     struct tcp_hdr *tcp_h;
     char* payload;
     probing_packet = rte_pktmbuf_alloc(ecmp_mbuf_pool);
+    if (!probing_packet){
+    	printf("ecmp: probing_packet alloc failed!\n");
+    }
     eth_hdr = (struct ether_hdr *) rte_pktmbuf_append(probing_packet, sizeof(struct ether_hdr));
     iph = (struct ipv4_hdr *)rte_pktmbuf_append(probing_packet, sizeof(struct ipv4_hdr));
     tcp_h = (struct tcp_hdr *) rte_pktmbuf_append(probing_packet,sizeof(struct tcp_hdr));
@@ -296,7 +295,6 @@ struct rte_mbuf* build_probe_packet(struct ipv4_5tuple* ip_5tuple){
 	The caller should resend the SAME mbuf.
 
 */
-
 struct rte_mbuf* backup_receive_probe_packet(struct rte_mbuf* mbuf){
 
 

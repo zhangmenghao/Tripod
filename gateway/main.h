@@ -1,8 +1,8 @@
-#define RX_RING_SIZE 128
+#define RX_RING_SIZE 512
 #define TX_RING_SIZE 512
 
 #define NUM_MBUFS 8191
-#define NUM_MANAGER_MBUFS 1023 
+#define NUM_MANAGER_MBUFS 8191
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
 #define MAX_RX_QUEUE_PER_LCORE 16
@@ -42,6 +42,8 @@
 /* Configuration about ECMP */
 #define N_MACHINE_MAX 8
 #define N_INTERFACE_MAX 48
+
+#define TIMER_RESOLUTION_CYCLES 2399987461ULL
 
 /*
  * Configure debug output level
@@ -110,8 +112,6 @@ extern uint8_t debug_mode;
 
 extern uint32_t dip_pool[DIP_POOL_SIZE];
 
-extern int flow_counts;
-
 extern struct rte_hash *state_hash_table[NB_SOCKETS];
 extern struct rte_hash *index_hash_table[NB_SOCKETS];
 
@@ -125,10 +125,8 @@ extern uint32_t this_machine_index;
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
 int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state);
-int delStates(struct ipv4_5tuple *ip_5tuple);
 void setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index);
 int getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index);
-int delIndexs(struct ipv4_5tuple *ip_5tuple);
 int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
           struct nf_indexs* target_indexs, struct nf_states** target_states);
 int port_init(uint8_t port, struct rte_mempool *mbuf_pool, struct rte_mempool *manager_mbuf_pool);
