@@ -133,12 +133,12 @@ static struct rte_eth_fdir_filter fdir_filter_arp = {
 };
 
 //configurations
-uint32_t dip_pool[DIP_POOL_SIZE]={
-	IPv4(100,10,0,0),
-	IPv4(100,10,0,1),
-	IPv4(100,10,0,2),
-	IPv4(100,10,0,3),
-	IPv4(100,10,0,4),
+uint32_t dip_pool[DIP_POOL_SIZE] = {
+    IPv4(100,10,0,0),
+    IPv4(100,10,0,1),
+    IPv4(100,10,0,2),
+    IPv4(100,10,0,3),
+    IPv4(100,10,0,4),
 };
 
 struct rte_ring* nf_manager_ring;
@@ -156,77 +156,77 @@ uint32_t broadcast_ip = IPv4(172,16,3,2);
 
 static inline uint32_t
 ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,
-		uint32_t init_val)
+              uint32_t init_val)
 {
-	const union ipv4_5tuple_host *k;
-	uint32_t t;
-	const uint32_t *p;
+    const union ipv4_5tuple_host *k;
+    uint32_t t;
+    const uint32_t *p;
 
-	k = data;
-	t = k->proto;
-	p = (const uint32_t *)&k->port_src;
+    k = data;
+    t = k->proto;
+    p = (const uint32_t *)&k->port_src;
 
-#ifdef EM_HASH_CRC
-	//printf("em-hash-crc\n");
-	init_val = rte_hash_crc_4byte(t, init_val);
-	init_val = rte_hash_crc_4byte(k->ip_src, init_val);
-	init_val = rte_hash_crc_4byte(k->ip_dst, init_val);
-	init_val = rte_hash_crc_4byte(*p, init_val);
-#else
-	//printf("not em-hash-crc\n");
-	init_val = rte_jhash_1word(t, init_val);
-	init_val = rte_jhash_1word(k->ip_src, init_val);
-	init_val = rte_jhash_1word(k->ip_dst, init_val);
-	init_val = rte_jhash_1word(*p, init_val);
-#endif
+    #ifdef EM_HASH_CRC
+    //printf("em-hash-crc\n");
+    init_val = rte_hash_crc_4byte(t, init_val);
+    init_val = rte_hash_crc_4byte(k->ip_src, init_val);
+    init_val = rte_hash_crc_4byte(k->ip_dst, init_val);
+    init_val = rte_hash_crc_4byte(*p, init_val);
+    #else
+    //printf("not em-hash-crc\n");
+    init_val = rte_jhash_1word(t, init_val);
+    init_val = rte_jhash_1word(k->ip_src, init_val);
+    init_val = rte_jhash_1word(k->ip_dst, init_val);
+    init_val = rte_jhash_1word(*p, init_val);
+    #endif
 
-	//printf("init_val = %u\n", init_val);
-	return init_val;
+    //printf("init_val = %u\n", init_val);
+    return init_val;
 }
 
 void
 setup_hash(const int socketid)
 {
-	struct rte_hash_parameters hash_params = {
-		.name = NULL,
-		.entries = HASH_ENTRIES,
-		.key_len = sizeof(union ipv4_5tuple_host),
-		.hash_func = ipv4_hash_crc,
-		.hash_func_init_val = 0,
-	};
-	char s[64];
-	snprintf(s, sizeof(s), "ipv4_state_hash_%d", socketid);
-	hash_params.name = s;
-	hash_params.socket_id = socketid;
-	state_hash_table[socketid] =
-		rte_hash_create(&hash_params);
+    struct rte_hash_parameters hash_params = {
+        .name = NULL,
+        .entries = HASH_ENTRIES,
+        .key_len = sizeof(union ipv4_5tuple_host),
+        .hash_func = ipv4_hash_crc,
+        .hash_func_init_val = 0,
+    };
+    char s[64];
+    snprintf(s, sizeof(s), "ipv4_state_hash_%d", socketid);
+    hash_params.name = s;
+    hash_params.socket_id = socketid;
+    state_hash_table[socketid] =
+        rte_hash_create(&hash_params);
 
-	struct rte_hash_parameters hash_paramss = {
-		.name = NULL,
-		.entries = HASH_ENTRIES,
-		.key_len = sizeof(union ipv4_5tuple_host),
-		.hash_func = ipv4_hash_crc,
-		.hash_func_init_val = 0,
-	};
-	char ss[64];
-	snprintf(ss, sizeof(ss), "ipv4_index_hash_%d", socketid);
-	hash_paramss.name = ss;
-	hash_paramss.socket_id = socketid;
-	index_hash_table[socketid] =
-		rte_hash_create(&hash_paramss);
+    struct rte_hash_parameters hash_paramss = {
+        .name = NULL,
+        .entries = HASH_ENTRIES,
+        .key_len = sizeof(union ipv4_5tuple_host),
+        .hash_func = ipv4_hash_crc,
+        .hash_func_init_val = 0,
+    };
+    char ss[64];
+    snprintf(ss, sizeof(ss), "ipv4_index_hash_%d", socketid);
+    hash_paramss.name = ss;
+    hash_paramss.socket_id = socketid;
+    index_hash_table[socketid] =
+        rte_hash_create(&hash_paramss);
 
-	if (state_hash_table[socketid] == NULL||index_hash_table[socketid] == NULL)
-		rte_exit(EXIT_FAILURE,
-			"Unable to create the hash on socket %d\n",
-			socketid);
-	printf("setup hash_table for state and index %s\n", s);
+    if (state_hash_table[socketid] == NULL||index_hash_table[socketid] == NULL)
+        rte_exit(EXIT_FAILURE,
+            "Unable to create the hash on socket %d\n",
+            socketid);
+    printf("setup hash_table for state and index %s\n", s);
 }
 
 static inline int
 rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
 {
     unsigned int idx, i, j = 0;
-	int retval;
+    int retval;
     for (idx = 0; idx < 2; idx++) {
         reta_conf[idx].mask = ~0ULL;
         for (i = 0; i < RTE_RETA_GROUP_SIZE; i++, j++) {
@@ -247,55 +247,55 @@ int
 port_init(uint8_t port, struct rte_mempool *mbuf_pool, 
  		struct rte_mempool *manager_mbuf_pool)
 {
-	if ((enabled_port_mask & (1 << port)) == 0) {
-		printf("Skipping disabled port %d\n", port);
-		return 1;
-	}
+    if ((enabled_port_mask & (1 << port)) == 0) {
+        printf("Skipping disabled port %d\n", port);
+        return 1;
+    }
 
-	struct rte_eth_conf port_conf = port_conf_default;
-	const uint16_t rx_rings = 2, tx_rings = 3;
-	uint16_t nb_rxd = RX_RING_SIZE;
-	uint16_t nb_txd = TX_RING_SIZE;
-	int retval;
-	uint16_t q;
+    struct rte_eth_conf port_conf = port_conf_default;
+    const uint16_t rx_rings = 2, tx_rings = 3;
+    uint16_t nb_rxd = RX_RING_SIZE;
+    uint16_t nb_txd = TX_RING_SIZE;
+    int retval;
+    uint16_t q;
 
-	if (port >= rte_eth_dev_count())
-		return -1;
+    if (port >= rte_eth_dev_count())
+        return -1;
 
-	/* Configure the Ethernet device. */
-	retval = rte_eth_dev_configure(port, rx_rings, tx_rings, &port_conf);
-	if (retval != 0)
-		return retval;
+    /* Configure the Ethernet device. */
+    retval = rte_eth_dev_configure(port, rx_rings, tx_rings, &port_conf);
+    if (retval != 0)
+        return retval;
 
-	retval = rte_eth_dev_adjust_nb_rx_tx_desc(port, &nb_rxd, &nb_txd);
-	if (retval != 0)
-		return retval;
+    retval = rte_eth_dev_adjust_nb_rx_tx_desc(port, &nb_rxd, &nb_txd);
+    if (retval != 0)
+        return retval;
 
-	/* Allocate and set up 2 RX queue per Ethernet port. */
-	for (q = 0; q < rx_rings; q++) {
-		if (((manager_rx_queue_mask >> q) & 1) == 1)
-			retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
-					rte_eth_dev_socket_id(port), NULL, mbuf_pool);
-		else
-			retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
-					rte_eth_dev_socket_id(port), NULL, manager_mbuf_pool);
-		if (retval < 0)
-			return retval;
-		printf("Init queue %d for port %d\n", q, port);
-	}
+    /* Allocate and set up 2 RX queue per Ethernet port. */
+    for (q = 0; q < rx_rings; q++) {
+        if (((manager_rx_queue_mask >> q) & 1) == 1)
+            retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
+                    rte_eth_dev_socket_id(port), NULL, mbuf_pool);
+        else
+            retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
+                    rte_eth_dev_socket_id(port), NULL, manager_mbuf_pool);
+        if (retval < 0)
+            return retval;
+        printf("Init queue %d for port %d\n", q, port);
+    }
 
-	/* Allocate and set up 1 TX queue per Ethernet port. */
-	for (q = 0; q < tx_rings; q++) {
-		retval = rte_eth_tx_queue_setup(port, q, nb_txd,
-				rte_eth_dev_socket_id(port), NULL);
-		if (retval < 0)
-			return retval;
-	}
+    /* Allocate and set up 1 TX queue per Ethernet port. */
+    for (q = 0; q < tx_rings; q++) {
+        retval = rte_eth_tx_queue_setup(port, q, nb_txd,
+                rte_eth_dev_socket_id(port), NULL);
+        if (retval < 0)
+            return retval;
+    }
 
-	/* Start the Ethernet port. */
-	retval = rte_eth_dev_start(port);
-	if (retval < 0)
-		return retval;
+    /* Start the Ethernet port. */
+    retval = rte_eth_dev_start(port);
+    if (retval < 0)
+        return retval;
 
     /* Set FlowDirector flow filter on port */
     retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
@@ -313,12 +313,12 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
     if (retval < 0)
         return retval;
     retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
-  					 				 RTE_ETH_FILTER_ADD, &fdir_filter_arp);
+                                     RTE_ETH_FILTER_ADD, &fdir_filter_arp);
     if (retval < 0)
         return retval;
     struct rte_eth_fdir_info fdir_info;
     retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
-  					 				 RTE_ETH_FILTER_INFO, &fdir_info);
+                                     RTE_ETH_FILTER_INFO, &fdir_info);
     if (retval < 0)
         return retval;
     unsigned int j;
@@ -327,159 +327,159 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 
     /* Set hash array of RSS */
     retval = rss_hash_set(1, port);
-	if (retval < 0)
-		return retval;
+    if (retval < 0)
+        return retval;
 
-	/* Display the port MAC address. */
-	struct ether_addr addr;
-	rte_eth_macaddr_get(port, &addr);
-	printf("Port %u MAC: %02" PRIx8 ":%02" PRIx8 ":%02" PRIx8
-			   ":%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8 "\n",
-			(unsigned)port,
-			addr.addr_bytes[0], addr.addr_bytes[1],
-			addr.addr_bytes[2], addr.addr_bytes[3],
-			addr.addr_bytes[4], addr.addr_bytes[5]);
+    /* Display the port MAC address. */
+    struct ether_addr addr;
+    rte_eth_macaddr_get(port, &addr);
+    printf("Port %u MAC: %02" PRIx8 ":%02" PRIx8 ":%02" PRIx8
+               ":%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8 "\n",
+            (unsigned)port,
+            addr.addr_bytes[0], addr.addr_bytes[1],
+            addr.addr_bytes[2], addr.addr_bytes[3],
+            addr.addr_bytes[4], addr.addr_bytes[5]);
 
-	/* Enable RX in promiscuous mode for the Ethernet device. */
-	rte_eth_promiscuous_enable(port);
+    /* Enable RX in promiscuous mode for the Ethernet device. */
+    rte_eth_promiscuous_enable(port);
 
-	return 0;
+    return 0;
 }
 
 /* display usage */
 static void
 print_usage(const char *prgname)
 {
-	printf("%s [EAL options] -- -p PORTMASK [-q NQ]\n"
-	       "  -p PORTMASK: hexadecimal bitmask of ports to configure\n",
-	       prgname);
+    printf("%s [EAL options] -- -p PORTMASK [-q NQ]\n"
+           "  -p PORTMASK: hexadecimal bitmask of ports to configure\n",
+           prgname);
 }
 
 static int
 parse_portmask(const char *portmask)
 {
-	char *end = NULL;
-	unsigned long pm;
+    char *end = NULL;
+    unsigned long pm;
 
-	/* parse hexadecimal string */
-	pm = strtoul(portmask, &end, 16);
-	if ((portmask[0] == '\0') || (end == NULL) || (*end != '\0'))
-		return -1;
+    /* parse hexadecimal string */
+    pm = strtoul(portmask, &end, 16);
+    if ((portmask[0] == '\0') || (end == NULL) || (*end != '\0'))
+        return -1;
 
-	if (pm == 0)
-		return -1;
+    if (pm == 0)
+        return -1;
 
-	return pm;
+    return pm;
 }
 
 /* Parse the argument given in the command line of the application */
 int
 parse_args(int argc, char **argv)
 {
-	int opt, ret;
-	char **argvopt;
-	int option_index;
-	char *prgname = argv[0];
-	static struct option lgopts[] = {
-		{NULL, 0, 0, 0}
-	};
+    int opt, ret;
+    char **argvopt;
+    int option_index;
+    char *prgname = argv[0];
+    static struct option lgopts[] = {
+        {NULL, 0, 0, 0}
+    };
 
-	argvopt = argv;
+    argvopt = argv;
 
-	while ((opt = getopt_long(argc, argvopt, "p:",
-				  lgopts, &option_index)) != EOF) {
+    while ((opt = getopt_long(argc, argvopt, "p:",
+                  lgopts, &option_index)) != EOF) {
 
-		switch (opt) {
-		/* portmask */
-		case 'p':
-			enabled_port_mask = parse_portmask(optarg);
-			if (enabled_port_mask < 0) {
-				printf("invalid portmask\n");
-				print_usage(prgname);
-				return -1;
-			}
-			break;
+        switch (opt) {
+        /* portmask */
+        case 'p':
+            enabled_port_mask = parse_portmask(optarg);
+            if (enabled_port_mask < 0) {
+                printf("invalid portmask\n");
+                print_usage(prgname);
+                return -1;
+            }
+            break;
 
-		/* long options */
-		case 0:
-			print_usage(prgname);
-			return -1;
+        /* long options */
+        case 0:
+            print_usage(prgname);
+            return -1;
 
-		default:
-			print_usage(prgname);
-			return -1;
-		}
-	}
+        default:
+            print_usage(prgname);
+            return -1;
+        }
+    }
 
-	if (enabled_port_mask == 0) {
-		printf("portmask not specified\n");
-		print_usage(prgname);
-		return -1;
-	}
+    if (enabled_port_mask == 0) {
+        printf("portmask not specified\n");
+        print_usage(prgname);
+        return -1;
+    }
 
-	if (optind >= 0)
-		argv[optind-1] = prgname;
+    if (optind >= 0)
+        argv[optind-1] = prgname;
 
-	ret = optind-1;
-	optind = 1; /* reset getopt lib */
-	return ret;
+    ret = optind-1;
+    optind = 1; /* reset getopt lib */
+    return ret;
 }
 
 void
 check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 {
-#define CHECK_INTERVAL 100 /* 100ms */
-#define MAX_CHECK_TIME 90 /* 9s (90 * 100ms) in total */
-	uint8_t portid, count, all_ports_up, print_flag = 0;
-	struct rte_eth_link link;
-   
-	printf("\nChecking link status");
-	fflush(stdout);
-	for (count = 0; count <= MAX_CHECK_TIME; count++) {
-		all_ports_up = 1;
-		for (portid = 0; portid < port_num; portid++) {
-			if ((port_mask & (1 << portid)) == 0)
-				continue;
-			memset(&link, 0, sizeof(link));
-			rte_eth_link_get_nowait(portid, &link);
-			/* print link status if flag set */
-			if (print_flag == 1) {
-				if (link.link_status) {
-					printf("Port %d Link Up - speed %u "
-						"Mbps - %s\n", (uint8_t)portid,
-						(unsigned)link.link_speed,
-				(link.link_duplex == ETH_LINK_FULL_DUPLEX) ?
-					("full-duplex") : ("half-duplex\n"));
-				}
-				else {
-					printf("Port %d Link Down\n",
-							(uint8_t)portid);
-				}
-				continue;
-			}
-			/* clear all_ports_up flag if any link down */
-			if (link.link_status == ETH_LINK_DOWN) {
-				all_ports_up = 0;
-				break;
-			}
-		}
-		/* after finally printing all link status, get out */
-		if (print_flag == 1)
-			break;
+    #define CHECK_INTERVAL 100 /* 100ms */
+    #define MAX_CHECK_TIME 90 /* 9s (90 * 100ms) in total */
+    uint8_t portid, count, all_ports_up, print_flag = 0;
+    struct rte_eth_link link;
 
-		if (all_ports_up == 0) {
-			printf(".");
-			fflush(stdout);
-			rte_delay_ms(CHECK_INTERVAL);
-		}
+    printf("\nChecking link status");
+    fflush(stdout);
+    for (count = 0; count <= MAX_CHECK_TIME; count++) {
+        all_ports_up = 1;
+        for (portid = 0; portid < port_num; portid++) {
+            if ((port_mask & (1 << portid)) == 0)
+                continue;
+            memset(&link, 0, sizeof(link));
+            rte_eth_link_get_nowait(portid, &link);
+            /* print link status if flag set */
+            if (print_flag == 1) {
+                if (link.link_status) {
+                    printf("Port %d Link Up - speed %u "
+                        "Mbps - %s\n", (uint8_t)portid,
+                        (unsigned)link.link_speed,
+                (link.link_duplex == ETH_LINK_FULL_DUPLEX) ?
+                    ("full-duplex") : ("half-duplex\n"));
+                }
+                else {
+                    printf("Port %d Link Down\n",
+                            (uint8_t)portid);
+                }
+                continue;
+            }
+            /* clear all_ports_up flag if any link down */
+            if (link.link_status == ETH_LINK_DOWN) {
+                all_ports_up = 0;
+                break;
+            }
+        }
+        /* after finally printing all link status, get out */
+        if (print_flag == 1)
+            break;
 
-		/* set the print_flag if all ports up or timeout */
-		if (all_ports_up == 1 || count == (MAX_CHECK_TIME - 1)) {
-			print_flag = 1;
+        if (all_ports_up == 0) {
+            printf(".");
+            fflush(stdout);
+            rte_delay_ms(CHECK_INTERVAL);
+        }
 
-			printf("\ndone\n");
-		}
-	}
+        /* set the print_flag if all ports up or timeout */
+        if (all_ports_up == 1 || count == (MAX_CHECK_TIME - 1)) {
+            print_flag = 1;
+
+            printf("\ndone\n");
+        }
+    }
 }
 
 int 

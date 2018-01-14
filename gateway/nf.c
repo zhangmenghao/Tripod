@@ -25,9 +25,8 @@
 struct rte_hash *state_hash_table[NB_SOCKETS];
 struct rte_hash *index_hash_table[NB_SOCKETS];
 
-int flow_counts = 0;
-int malicious_packet_counts = 0;
-int packet_counts = 0;
+uint32_t flow_counts = 0;
+uint32_t malicious_packet_counts = 0;
 
 void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
@@ -137,7 +136,9 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 			ret = pullState(1, 0, ip_5tuple, index, state);
 		}
 		else{
+			#ifdef __DEBUG_LV1
 			printf("nf: this is an attack!\n");
+			#endif
 		}
 	}
 	else{
@@ -254,13 +255,6 @@ lcore_nf(__attribute__((unused)) void *arg)
 					printf("nf: udp packets! pass!\n");	
 				}
 				else if (ip_5tuples.proto == 6){
-					packet_counts ++;
-					if (packet_counts % 10000 == 1){
-						printf("nf :                  packet_counts = %d, flow_counts = %d\n", packet_counts, flow_counts);
-					}
-					if (flow_counts % 1000 == 1){
-						printf("nf :                  packet_counts = %d, flow_counts = %d\n", packet_counts, flow_counts);
-					}
 					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
 					ip_5tuples.port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
 					ip_5tuples.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
@@ -352,7 +346,9 @@ lcore_nf(__attribute__((unused)) void *arg)
 						else{
 							rte_pktmbuf_free(bufs[i]);
 							malicious_packet_counts ++;
+							#ifdef __DEBUG_LV1
 							printf("nf: state not found!%d %d\n",flow_counts ,malicious_packet_counts);
+							#endif
 						}
 					}
 					#ifdef __DEBUG_LV1

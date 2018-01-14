@@ -10,10 +10,10 @@
 #ifndef IPv4_BYTES
 #define IPv4_BYTES_FMT "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8
 #define IPv4_BYTES(addr) \
-		(uint8_t) (((addr) >> 24) & 0xFF),\
-		(uint8_t) (((addr) >> 16) & 0xFF),\
-		(uint8_t) (((addr) >> 8) & 0xFF),\
-		(uint8_t) ((addr) & 0xFF)
+        (uint8_t) (((addr) >> 24) & 0xFF),\
+        (uint8_t) (((addr) >> 16) & 0xFF),\
+        (uint8_t) (((addr) >> 8) & 0xFF),\
+        (uint8_t) ((addr) & 0xFF)
 #endif
 
 
@@ -60,35 +60,35 @@ struct nf_states{
     uint32_t ipserver; //Load Balancer
 
     uint32_t dip; //NAT
-	uint16_t dport;
+    uint16_t dport;
 
     uint32_t bip; // Backup Machine IP
 
 };
 
 struct nf_indexs{
-	uint32_t backupip[2];
+    uint32_t backupip[2];
 };
 
 struct ipv4_5tuple {
-	uint32_t ip_dst;
-	uint32_t ip_src;
-	uint16_t port_dst;
-	uint16_t port_src;
-	uint8_t  proto;
+    uint32_t ip_dst;
+    uint32_t ip_src;
+    uint16_t port_dst;
+    uint16_t port_src;
+    uint8_t  proto;
 };
 
 union ipv4_5tuple_host {
-	struct {
-		uint8_t  pad0;
-		uint8_t  proto;
-		uint16_t pad1;
-		uint32_t ip_src;
-		uint32_t ip_dst;
-		uint16_t port_src;
-		uint16_t port_dst;
-	};
-	xmm_t xmm;
+    struct {
+        uint8_t  pad0;
+        uint8_t  proto;
+        uint16_t pad1;
+        uint32_t ip_src;
+        uint32_t ip_dst;
+        uint16_t port_src;
+        uint16_t port_dst;
+    };
+    xmm_t xmm;
 };
 
 struct port_param {
@@ -97,8 +97,8 @@ struct port_param {
 };
 
 struct machine_IP_pair{
-	uint8_t id;
-	uint32_t ip;
+    uint8_t id;
+    uint32_t ip;
 };
 
 extern struct port_param single_port_param;
@@ -121,6 +121,9 @@ extern struct rte_mbuf* probing_packet;
 extern struct ether_addr interface_MAC;
 extern uint32_t broadcast_ip;
 extern uint32_t this_machine_index;
+
+extern uint32_t flow_counts;
+extern uint32_t malicious_packet_counts;
 
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
