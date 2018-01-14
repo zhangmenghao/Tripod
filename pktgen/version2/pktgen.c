@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 #include <inttypes.h>
 #include <rte_eal.h>
 #include <rte_ethdev.h>
@@ -29,7 +30,7 @@
 		(uint8_t) ((addr) & 0xFF)
 #endif
 
-#define TIMER_RESOLUTION_CYCLES 2399987461ULL
+#define TIMER_RESOLUTION_CYCLES 2399984940ULL
 
 static struct rte_timer timer;
 static uint64_t prev_tsc = 0, cur_tsc , diff_tsc;
@@ -64,8 +65,10 @@ unsigned long long last_rx_new_flow = 0;
 
 unsigned long long rx_new_flow2 = 0;
 unsigned long long last_rx_new_flow2 = 0;
-uint32_t ip_count = 0;
+
+uint32_t packet_count = 0;
 uint64_t time_record[1000000];
+
 static void
 timer_cb( __attribute__((unused)) struct rte_timer *tim, __attribute__((unused)) void *arg)
 {
@@ -84,6 +87,7 @@ timer_cb( __attribute__((unused)) struct rte_timer *tim, __attribute__((unused))
 	last_tx_pkts = tx_pkts;
 	last_rx_new_flow = rx_new_flow;
 	last_rx_new_flow2 = rx_new_flow2;
+
 }
 
 /* basicfwd.c: Basic DPDK skeleton forwarding example. */
@@ -214,8 +218,10 @@ lcore_main(void)
 						if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 100 ){
 							if (ip_hdr->next_proto_id == 6){
 								struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+								#ifdef __lantency
 								time_record[tcp_hdrs->sent_seq] = rte_rdtsc() - time_record[tcp_hdrs->sent_seq];
-								//printf("ip_count: %d, rtt: %llu\n", tcp_hdrs->sent_seq,time_record[tcp_hdrs->sent_seq]);
+								//printf("packet_count: %d, rtt: %llu\n", tcp_hdrs->sent_seq,time_record[tcp_hdrs->sent_seq]);
+								#endif
 								if (tcp_hdrs->tcp_flags == 2){
 									rx_new_flow2 ++;
 								}
@@ -311,11 +317,7 @@ lcore_main(void)
 					#endif
 					struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
 					//ip_hdr->dst_addr = rte_cpu_to_be_32(IPv4(172,17,17,2));
-/*
-					if ((rte_be_to_cpu_32(ip_hdr->src_addr) >> 24) >= 224 && (rte_be_to_cpu_32(ip_hdr->src_addr) >> 24) < 240){
-						continue;
-					}
-*/
+
 					ip_hdr->src_addr = ((ip_hdr->src_addr & 0xffffff00) | 166);
 
 					ip_hdr->hdr_checksum = 0;
@@ -329,14 +331,15 @@ lcore_main(void)
 					if (rte_be_to_cpu_32(ip_hdr->dst_addr) >> 24 == 173){
 						if (ip_hdr->next_proto_id == 6){
 							struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
-							tcp_hdrs->sent_seq = ip_count;
+							#ifdef __lantency
+							tcp_hdrs->sent_seq = packet_count;
 							int64_t tsc = rte_rdtsc();	
-							time_record[ip_count] = tsc;
-							ip_count++;
-							//printf("ip_count: %u, time_record:%llu\n",ip_count-1,time_record[ip_count-1]); 
+							time_record[packet_count] = tsc;
+							packet_count++;
+							#endif
+							//printf("packet_count: %u, time_record:%llu\n",packet_count-1,time_record[packet_count-1]); 
 
-
-//							rte_pktmbuf_dump(stdout,bufs[i],100);
+							//rte_pktmbuf_dump(stdout,bufs[i],100);
 		    				uint32_t ipv4_addr = rte_be_to_cpu_32(ip_hdr->src_addr);
 							//printf("%d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,(ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,ipv4_addr & 0xFF);
 
@@ -345,6 +348,22 @@ lcore_main(void)
 							}
 							tx_pkts ++;
 							tx_byte += bufs[i]->data_len;
+							/*if (tx_pkts == 978721){
+								printf("in output file!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+								FILE *fp;
+								if ((fp = fopen("latency.txt", "w")) == NULL){
+									printf("Cannot open file latency.txt\n");
+									exit(1);
+								}
+								else{
+									int kk;
+									for (kk = 0; kk <= 978721; kk ++){
+										fprintf(fp, "%d ", kk);
+										fprintf(fp, "%llu\n", time_record[kk]*1000000000/TIMER_RESOLUTION_CYCLES);		
+									}
+								}
+								fclose(fp);
+							}*/
 							#ifdef __DEBUG_LV1
 							printf("nf: this is very important! port_src and port_dst is %u and %u\n", 
 								rte_be_to_cpu_16(tcp_hdrs->src_port), rte_be_to_cpu_16(tcp_hdrs->dst_port));
@@ -371,7 +390,7 @@ lcore_main(void)
 					for (buf = nb_tx; buf < nb_rx; buf++)
 						rte_pktmbuf_free(bufs[buf]);
 				}
-			}			
+			}
 		}
 	}
 }
