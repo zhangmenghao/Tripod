@@ -131,8 +131,8 @@ build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
      */
     ip_h->packet_id = rte_cpu_to_be_16(packet_id);
     ip_h->time_to_live=4;
-    /* In HPSMS, proto 0 indicate this is state backup message */
-    ip_h->next_proto_id = 0x0;
+    /* In HPSMS, proto A0 indicate this is state backup message */
+    ip_h->next_proto_id = 0xA0;
     ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
     /* Set the packet payload(5tuple:states) */
     payload->l4_5tuple.ip_dst = ip_5tuple->ip_dst;
@@ -191,8 +191,8 @@ build_pull_packet(uint8_t port, uint16_t nf_id, struct ipv4_5tuple* ip_5tuple)
      */
     ip_h->packet_id = rte_cpu_to_be_16(nf_id);
     ip_h->time_to_live=4;
-    /* In HPSMS, proto 1 indicate this is state pull message */
-    ip_h->next_proto_id = 0x1;
+    /* In HPSMS, proto A1 indicate this is state pull message */
+    ip_h->next_proto_id = 0xA1;
     ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
     /* Set the packet payload(5tuple:states) */
     payload->ip_dst = ip_5tuple->ip_dst;
@@ -236,8 +236,8 @@ build_keyset_packet(uint32_t target_ip, struct nf_indexs* indexs,
     ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct indexs_5tuple_pair));
     ip_h->packet_id = 0;/* NO USE */
     ip_h->time_to_live=4;
-    /* In HPSMS, proto 2 indicate this is keyset broadcast message */
-    ip_h->next_proto_id = 0x2;
+    /* In HPSMS, proto A2 indicate this is keyset broadcast message */
+    ip_h->next_proto_id = 0xA2;
     ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
     /* Set the packet payload(5tuple:states) */
     payload->l4_5tuple.ip_dst = ip_5tuple->ip_dst;
@@ -390,7 +390,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                    IPv4_BYTES(ip_h->dst_addr));
             printf("mg: proto: %x\n",ip_proto);
             #endif
-            if (ip_proto == 0) {
+            if (ip_proto == 0xA0) {
                 /* Control message about state backup */
                 /* Destination ip is 172.16.X.Y */
                 /* This is state backup message */
@@ -416,7 +416,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                     }
                 }
             }
-            else if (ip_proto == 1) {
+            else if (ip_proto == 0xA1) {
                 /* Control message about state pull */
                 struct ipv4_5tuple* ip_5tuple;
                 struct rte_mbuf* backup_packet;
