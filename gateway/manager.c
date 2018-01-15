@@ -394,6 +394,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                 /* Control message about state backup */
                 /* Destination ip is 172.16.X.Y */
                 /* This is state backup message */
+                ctrl_pkts += 1;
+                ctrl_bytes += bufs[i]->data_len;
                 #ifdef __DEBUG_LV1
                 printf("mg: This is state backup message\n");
                 #endif
@@ -421,6 +423,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                 struct nf_states* request_states;
                 struct ether_addr self_eth_addr;
                 uint32_t request_ip;
+                ctrl_pkts += 1;
+                ctrl_bytes += bufs[i]->data_len;
                 payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
                 /* Get the 5tuple and relevant state, build and send */
                 ip_5tuple = (struct ipv4_5tuple*)payload;
