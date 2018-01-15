@@ -2,7 +2,7 @@
 #define TX_RING_SIZE 512
 
 #define NUM_MBUFS 8191
-#define NUM_MANAGER_MBUFS 8191
+#define NUM_MANAGER_MBUFS 16383
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
 #define MAX_RX_QUEUE_PER_LCORE 16
@@ -109,7 +109,8 @@ extern uint8_t debug_mode;
 
 extern uint32_t dip_pool[DIP_POOL_SIZE];
 
-extern int flow_counts;
+extern uint32_t flow_counts;
+extern uint32_t malicious_packet_counts;
 
 extern struct rte_hash *state_hash_table[NB_SOCKETS];
 extern struct rte_hash *index_hash_table[NB_SOCKETS];
