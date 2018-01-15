@@ -319,6 +319,7 @@ lcore_main(void)
 					//ip_hdr->dst_addr = rte_cpu_to_be_32(IPv4(172,17,17,2));
 
 					ip_hdr->src_addr = ((ip_hdr->src_addr & 0xffffff00) | 166);
+					ip_hdr->dst_addr = ((ip_hdr->dst_addr & 0xffffff00) | 173);
 
 					ip_hdr->hdr_checksum = 0;
 					uint16_t ck1 = rte_ipv4_cksum(ip_hdr);
@@ -340,7 +341,7 @@ lcore_main(void)
 							//printf("packet_count: %u, time_record:%llu\n",packet_count-1,time_record[packet_count-1]); 
 
 							//rte_pktmbuf_dump(stdout,bufs[i],100);
-		    				uint32_t ipv4_addr = rte_be_to_cpu_32(ip_hdr->src_addr);
+		    				//uint32_t ipv4_addr = rte_be_to_cpu_32(ip_hdr->src_addr);
 							//printf("%d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,(ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,ipv4_addr & 0xFF);
 
 							if (tcp_hdrs->tcp_flags == 2){
@@ -348,7 +349,7 @@ lcore_main(void)
 							}
 							tx_pkts ++;
 							tx_byte += bufs[i]->data_len;
-							/*if (tx_pkts == 978721){
+							/*if (tx_pkts == 11558050){
 								printf("in output file!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 								FILE *fp;
 								if ((fp = fopen("latency.txt", "w")) == NULL){
@@ -357,7 +358,7 @@ lcore_main(void)
 								}
 								else{
 									int kk;
-									for (kk = 0; kk <= 978721; kk ++){
+									for (kk = 0; kk <= 11558050; kk ++){
 										fprintf(fp, "%d ", kk);
 										fprintf(fp, "%llu\n", time_record[kk]*1000000000/TIMER_RESOLUTION_CYCLES);		
 									}
