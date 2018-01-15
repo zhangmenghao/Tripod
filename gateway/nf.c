@@ -122,11 +122,11 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state)
         #endif
     }
     end_tsc = rte_rdtsc();
-    printf("monitor: ip_dst is "IPv4_BYTES_FMT " \n",
-           IPv4_BYTES(ip_5tuple->ip_dst));
-    printf("monitor: ip_src is "IPv4_BYTES_FMT " \n",
-           IPv4_BYTES(ip_5tuple->ip_src));
-    printf("monitor: pull rtt is %lu\n\n", end_tsc - start_tsc);
+    // printf("monitor: ip_dst is "IPv4_BYTES_FMT " \n",
+           // IPv4_BYTES(ip_5tuple->ip_dst));
+    // printf("monitor: ip_src is "IPv4_BYTES_FMT " \n",
+           // IPv4_BYTES(ip_5tuple->ip_src));
+    // printf("monitor: pull rtt is %lu\n\n", end_tsc - start_tsc);
     return ret;
 }
 
