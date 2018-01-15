@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <stdlib.h>
+#include <time.h>
 #include <inttypes.h>
 #include <getopt.h>
 #include <rte_eal.h>
@@ -158,7 +160,7 @@ build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
 }
 
 static struct rte_mbuf*
-build_pull_packet(uint8_t port, struct nf_indexs* indexs,
+build_pull_packet(uint8_t port, uint32_t target_ip, 
                   uint16_t nf_id, struct ipv4_5tuple* ip_5tuple)
 {
     struct rte_mbuf* pull_packet;
@@ -185,7 +187,7 @@ build_pull_packet(uint8_t port, struct nf_indexs* indexs,
     /* Set the packet ip header */
     memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
     ip_h->src_addr=rte_cpu_to_be_32(this_machine->ip);
-    ip_h->dst_addr=rte_cpu_to_be_32(indexs->backupip[0]);
+    ip_h->dst_addr=rte_cpu_to_be_32(target_ip);
     ip_h->version_ihl = (4 << 4) | 5;
     ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct ipv4_5tuple));
     /*
@@ -319,13 +321,25 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
     uint64_t prev_tsc, cur_tsc, diff_tsc;
     /* build and send pull request packet */
     pull_packet = build_pull_packet(
-        port, target_indexs, nf_id, ip_5tuple
+        port, target_indexs->backupip[0], nf_id, ip_5tuple
     );
 
     if (rte_eth_tx_burst(port, 2, &pull_packet, 1) != 1) {
         printf("mg: tx pullState failed!\n");
         rte_pktmbuf_free(pull_packet);
     }
+
+    /* If the second index is set, send 2 pull request packet */
+    if (target_indexs->backupip[1] != 0) {
+        pull_packet = build_pull_packet(
+            port, target_indexs->backupip[1], nf_id, ip_5tuple
+        );
+        if (rte_eth_tx_burst(port, 2, &pull_packet, 1) != 1) {
+            printf("mg: tx pullState2 failed!\n");
+            rte_pktmbuf_free(pull_packet);
+        }
+    }
+
     /* wait until receive response(specific state backup message) */
     prev_tsc = rte_rdtsc();
     while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0) {
@@ -336,6 +350,62 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
             return -1;
         }
     }
+    return 0;
+}
+
+int
+backup_to_remote(struct ipv4_5tuple* ip_5tuple, uint8_t backup_num)
+{
+    struct rte_mbuf* backup_packet;
+    struct nf_states* backup_states;
+    struct rte_mbuf* keyset_packet;
+    struct nf_indexs *indexs;
+    int i, idx, ret = managerGetStates(ip_5tuple, &backup_states);
+    if (ret < 0) {
+        printf("mg: state not found!\n");
+        return ret;
+    }
+
+    indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
+    memset((void*)indexs, 0, sizeof(struct nf_indexs));
+    if (!indexs) {
+        rte_panic("mg: indexs malloc failed!");
+        return -1;
+    }
+
+    for (i = 0; i < backup_num; i++) {
+        int rnd;
+        do {
+            rnd = rand() % N_MACHINE;
+        } 
+        while (rnd == this_machine_index);
+        indexs->backupip[i] = topo[rnd].ip;
+        backup_packet = build_backup_packet(
+            0, indexs->backupip[i], 0x00, 
+            ip_5tuple, backup_states
+        );
+        /* Send control message from port 0 queue 2 */
+        if (rte_eth_tx_burst(0, 2, &backup_packet, 1) != 1) {
+            printf("mg: tx backup_packet failed!\n");
+            rte_pktmbuf_free(backup_packet);
+        }
+    }
+
+    setIndexs(ip_5tuple, indexs);
+
+    for (idx = 0; idx < N_MACHINE; idx++) {
+        if (idx == this_machine_index)
+            continue;
+        keyset_packet = build_keyset_packet(
+            topo[idx].ip, indexs, 0, ip_5tuple
+        );
+        /* Send control message from port 0 queue 2 */
+        if (rte_eth_tx_burst(0, 2, &keyset_packet, 1) != 1) {
+            printf("mg: tx keyset_packet failed!\n");
+            rte_pktmbuf_free(keyset_packet);
+        }
+    }
+
     return 0;
 }
 
@@ -362,6 +432,8 @@ lcore_manager(__attribute__((unused)) void *arg)
         &manager_timer, rte_get_timer_hz(), PERIODICAL,
         rte_lcore_id(), manager_timer_cb, NULL
     );
+
+    srand((int)time(NULL));
 
 	/* Run until the application is quit or killed. */
     for (;;) {
@@ -401,125 +473,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                        IPv4_BYTES(ip_h->dst_addr));
                 printf("mg: proto: %x\n",ip_proto);
                 #endif
-                if (ip_proto == 0x06 || ip_proto == 0x11) {
-                    ctrl_pkts += 1;
-                    ctrl_bytes += bufs[i]->data_len;
-                    /* Control message about ECMP */
-                    if ((ip_h->dst_addr & 0x00FF0000) == (0xFD << 16)) {
-                        /* Destination ip is 172.16.253.X */
-                        /* This is ECMP predict request message */
-                        struct rte_mbuf* probing_packet;
-                        probing_packet = backup_receive_probe_packet(bufs[i]);
-                        if (rte_eth_tx_burst(port,2,&probing_packet,1) != 1) {
-                            printf("mg: tx probing_packet failed!\n");
-                            rte_pktmbuf_free(probing_packet);
-                        }
-                        #ifdef __DEBUG_LV1
-                        printf("mg: This is ECMP predict request message\n");
-                        #endif
-                    }
-                    else {
-                        /* Destination ip is 172.16.X.Y */
-                        /* This is ECMP predict reply message */
-                        // ecmp_receive_reply(bufs[i]);
-                        struct ipv4_5tuple* ip_5tuple;
-                        struct rte_mbuf* backup_packet;
-                        struct nf_states* backup_states;
-                        struct rte_mbuf* keyset_packet;
-                        struct nf_indexs *indexs;
-                        uint32_t backup_ip1;
-                        uint32_t backup_ip2;
-                        uint16_t nb_tx;
-                        int idx;
-                        /* Get backup machine ip */
-                        master_receive_probe_reply(
-                            bufs[i], &backup_ip1, &backup_ip2, &ip_5tuple
-                        );
-                        #ifdef __DEBUG_LV1
-                        printf("mg: This is ECMP pedict reply message\n");
-                        #endif
-                        // printf("debug: size %d ip_5tuple %lx\n",
-                               // sizeof(ip_5tuple), ip_5tuple);
-                        ip_5tuple->proto = 0x6;
-                        int ret = managerGetStates(ip_5tuple, &backup_states);
-                        if (ret < 0) {
-                            printf("mg: state not found!\n");
-                            rte_pktmbuf_free(bufs[i]);
-                            continue;
-                        }
-                        indexs = rte_malloc(NULL, sizeof(struct nf_indexs), 0);
-                        if (!indexs) {
-                            rte_panic("mg: indexs malloc failed!");
-                            rte_pktmbuf_free(bufs[i]);
-                            continue;
-                        }
-                        if (backup_ip1 ==  this_machine->ip) {
-                            indexs->backupip[0] = backup_ip2;
-                            // indexs->backupip[0] = topo[3].ip;
-                            indexs->backupip[1] = 0;
-                            setIndexs(ip_5tuple, indexs);
-                            backup_packet = build_backup_packet(
-                                port, backup_ip2, 0x00, ip_5tuple, backup_states
-                            );
-                            // backup_packet = build_backup_packet(
-                            //     port, topo[3].ip, 0x00,
-                            //     ip_5tuple, backup_states
-                            // );
-                            nb_tx = rte_eth_tx_burst(port,2,&backup_packet,1);
-                            if (nb_tx != 1) {
-                                printf("mg: tx backup_packet failed!\n");
-                                rte_pktmbuf_free(backup_packet);
-                            }
-                        }
-                        else if (backup_ip2 ==  this_machine->ip) {
-                            indexs->backupip[0] = backup_ip1;
-                            indexs->backupip[1] = 0;
-                            setIndexs(ip_5tuple, indexs);
-                            backup_packet = build_backup_packet(
-                                port, backup_ip1, 0x00, ip_5tuple, backup_states
-                            );
-                            nb_tx = rte_eth_tx_burst(port,2,&backup_packet,1);
-                            if (nb_tx != 1) {
-                                printf("mg: tx backup_packet failed!\n");
-                                rte_pktmbuf_free(backup_packet);
-                            }
-                        }
-                        else {
-                            indexs->backupip[0] = backup_ip1;
-                            indexs->backupip[1] = backup_ip2;
-                            setIndexs(ip_5tuple, indexs);
-                            backup_packet = build_backup_packet(
-                                port, backup_ip1, 0x00, ip_5tuple, backup_states
-                            );
-                            nb_tx = rte_eth_tx_burst(port,2,&backup_packet,1);
-                            if (nb_tx != 1) {
-                                printf("mg: tx backup_packet failed!\n");
-                                rte_pktmbuf_free(backup_packet);
-                            }
-                            backup_packet = build_backup_packet(
-                                port, backup_ip2, 0x00, ip_5tuple, backup_states
-                            );
-                            nb_tx = rte_eth_tx_burst(port,2,&backup_packet,1);
-                            if (nb_tx != 1) {
-                                printf("mg: tx backup_packet failed!\n");
-                                rte_pktmbuf_free(backup_packet);
-                            }
-                        }
-                        for (idx = 0; idx < 4; idx++) {
-                            if (idx == this_machine_index)
-                                continue;
-                            keyset_packet = build_keyset_packet(
-                                topo[idx].ip, indexs, port, ip_5tuple
-                            );
-                            nb_tx = rte_eth_tx_burst(port,2,&keyset_packet,1);
-                            if (nb_tx != 1) {
-                                printf("mg: tx keyset_packet failed!\n");
-                                rte_pktmbuf_free(keyset_packet);
-                            }
-                        }
-                    }
-                }
-                else if (ip_proto == 0xA0) {
+                if (ip_proto == 0xA0) {
                     /* Control message about state backup */
                     /* Destination ip is 172.16.X.Y */
                     /* This is state backup message */
@@ -535,7 +489,15 @@ lcore_manager(__attribute__((unused)) void *arg)
                     }
                     else if (rte_be_to_cpu_16(ip_h->packet_id) == 1) {
                         /* Specific state backup message for nf */
-                        int ret = rte_ring_enqueue(
+                        struct states_5tuple_pair* backup_pair;
+                        struct nf_states* tmp_states;
+                        int ret;
+                        backup_pair = (struct states_5tuple_pair*)payload;
+                        ret = managerGetStates(
+                            &backup_pair->l4_5tuple, &tmp_states
+                        );
+                        if (ret >= 0) continue;
+                        ret = rte_ring_enqueue(
                             nf_pull_wait_ring,
                             backup_to_machine(
                                 (struct states_5tuple_pair*)payload
@@ -617,8 +579,6 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
             if (rte_ring_dequeue(nf_manager_ring, (void**)&ip_5tuple) == 0) {
                 // printf("debug: size %d ip_5tuple %lx\n",
                        // sizeof(ip_5tuple), ip_5tuple);
-                struct rte_mbuf* probing_packet;
-                probing_packet = build_probe_packet(ip_5tuple);
                 #ifdef __DEBUG_LV1
                 printf("mg-salve: Receive backup request from nf\n");
                 printf("mg-salve: ip_dst is "IPv4_BYTES_FMT " \n",
@@ -634,10 +594,7 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
                 #ifdef __DEBUG_LV1
                 printf("\n");
                 #endif
-                if (rte_eth_tx_burst(port, 1, &probing_packet, 1) != 1) {
-                    printf("mg-slave: tx probing_packet failed!\n");
-                    rte_pktmbuf_free(probing_packet);
-                }
+                backup_to_remote(ip_5tuple, 1);
             }
         }
     }

@@ -40,6 +40,7 @@
 #endif
 
 /* Configuration about ECMP */
+#define N_MACHINE 4
 #define N_MACHINE_MAX 8
 #define N_INTERFACE_MAX 48
 
