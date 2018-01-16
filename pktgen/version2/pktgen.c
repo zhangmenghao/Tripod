@@ -222,7 +222,7 @@ lcore_main(void)
 								time_record[tcp_hdrs->sent_seq] = rte_rdtsc() - time_record[tcp_hdrs->sent_seq];
 								//printf("packet_count: %d, rtt: %llu\n", tcp_hdrs->sent_seq,time_record[tcp_hdrs->sent_seq]);
 								#endif
-								if (tcp_hdrs->tcp_flags == 2){
+								if (tcp_hdrs->tcp_flags == 0x2){
 									rx_new_flow2 ++;
 								}
 								rx_pkts ++;
@@ -344,7 +344,7 @@ lcore_main(void)
 		    				//uint32_t ipv4_addr = rte_be_to_cpu_32(ip_hdr->src_addr);
 							//printf("%d.%d.%d.%d\n", (ipv4_addr >> 24) & 0xFF,(ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,ipv4_addr & 0xFF);
 
-							if (tcp_hdrs->tcp_flags == 2){
+							if (tcp_hdrs->tcp_flags == 0x2){
 								rx_new_flow ++;
 							}
 							tx_pkts ++;
