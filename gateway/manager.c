@@ -401,8 +401,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                        IPv4_BYTES(ip_h->dst_addr));
                 printf("mg: proto: %x\n",ip_proto);
                 #endif
-                if (((ip_h->dst_addr & 0x000000FF) == (0xAC << 0)) ||
-                    ((ip_h->dst_addr & 0x0000FF00) == (0x10 << 8))) {
+                if (((ip_h->dst_addr & 0x000000FF) != (0xAC << 0)) ||
+                    ((ip_h->dst_addr & 0x0000FF00) != (0x10 << 8))) {
                     printf("mg: wrong packet in control message queue!!!\n");
                     rte_pktmbuf_free(bufs[i]);
                     continue;
