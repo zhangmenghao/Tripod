@@ -90,7 +90,9 @@ managerGetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state)
         printf("mg: parameter invalid in getStates\n");
     }
     else if (ret == -ENOENT) {
+        #ifdef __DEBUG_LV1
         printf("mg: key not found in getStates!\n");
+        #endif
     }
     else{
         printf("mg: get state error!\n");
@@ -496,15 +498,16 @@ lcore_manager(__attribute__((unused)) void *arg)
                         ret = managerGetStates(
                             &backup_pair->l4_5tuple, &tmp_states
                         );
-                        if (ret >= 0) continue;
-                        ret = rte_ring_enqueue(
-                            nf_pull_wait_ring,
-                            backup_to_machine(
-                                (struct states_5tuple_pair*)payload
-                            )
-                        );
                         if (ret < 0) {
-                            printf("mg: enqueue failed!\n");
+                            ret = rte_ring_enqueue(
+                                nf_pull_wait_ring,
+                                backup_to_machine(
+                                    (struct states_5tuple_pair*)payload
+                                )
+                            );
+                            if (ret < 0) {
+                                printf("mg: enqueue failed!\n");
+                            }
                         }
                     }
                 }

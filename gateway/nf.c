@@ -328,6 +328,9 @@ lcore_nf(__attribute__((unused)) void *arg)
 				}
 				else{
 					printf("nf: not tcp and udp packets!\n");
+					printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_dst));
+					printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_src));
+					printf("nf: next_proto_id is %u\n", ip_5tuples.proto);
 					rte_pktmbuf_free(bufs[i]);
 				}
 				#ifdef __DEBUG_LV1
