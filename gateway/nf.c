@@ -206,7 +206,7 @@ lcore_nf(__attribute__((unused)) void *arg)
                     rte_pktmbuf_free(bufs[i]);
                 }
                 #ifdef __DEBUG_LV1
-                printf("This is arp request message\n");
+                printf("nf: This is arp request message\n");
                 printf("\n");
                 #endif
                 continue;

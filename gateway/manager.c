@@ -382,6 +382,39 @@ lcore_manager(__attribute__((unused)) void *arg)
             printf("mg: packet comes from port %u queue %u\n", port, queue);
             #endif
             eth_h = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
+            if (eth_h->ether_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
+                /* arp message to keep live with switch */
+                struct arp_hdr* arp_h;
+                struct ether_addr self_eth_addr;
+                uint32_t ip_addr;
+                arp_h = (struct arp_hdr*)
+                        ((u_char*)eth_h + sizeof(struct ether_hdr));
+                rte_eth_macaddr_get(port, &self_eth_addr);
+                ether_addr_copy(&(eth_h->s_addr), &(eth_h->d_addr));
+                ether_addr_copy(&(eth_h->s_addr), &interface_MAC);
+                /* Set source MAC address with MAC of TX Port */
+                ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
+                arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
+                ether_addr_copy(
+                    &(arp_h->arp_data.arp_sha), &(arp_h->arp_data.arp_tha)
+                );
+                ether_addr_copy(
+                    &(eth_h->s_addr), &(arp_h->arp_data.arp_sha)
+                );
+                /* Swap IP address in ARP payload */
+                ip_addr = arp_h->arp_data.arp_sip;
+                arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
+                arp_h->arp_data.arp_tip = ip_addr;
+                if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1) {
+                    printf("nf: tx failed in arp!\n");
+                    rte_pktmbuf_free(bufs[i]);
+                }
+                #ifdef __DEBUG_LV1
+                printf("mg: This is arp request message\n");
+                printf("\n");
+                #endif
+                continue;
+            }
             ip_h = (struct ipv4_hdr*)
                     ((u_char*)eth_h + sizeof(struct ether_hdr));
             ip_proto = ip_h->next_proto_id;

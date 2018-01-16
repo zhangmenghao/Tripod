@@ -78,16 +78,16 @@ void ecmp_predict_init(struct rte_mempool * mbuf_pool){
 	
 	//TODO: need a configuration process when boot
 	topo[0].id = 1;
-	topo[0].ip = IPv4(172,16,0,2);
+	topo[0].ip = IPv4(172,16,4,2);
 
 	topo[1].id = 2;
-	topo[1].ip = IPv4(172,16,1,2);
+	topo[1].ip = IPv4(172,16,5,2);
 
 	topo[2].id = 3;
-	topo[2].ip = IPv4(172,16,2,2);
+	topo[2].ip = IPv4(172,16,6,2);
 
 	topo[3].id = 4;
-	topo[3].ip = IPv4(172,16,3,2);
+	topo[3].ip = IPv4(172,16,7,2);
 
     this_machine_index = 1;
 
