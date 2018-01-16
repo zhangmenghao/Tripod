@@ -401,6 +401,12 @@ lcore_manager(__attribute__((unused)) void *arg)
                        IPv4_BYTES(ip_h->dst_addr));
                 printf("mg: proto: %x\n",ip_proto);
                 #endif
+                if (((ip_h->dst_addr & 0x000000FF) == (0xAC << 0)) ||
+                    ((ip_h->dst_addr & 0x0000FF00) == (0x10 << 8))) {
+                    printf("mg: wrong packet in control message queue!!!\n");
+                    rte_pktmbuf_free(bufs[i]);
+                    continue;
+                }
                 if (ip_proto == 0x06 || ip_proto == 0x11) {
                     ctrl_pkts += 1;
                     ctrl_bytes += bufs[i]->data_len;
@@ -418,8 +424,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                         printf("mg: This is ECMP predict request message\n");
                         #endif
                     }
-                    else {
-                        /* Destination ip is 172.16.X.Y */
+                    else if ((ip_h->dst_addr & 0xFF000000) == (0x2 << 24)) {
+                        /* Destination ip is 172.16.X.2 */
                         /* This is ECMP predict reply message */
                         // ecmp_receive_reply(bufs[i]);
                         struct ipv4_5tuple* ip_5tuple;
