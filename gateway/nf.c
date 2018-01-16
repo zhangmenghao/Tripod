@@ -267,10 +267,11 @@ lcore_nf(__attribute__((unused)) void *arg)
 					#ifdef __DEBUG_LV1
 					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					#endif
-					if (tcp_hdrs->tcp_flags == 0x12){
+					if (tcp_hdrs->tcp_flags == 0x02){
 						#ifdef __DEBUG_LV1
 						printf("nf: recerive a new flow!\n");
 						#endif
+
 						struct ipv4_5tuple *ip_5tuple = rte_malloc(NULL, sizeof(*ip_5tuple), 0);
 						if (!ip_5tuple)
 							rte_panic("nf: ip_5tuple malloc failed!");
@@ -284,6 +285,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 							rte_panic("nf: state malloc failed!");
 						state->ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
 						setStates(ip_5tuple, state);
+
 						ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
 						ip_hdr->hdr_checksum = 0;
 						ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);

@@ -16,16 +16,7 @@
         (uint8_t) ((addr) & 0xFF)
 #endif
 
-
-/* Configuration about NF */
-/* Hash parameters. */
-#ifdef RTE_ARCH_64
-/* default to 4 million hash entries (approx) */
 #define HASH_ENTRIES		(1024*1024*4)
-#else
-/* 32-bit has less address-space for hugepage memory, limit to 1M entries */
-#define HASH_ENTRIES		(1024*1024*1)
-#endif
 
 #define DIP_POOL_SIZE 5
 
