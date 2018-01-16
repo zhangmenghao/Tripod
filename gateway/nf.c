@@ -26,6 +26,7 @@ struct rte_hash *state_hash_table[NB_SOCKETS];
 struct rte_hash *index_hash_table[NB_SOCKETS];
 
 uint32_t flow_counts = 0;
+uint32_t last_flow_counts = 0;
 uint32_t malicious_packet_counts = 0;
 
 void
@@ -263,7 +264,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					#ifdef __DEBUG_LV1
 					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					#endif
-					if (tcp_hdrs->tcp_flags == 2){
+					if (tcp_hdrs->tcp_flags == 0x12){
 						#ifdef __DEBUG_LV1
 						printf("nf: recerive a new flow!\n");
 						#endif

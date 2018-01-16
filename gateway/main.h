@@ -123,6 +123,7 @@ extern uint32_t broadcast_ip;
 extern uint32_t this_machine_index;
 
 extern uint32_t flow_counts;
+extern uint32_t last_flow_counts;
 extern uint32_t malicious_packet_counts;
 
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);

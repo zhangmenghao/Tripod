@@ -46,9 +46,11 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
     printf("ctrl_pkts_sec: %llu\n", ctrl_pkts - last_ctrl_pkts);
     printf("ctrl_pkts: %llu\n", ctrl_pkts);
     printf("malicious_packet_counts: %u\n", malicious_packet_counts);
-    printf("flow_counts: %u\n\n", flow_counts);
+    printf("flow_counts: %u\n", flow_counts);
+    printf("flow_counts_per_second %u\n\n", flow_counts - last_flow_counts);
     last_ctrl_bytes = ctrl_bytes;
     last_ctrl_pkts = ctrl_pkts;
+    last_flow_counts = flow_counts;
 }
 
 /*
