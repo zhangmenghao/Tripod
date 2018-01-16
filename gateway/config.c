@@ -488,10 +488,16 @@ lcore_main_loop(__attribute__((unused)) void *arg)
     unsigned lcore;
 
     lcore = rte_lcore_id();
-    if (lcore == 1)
+    if (lcore == 1){
+        setup_hash(lcore);
         lcore_nf(NULL);
-    else if (lcore == 2)
+    }
+    else if (lcore == 2){
         lcore_manager_slave(NULL);
-    else
+    }
+    else{
+        setup_hash(lcore);
         lcore_manager(NULL);
+
+    }
 }

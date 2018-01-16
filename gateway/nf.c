@@ -293,6 +293,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 							rte_pktmbuf_free(bufs[i]);
 							printf("nf: error in tx packets\n");
 						}
+						struct nf_states *statetemp;
+						if (getStates(&ip_5tuples, &statetemp) < 0){
+							printf("nf: error!\n");
+						}
 						//rte_pktmbuf_free(bufs[i]);
 						flow_counts ++;
 					}
