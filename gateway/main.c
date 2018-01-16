@@ -95,8 +95,6 @@ main(int argc, char *argv[])
     single_port_param.nf_mempool = mbuf_pool;
     single_port_param.manager_mempool = manager_mbuf_pool;
 
-    setup_hash((int)rte_socket_id());//now is a single socket version
-
     /* check if portmask has non-existent ports */
     if (enabled_port_mask & ~(RTE_LEN2MASK(nb_ports, unsigned)))
         rte_exit(EXIT_FAILURE, "Non-existent ports in portmask!\n");

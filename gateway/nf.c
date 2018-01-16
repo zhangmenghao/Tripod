@@ -87,7 +87,7 @@ void
 setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	int ret =  rte_hash_add_key_data(state_hash_table[0], &newkey, state);
+	int ret =  rte_hash_add_key_data(state_hash_table[1], &newkey, state);
 	if (ret == 0)
 	{
 		#ifdef __DEBUG_LV2
@@ -113,7 +113,10 @@ int
 getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	int ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
+	int ret = rte_hash_lookup_data(state_hash_table[1], &newkey, (void **) state);
+    if (ret < 0) {
+	    ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
+    }
 	//printf("ret, EINVAL, ENOENT is %d, %u and %u\n", ret, EINVAL, ENOENT);
 	if (ret >= 0){
 		#ifdef __DEBUG_LV2
