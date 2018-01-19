@@ -276,7 +276,7 @@ build_pullback_packet(uint8_t port,uint32_t backup_machine_ip,
         rte_pktmbuf_append(backup_packet, sizeof(struct ipv4_hdr));
     payload = (struct states_5tuple_pair*)
         rte_pktmbuf_append(
-            backup_packet, sizeof(struct ipv4_5tuple) + sizeof(void*)
+            backup_packet, sizeof(struct states_5tuple_pair) + sizeof(void*)
         );
     /* Set the packet ether header */
     eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
@@ -318,7 +318,8 @@ build_pullback_packet(uint8_t port,uint32_t backup_machine_ip,
         payload->states.dport = states->dport;
         payload->states.bip = states->bip;
     }
-    *((void**)((u_char*)payload + sizeof(struct ipv4_5tuple))) = callback_arg;
+    *((void**)
+    ((u_char*)payload + sizeof(struct states_5tuple_pair))) = callback_arg;
     return backup_packet;
 }
 
@@ -487,7 +488,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                         backup_to_machine(
                             (struct states_5tuple_pair*)payload
                         ),
-                        (void*)((u_char*)payload + sizeof(struct ipv4_5tuple))
+                        (void*)
+                        ((u_char*)payload + sizeof(struct states_5tuple_pair))
                     );
                 }
             }
