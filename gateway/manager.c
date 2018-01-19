@@ -42,6 +42,7 @@ static void
 manager_timer_cb(__attribute__((unused)) struct rte_timer *tim, 
                  __attribute__((unused)) void *arg)
 {
+    //return;
     printf("ctrl_throughput: %llu Mbps\n",
            (ctrl_bytes - last_ctrl_bytes) * 8 / 1024 / 1024);
     printf("ctrl_bytes: %llu\n", ctrl_bytes);
@@ -316,16 +317,21 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
     uint64_t prev_tsc, cur_tsc, diff_tsc;
     /* build and send pull request packet */
     pull_packet = build_pull_packet(port, nf_id, ip_5tuple);
+    while (rte_ring_count(nf_pull_wait_ring) != 0) {
+    	void* tmp;
+    	rte_ring_dequeue(nf_pull_wait_ring, (void**)&tmp);
+    }
     if (rte_eth_tx_burst(port, 1, &pull_packet, 1) != 1) {
         printf("mg: tx pullState failed!\n");
         rte_pktmbuf_free(pull_packet);
     }
     /* wait until receive response(specific state backup message) */
     prev_tsc = rte_rdtsc();
+    //printf("monitor: %u\n", rte_ring_count(nf_pull_wait_ring));
     while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0) {
         cur_tsc = rte_rdtsc();
         diff_tsc = cur_tsc - prev_tsc;
-        if (diff_tsc > TIMER_RESOLUTION_CYCLES/1000000) {
+        if (diff_tsc > TIMER_RESOLUTION_CYCLES/80000) {
             drop_packet_counts += 1;
             #ifdef __DEBUG_LV1
             printf("mg: timeout in pullState\n");
@@ -333,6 +339,19 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
             return -1;
         }
     }
+    //printf("monitor: %u\n", rte_ring_count(nf_pull_wait_ring));
+    /*printf("mg: ip_src is "IPv4_BYTES_FMT " \n",
+           IPv4_BYTES(ip_5tuple->ip_src));
+    printf("mg: ip_dst is "IPv4_BYTES_FMT " \n",
+           IPv4_BYTES(ip_5tuple->ip_dst));
+    printf("mg: port_dst is 0x%x\n", ip_5tuple->port_dst);*/
+    /*while (1) {
+        cur_tsc = rte_rdtsc();
+        diff_tsc = cur_tsc - prev_tsc;
+        if (diff_tsc > TIMER_RESOLUTION_CYCLES/100000) {
+            break;
+        }
+    }*/
     return 0;
 }
 
@@ -357,9 +376,10 @@ lcore_manager(__attribute__((unused)) void *arg)
     rte_timer_subsystem_init();
     rte_timer_init(&manager_timer);
     rte_timer_reset(
-        &manager_timer, rte_get_timer_hz(), PERIODICAL,
+        &manager_timer, rte_get_timer_hz()/5, PERIODICAL,
         rte_lcore_id(), manager_timer_cb, NULL
     );
+    printf("\nCore %u time hz is %lu.\n", rte_lcore_id(), rte_get_timer_hz());
     /* Run until the application is quit or killed. */
     for (;;) {
         uint64_t prev_tsc = 0, cur_tsc , diff_tsc;

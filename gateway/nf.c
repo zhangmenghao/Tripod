@@ -108,8 +108,13 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state)
 int
 getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state)
 {
-    uint64_t start_tsc, end_tsc;
-    start_tsc = rte_rdtsc();
+    //uint64_t start_tsc, end_tsc;
+    //start_tsc = rte_rdtsc();
+    /*printf("monitor: ip_dst is "IPv4_BYTES_FMT " \n",
+           IPv4_BYTES(ip_5tuple->ip_dst));
+    printf("monitor: ip_src is "IPv4_BYTES_FMT " \n",
+           IPv4_BYTES(ip_5tuple->ip_src));
+    printf("monitor: port_dst is %d\n", ip_5tuple->port_dst);*/
     int ret = pullState(1, 1, ip_5tuple, state);
     if (ret == 0) {
         #ifdef __DEBUG_LV1
@@ -121,12 +126,12 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state)
         printf("nf: getStates(pullState) fail!!!\n");
         #endif
     }
-    end_tsc = rte_rdtsc();
+    //end_tsc = rte_rdtsc();
     // printf("monitor: ip_dst is "IPv4_BYTES_FMT " \n",
            // IPv4_BYTES(ip_5tuple->ip_dst));
     // printf("monitor: ip_src is "IPv4_BYTES_FMT " \n",
            // IPv4_BYTES(ip_5tuple->ip_src));
-    // printf("monitor: pull rtt is %lu\n\n", end_tsc - start_tsc);
+    //printf("monitor: pull rtt is %lu\n\n", end_tsc - start_tsc);
     return ret;
 }
 
@@ -166,6 +171,8 @@ lcore_nf(__attribute__((unused)) void *arg)
     /* Run until the application is quit or killed. */
     for (;;) {
         struct rte_mbuf *bufs[BURST_SIZE];
+	uint64_t start_tsc, end_tsc;
+   	start_tsc = rte_rdtsc();
         const uint16_t nb_rx = rte_eth_rx_burst(port, queue, bufs, BURST_SIZE);
         if (unlikely(nb_rx == 0))
             continue;	
@@ -277,9 +284,14 @@ lcore_nf(__attribute__((unused)) void *arg)
                         printf("nf: tx burst in syn!\n");
                         rte_pktmbuf_free(bufs[i]);
                     }
+   		    end_tsc = rte_rdtsc();
+   		    //printf("monitor: syn latency is %lu cycles\n", end_tsc - start_tsc);
                     //rte_pktmbuf_free(bufs[i]);
                     flow_counts ++;
-                }
+		    if (flow_counts >= 13000) {
+			rte_exit(EXIT_FAILURE, "this is just a test\n");
+		    }
+		}
                 else{
                     struct nf_states *state;
                     int ret =  getStates(&ip_5tuples, &state);
@@ -302,6 +314,8 @@ lcore_nf(__attribute__((unused)) void *arg)
                             printf("nf: tx burst in data!\n");
                             rte_pktmbuf_free(bufs[i]);
                         }
+   		    	end_tsc = rte_rdtsc();
+   		    	//printf("monitor: data latency is %lu cycles\n", end_tsc - start_tsc);
                     }
                     else{
                         #ifdef __DEBUG_LV1

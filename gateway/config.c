@@ -51,7 +51,7 @@ static struct rte_eth_rss_reta_entry64 reta_conf[2];
 
 static uint32_t manager_port_mask = 0x2;
 
-uint32_t statelessBackupIP = IPv4(172, 16, 7, 2);
+uint32_t statelessBackupIP = IPv4(172, 16, 8, 2);
 
 static inline uint32_t
 ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,

@@ -2,7 +2,7 @@
 #define TX_RING_SIZE 512
 
 #define NUM_MBUFS 8191
-#define NUM_MANAGER_MBUFS 16383
+#define NUM_MANAGER_MBUFS 32767
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
 #define MAX_RX_QUEUE_PER_LCORE 16
@@ -52,6 +52,9 @@
  * debug output level 2: #define __DEBUG_LV1 
  *                       #define __DEBUG_LV2
  */
+
+ //#define __DEBUG_LV1
+ //#define __DEBUG_LV2
 
 struct nf_states{
     uint32_t ipserver; //Load Balancer
