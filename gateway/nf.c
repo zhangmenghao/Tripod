@@ -106,35 +106,57 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state)
 }
 
 int
-getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state)
+getStates(struct ipv4_5tuple *ip_5tuple, void* callback_arg)
 {
-    //uint64_t start_tsc, end_tsc;
-    //start_tsc = rte_rdtsc();
-    /*printf("monitor: ip_dst is "IPv4_BYTES_FMT " \n",
-           IPv4_BYTES(ip_5tuple->ip_dst));
-    printf("monitor: ip_src is "IPv4_BYTES_FMT " \n",
-           IPv4_BYTES(ip_5tuple->ip_src));
-    printf("monitor: port_dst is %d\n", ip_5tuple->port_dst);*/
-    int ret = pullState(1, 1, ip_5tuple, state);
-    if (ret == 0) {
-        #ifdef __DEBUG_LV1
-        printf("nf: getStates(pullState) success!\n");
-        #endif
+    struct rte_mbuf* pull_packet;
+    
+    pull_packet = build_pull_packet(callback_arg, 1, 1, ip_5tuple);
+
+    if (rte_eth_tx_burst(1, 1, &pull_packet, 1) != 1) {
+        printf("mg: tx pullState failed!\n");
+        rte_pktmbuf_free(pull_packet);
+        return -1;
     }
-    else {
-        #ifdef __DEBUG_LV1
-        printf("nf: getStates(pullState) fail!!!\n");
-        #endif
-    }
-    //end_tsc = rte_rdtsc();
-    // printf("monitor: ip_dst is "IPv4_BYTES_FMT " \n",
-           // IPv4_BYTES(ip_5tuple->ip_dst));
-    // printf("monitor: ip_src is "IPv4_BYTES_FMT " \n",
-           // IPv4_BYTES(ip_5tuple->ip_src));
-    //printf("monitor: pull rtt is %lu\n\n", end_tsc - start_tsc);
-    return ret;
+
+    return 0;
 }
 
+int
+getStatesCallback(struct nf_states* state, void* callback_arg)
+{
+    struct ether_hdr *eth_hdr;
+    struct ether_addr eth_s_addr;
+    struct ether_addr eth_d_addr;
+    struct ipv4_hdr *ip_hdr;
+    struct rte_mbuf* packet = (struct rte_mbuf*)callback_arg;
+
+    eth_hdr = rte_pktmbuf_mtod(packet, struct ether_hdr *);
+    eth_s_addr = eth_hdr->s_addr;
+    eth_d_addr = eth_hdr->d_addr;
+    ip_hdr = (struct ipv4_hdr*)
+             ((char*)eth_hdr + sizeof(struct ether_hdr));
+
+    if (state->ipserver == 0) {
+        malicious_packet_counts += 1;
+    }
+
+    ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
+    ip_hdr->hdr_checksum = 0;
+    ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
+    ether_addr_copy(&eth_s_addr,&eth_hdr->d_addr);
+    ether_addr_copy(&eth_d_addr,&eth_hdr->s_addr);
+    #ifdef __DEBUG_LV1
+    printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n",
+           IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+    #endif
+
+    if (rte_eth_tx_burst(0, 0, &packet, 1) != 1) {
+        printf("nf: tx burst in data!\n");
+        rte_pktmbuf_free(packet);
+    }
+
+    return 0;
+}
 
 
 static void
@@ -284,44 +306,19 @@ lcore_nf(__attribute__((unused)) void *arg)
                         printf("nf: tx burst in syn!\n");
                         rte_pktmbuf_free(bufs[i]);
                     }
-   		    end_tsc = rte_rdtsc();
-   		    //printf("monitor: syn latency is %lu cycles\n", end_tsc - start_tsc);
+                    end_tsc = rte_rdtsc();
+                    //printf("monitor: syn latency is %lu cycles\n", end_tsc - start_tsc);
                     //rte_pktmbuf_free(bufs[i]);
                     flow_counts ++;
-		    if (flow_counts >= 13000) {
-			rte_exit(EXIT_FAILURE, "this is just a test\n");
-		    }
-		}
+                    if (flow_counts >= 13000) {
+                        rte_exit(EXIT_FAILURE, "this is just a test\n");
+                    }
+                }
                 else{
                     struct nf_states *state;
-                    int ret =  getStates(&ip_5tuples, &state);
+                    int ret =  getStates(&ip_5tuples, (void*)bufs[i]);
                     //printf("%x\n", state);
                     //printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
-                    if (ret >= 0) {
-                        if (state->ipserver == 0) {
-                            malicious_packet_counts += 1;
-                        }
-                        ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
-                        ip_hdr->hdr_checksum = 0;
-                        ether_addr_copy(&eth_s_addr,&eth_hdr->d_addr);
-                        ether_addr_copy(&eth_d_addr,&eth_hdr->s_addr);
-                        ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
-                        #ifdef __DEBUG_LV1
-                        printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n",
-                               IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
-                        #endif
-                        if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1) {
-                            printf("nf: tx burst in data!\n");
-                            rte_pktmbuf_free(bufs[i]);
-                        }
-   		    	end_tsc = rte_rdtsc();
-   		    	//printf("monitor: data latency is %lu cycles\n", end_tsc - start_tsc);
-                    }
-                    else{
-                        #ifdef __DEBUG_LV1
-                        printf("nf: state not found!\n");
-                        #endif
-                    }
                 }
             }
             #ifdef __DEBUG_LV1

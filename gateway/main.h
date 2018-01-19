@@ -127,7 +127,7 @@ extern uint32_t this_machine_index;
 
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
-int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state);
+int getStates(struct ipv4_5tuple *ip_5tuple, void* callback_arg);
 void setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index);
 int getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index);
 int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, struct nf_states** target_states);
@@ -140,6 +140,9 @@ struct rte_mbuf* build_probe_packet(struct ipv4_5tuple* ip_5tuple, struct nf_sta
 struct rte_mbuf* backup_receive_probe_packet(struct rte_mbuf* mbuf);
 void master_receive_probe_reply(struct rte_mbuf* mbuf, uint32_t* machine_ip1, uint32_t* machine_ip2, struct ipv4_5tuple** ip_5tuple, struct nf_states** state);
 void ecmp_predict_init(struct rte_mempool * mbuf_pool);
+
+struct rte_mbuf* build_pull_packet(void* callback_arg, uint8_t port, uint16_t nf_id, struct ipv4_5tuple* ip_5tuple);
+int getStatesCallback(struct nf_states* state, void* callback_arg);
 
 int lcore_nf(__attribute__((unused)) void *arg);
 int lcore_manager(__attribute__((unused)) void *arg);
