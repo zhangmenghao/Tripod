@@ -1,8 +1,8 @@
-#define RX_RING_SIZE 128
+#define RX_RING_SIZE 512
 #define TX_RING_SIZE 512
 
 #define NUM_MBUFS 8191
-#define NUM_MANAGER_MBUFS 1023 
+#define NUM_MANAGER_MBUFS 8191
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
 #define MAX_RX_QUEUE_PER_LCORE 16
@@ -10,22 +10,13 @@
 #ifndef IPv4_BYTES
 #define IPv4_BYTES_FMT "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8
 #define IPv4_BYTES(addr) \
-		(uint8_t) (((addr) >> 24) & 0xFF),\
-		(uint8_t) (((addr) >> 16) & 0xFF),\
-		(uint8_t) (((addr) >> 8) & 0xFF),\
-		(uint8_t) ((addr) & 0xFF)
+        (uint8_t) (((addr) >> 24) & 0xFF),\
+        (uint8_t) (((addr) >> 16) & 0xFF),\
+        (uint8_t) (((addr) >> 8) & 0xFF),\
+        (uint8_t) ((addr) & 0xFF)
 #endif
 
-
-/* Configuration about NF */
-/* Hash parameters. */
-#ifdef RTE_ARCH_64
-/* default to 4 million hash entries (approx) */
 #define HASH_ENTRIES		(1024*1024*4)
-#else
-/* 32-bit has less address-space for hugepage memory, limit to 1M entries */
-#define HASH_ENTRIES		(1024*1024*1)
-#endif
 
 #define DIP_POOL_SIZE 5
 
@@ -43,6 +34,8 @@
 #define N_MACHINE_MAX 8
 #define N_INTERFACE_MAX 48
 
+#define TIMER_RESOLUTION_CYCLES 2399987461ULL
+
 /*
  * Configure debug output level
  * none debug output: nothing to do
@@ -51,42 +44,42 @@
  *                       #define __DEBUG_LV2
  */
 
-#define __DEBUG_LV1
+//#define __DEBUG_LV1
 
 
 struct nf_states{
     uint32_t ipserver; //Load Balancer
 
     uint32_t dip; //NAT
-	uint16_t dport;
+    uint16_t dport;
 
     uint32_t bip; // Backup Machine IP
 
 };
 
 struct nf_indexs{
-	uint32_t backupip[2];
+    uint32_t backupip[2];
 };
 
 struct ipv4_5tuple {
-	uint32_t ip_dst;
-	uint32_t ip_src;
-	uint16_t port_dst;
-	uint16_t port_src;
-	uint8_t  proto;
+    uint32_t ip_dst;
+    uint32_t ip_src;
+    uint16_t port_dst;
+    uint16_t port_src;
+    uint8_t  proto;
 };
 
 union ipv4_5tuple_host {
-	struct {
-		uint8_t  pad0;
-		uint8_t  proto;
-		uint16_t pad1;
-		uint32_t ip_src;
-		uint32_t ip_dst;
-		uint16_t port_src;
-		uint16_t port_dst;
-	};
-	xmm_t xmm;
+    struct {
+        uint8_t  pad0;
+        uint8_t  proto;
+        uint16_t pad1;
+        uint32_t ip_src;
+        uint32_t ip_dst;
+        uint16_t port_src;
+        uint16_t port_dst;
+    };
+    xmm_t xmm;
 };
 
 struct port_param {
@@ -95,8 +88,8 @@ struct port_param {
 };
 
 struct machine_IP_pair{
-	uint8_t id;
-	uint32_t ip;
+    uint8_t id;
+    uint32_t ip;
 };
 
 extern struct port_param single_port_param;
@@ -110,8 +103,6 @@ extern uint8_t debug_mode;
 
 extern uint32_t dip_pool[DIP_POOL_SIZE];
 
-extern int flow_counts;
-
 extern struct rte_hash *state_hash_table[NB_SOCKETS];
 extern struct rte_hash *index_hash_table[NB_SOCKETS];
 
@@ -121,6 +112,10 @@ extern struct rte_mbuf* probing_packet;
 extern struct ether_addr interface_MAC;
 extern uint32_t broadcast_ip;
 extern uint32_t this_machine_index;
+
+extern uint32_t flow_counts;
+extern uint32_t last_flow_counts;
+extern uint32_t malicious_packet_counts;
 
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
