@@ -451,7 +451,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                 ip_addr = arp_h->arp_data.arp_sip;
                 arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
                 arp_h->arp_data.arp_tip = ip_addr;
-                if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1) {
+                if (rte_eth_tx_burst(port, 1, &bufs[i], 1) != 1) {
                     printf("nf: tx failed in arp!\n");
                     rte_pktmbuf_free(bufs[i]);
                 }

@@ -112,7 +112,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, void* callback_arg)
     
     pull_packet = build_pull_packet(callback_arg, 1, 1, ip_5tuple);
 
-    if (rte_eth_tx_burst(1, 1, &pull_packet, 1) != 1) {
+    if (rte_eth_tx_burst(1, 2, &pull_packet, 1) != 1) {
         printf("mg: tx pullState failed!\n");
         rte_pktmbuf_free(pull_packet);
         return -1;
@@ -150,7 +150,7 @@ getStatesCallback(struct nf_states* state, void* callback_arg)
            IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
     #endif
 
-    if (rte_eth_tx_burst(0, 0, &packet, 1) != 1) {
+    if (rte_eth_tx_burst(0, 1, &packet, 1) != 1) {
         printf("nf: tx burst in data!\n");
         rte_pktmbuf_free(packet);
     }
@@ -310,9 +310,9 @@ lcore_nf(__attribute__((unused)) void *arg)
                     //printf("monitor: syn latency is %lu cycles\n", end_tsc - start_tsc);
                     //rte_pktmbuf_free(bufs[i]);
                     flow_counts ++;
-                    if (flow_counts >= 13000) {
-                        rte_exit(EXIT_FAILURE, "this is just a test\n");
-                    }
+                    //if (flow_counts >= 13000) {
+                        //rte_exit(EXIT_FAILURE, "this is just a test\n");
+                    //}
                 }
                 else{
                     struct nf_states *state;
