@@ -488,8 +488,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                         backup_to_machine(
                             (struct states_5tuple_pair*)payload
                         ),
-                        (void*)
-                        ((u_char*)payload + sizeof(struct states_5tuple_pair))
+                        *((void**)
+                        ((u_char*)payload + sizeof(struct states_5tuple_pair)))
                     );
                 }
             }
@@ -506,7 +506,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                 payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
                 /* Get the 5tuple and relevant state, build and send */
                 ip_5tuple = (struct ipv4_5tuple*)payload;
-                callback_arg = (void*)(payload + sizeof(struct ipv4_5tuple));
+                callback_arg = *((void**)(payload + sizeof(struct ipv4_5tuple)));
                 #ifdef __DEBUG_LV1
                 printf("mg: This is state pull message\n");
                 printf("mg: ip_dst is "IPv4_BYTES_FMT " \n",
