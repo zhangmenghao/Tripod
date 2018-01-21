@@ -168,8 +168,8 @@ build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
 }
 
 static struct rte_mbuf*
-build_pull_packet(uint8_t port, uint32_t target_ip, 
-                  uint16_t nf_id, struct ipv4_5tuple* ip_5tuple)
+build_pull_packet(uint8_t port, uint32_t target_ip, uint16_t nf_id,
+                  struct ipv4_5tuple* ip_5tuple, void* callback_arg)
 {
     struct rte_mbuf* pull_packet;
     struct ether_hdr* eth_h;
@@ -186,7 +186,7 @@ build_pull_packet(uint8_t port, uint32_t target_ip,
     ip_h = (struct ipv4_hdr *)
         rte_pktmbuf_append(pull_packet, sizeof(struct ipv4_hdr));
     payload = (struct ipv4_5tuple*)
-        rte_pktmbuf_append(pull_packet, sizeof(struct ipv4_5tuple));
+      rte_pktmbuf_append(pull_packet, sizeof(struct ipv4_5tuple)+sizeof(void*));
     /* Set the packet ether header */
     eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
     ether_addr_copy(&interface_MAC, &(eth_h->d_addr));
@@ -197,7 +197,9 @@ build_pull_packet(uint8_t port, uint32_t target_ip,
     ip_h->src_addr=rte_cpu_to_be_32(this_machine->ip);
     ip_h->dst_addr=rte_cpu_to_be_32(target_ip);
     ip_h->version_ihl = (4 << 4) | 5;
-    ip_h->total_length = rte_cpu_to_be_16(20+sizeof(struct ipv4_5tuple));
+    ip_h->total_length = rte_cpu_to_be_16(
+        20 + sizeof(struct ipv4_5tuple) + sizeof(void*)
+    );
     /*
      * packet_id indicates nf_id: 0 means general state backup,
      * other means response for nf's state pull request
@@ -213,6 +215,7 @@ build_pull_packet(uint8_t port, uint32_t target_ip,
     payload->port_dst = ip_5tuple->port_dst;
     payload->port_src = ip_5tuple->port_src;
     payload->proto = ip_5tuple->proto;
+    *((void**)((u_char*)payload + sizeof(struct ipv4_5tuple))) = callback_arg;
     return pull_packet;
 }
 
@@ -261,6 +264,74 @@ build_keyset_packet(uint32_t target_ip, struct nf_indexs* indexs,
     payload->indexs.backupip[0] = indexs->backupip[0];
     payload->indexs.backupip[1] = indexs->backupip[1];
     return keyset_packet;
+}
+
+static struct rte_mbuf*
+build_pullback_packet(uint8_t port,uint32_t backup_machine_ip,
+                      uint16_t packet_id, struct ipv4_5tuple* ip_5tuple,
+                      struct nf_states* states, void* callback_arg)
+{
+    struct rte_mbuf* backup_packet;
+    struct ether_hdr* eth_h;
+    struct ipv4_hdr* ip_h;
+    struct states_5tuple_pair* payload;
+    struct ether_addr self_eth_addr;
+    /* Allocate space */
+    backup_packet = rte_pktmbuf_alloc(single_port_param.manager_mempool);
+    if (backup_packet == NULL) {
+        printf("mg: backup_packet alloc failed!\n");
+    }
+    eth_h = (struct ether_hdr *)
+      rte_pktmbuf_append(backup_packet, sizeof(struct ether_hdr));
+    ip_h = (struct ipv4_hdr *)
+        rte_pktmbuf_append(backup_packet, sizeof(struct ipv4_hdr));
+    payload = (struct states_5tuple_pair*)
+        rte_pktmbuf_append(
+            backup_packet, sizeof(struct states_5tuple_pair) + sizeof(void*)
+        );
+    /* Set the packet ether header */
+    eth_h->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
+    ether_addr_copy(&interface_MAC, &(eth_h->d_addr));
+    rte_eth_macaddr_get(port, &self_eth_addr);
+    ether_addr_copy(&self_eth_addr, &(eth_h->s_addr));
+    /* Set the packet ip header */
+    memset((char *)ip_h, 0, sizeof(struct ipv4_hdr));
+    ip_h->src_addr=rte_cpu_to_be_32(this_machine->ip);
+    ip_h->dst_addr=rte_cpu_to_be_32(backup_machine_ip);
+    ip_h->version_ihl = (4 << 4) | 5;
+    ip_h->total_length = rte_cpu_to_be_16(
+        20 + sizeof(struct states_5tuple_pair) + sizeof(void*)
+    );
+    /*
+     * packet_id indicates nf_id: 0 means general state backup,
+     * other means response for nf's state pull request
+     */
+    ip_h->packet_id = rte_cpu_to_be_16(packet_id);
+    ip_h->time_to_live=4;
+    /* In HPSMS, proto A0 indicate this is state backup message */
+    ip_h->next_proto_id = 0xA0;
+    ip_h->hdr_checksum = rte_ipv4_cksum(ip_h);
+    /* Set the packet payload(5tuple:states) */
+    payload->l4_5tuple.ip_dst = ip_5tuple->ip_dst;
+    payload->l4_5tuple.ip_src = ip_5tuple->ip_src;
+    payload->l4_5tuple.port_dst = ip_5tuple->port_dst;
+    payload->l4_5tuple.port_src = ip_5tuple->port_src;
+    payload->l4_5tuple.proto = ip_5tuple->proto;
+    if (states == NULL) {
+        payload->states.ipserver = 0;
+        payload->states.dip = 0;
+        payload->states.dport = 0;
+        payload->states.bip = 0;
+    }
+    else {
+        payload->states.ipserver = states->ipserver;
+        payload->states.dip = states->dip;
+        payload->states.dport = states->dport;
+        payload->states.bip = states->bip;
+    }
+    *((void**)
+    ((u_char*)payload + sizeof(struct states_5tuple_pair))) = callback_arg;
+    return backup_packet;
 }
 
 static struct nf_states*
@@ -322,17 +393,18 @@ keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
 }
 
 int
-pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
-          struct nf_indexs* target_indexs, struct nf_states** target_states)
+pullState(uint16_t nf_id, uint8_t port, void* callback_arg,
+          struct ipv4_5tuple* ip_5tuple, struct nf_indexs* target_indexs,
+          struct nf_states** target_states)
 {
     struct rte_mbuf* pull_packet;
     uint64_t prev_tsc, cur_tsc, diff_tsc;
     /* build and send pull request packet */
     pull_packet = build_pull_packet(
-        port, target_indexs->backupip[0], nf_id, ip_5tuple
+        port, target_indexs->backupip[0], nf_id, ip_5tuple, callback_arg
     );
 
-    if (rte_eth_tx_burst(port, 2, &pull_packet, 1) != 1) {
+    if (rte_eth_tx_burst(port, 0, &pull_packet, 1) != 1) {
         printf("mg: tx pullState failed!\n");
         rte_pktmbuf_free(pull_packet);
     }
@@ -340,27 +412,14 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
     /* If the second index is set, send 2 pull request packet */
     if (target_indexs->backupip[1] != 0) {
         pull_packet = build_pull_packet(
-            port, target_indexs->backupip[1], nf_id, ip_5tuple
+            port, target_indexs->backupip[1], nf_id, ip_5tuple, callback_arg
         );
-        if (rte_eth_tx_burst(port, 2, &pull_packet, 1) != 1) {
+        if (rte_eth_tx_burst(port, 0, &pull_packet, 1) != 1) {
             printf("mg: tx pullState2 failed!\n");
             rte_pktmbuf_free(pull_packet);
         }
     }
 
-    /* wait until receive response(specific state backup message) */
-    prev_tsc = rte_rdtsc();
-    while (rte_ring_dequeue(nf_pull_wait_ring, (void**)target_states) != 0) {
-        cur_tsc = rte_rdtsc();
-        diff_tsc = cur_tsc - prev_tsc;
-        if (diff_tsc >= TIMER_RESOLUTION_CYCLES/50000) {
-            drop_packet_counts += 1;
-            #ifdef __DEBUG_LV1
-            printf("mg: timeout in pullState\n");
-            #endif
-            return -1;
-        }
-    }
     return 0;
 }
 
@@ -388,11 +447,11 @@ backup_to_remote(struct ipv4_5tuple* ip_5tuple, uint8_t backup_num)
         int rnd;
         do {
             rnd = rand() % N_MACHINE;
-        } 
+        }
         while (rnd == this_machine_index);
         indexs->backupip[i] = topo[rnd].ip;
         backup_packet = build_backup_packet(
-            0, indexs->backupip[i], 0x00, 
+            0, indexs->backupip[i], 0x00,
             ip_5tuple, backup_states
         );
         /* Send control message from port 0 queue 2 */
@@ -508,11 +567,12 @@ lcore_manager(__attribute__((unused)) void *arg)
                             &backup_pair->l4_5tuple, &tmp_states
                         );
                         if (ret < 0) {
-                            ret = rte_ring_enqueue(
-                                nf_pull_wait_ring,
+                            pullStateCallback(
                                 backup_to_machine(
                                     (struct states_5tuple_pair*)payload
-                                )
+                                ),
+                                *((void**)
+                                ((u_char*)payload + sizeof(struct states_5tuple_pair)))
                             );
                             if (ret < 0) {
                                 printf("mg: enqueue failed!\n");
@@ -527,6 +587,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                     struct nf_states* request_states;
                     struct ether_addr self_eth_addr;
                     uint32_t request_ip;
+                    void* callback_arg;
                     ctrl_pkts += 1;
                     ctrl_bytes += bufs[i]->data_len;
                     #ifdef __DEBUG_LV1
@@ -535,19 +596,21 @@ lcore_manager(__attribute__((unused)) void *arg)
                     payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
                     /* Get the 5tuple and relevant state, build and send */
                     ip_5tuple = (struct ipv4_5tuple*)payload;
+                    callback_arg = *((void**)(payload + sizeof(struct ipv4_5tuple)));
                     int ret = managerGetStates(ip_5tuple, &request_states);
                     if (ret < 0) {
                         printf("mg: state not found for remote machine!\n");
-                        backup_packet = build_backup_packet(
+                        backup_packet = build_pullback_packet(
                             port, rte_be_to_cpu_32(ip_h->src_addr),
-                            rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple, NULL
+                            rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple,
+                            NULL, callback_arg
                         );
                     }
                     else {
-                        backup_packet = build_backup_packet(
+                        backup_packet = build_pullback_packet(
                             port, rte_be_to_cpu_32(ip_h->src_addr),
                             rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple,
-                            request_states
+                            request_states, callback_arg
                         );
                     }
                     if (rte_eth_tx_burst(port, 2, &backup_packet, 1) != 1) {

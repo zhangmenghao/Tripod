@@ -50,7 +50,7 @@
  * Configure debug output level
  * none debug output: nothing to do
  * debug output level 1: #define __DEBUG_LV1
- * debug output level 2: #define __DEBUG_LV1 
+ * debug output level 2: #define __DEBUG_LV1
  *                       #define __DEBUG_LV2
  */
 
@@ -107,7 +107,7 @@ extern struct port_param single_port_param;
 extern struct rte_ring* nf_manager_ring;
 extern struct rte_ring* nf_pull_wait_ring;
 
-extern int enabled_port_mask; 
+extern int enabled_port_mask;
 
 extern uint8_t debug_mode;
 
@@ -128,11 +128,12 @@ extern uint32_t malicious_packet_counts;
 
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
-int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state);
+int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state, void* callback_arg);
 void setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index);
 int getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index);
-int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
-          struct nf_indexs* target_indexs, struct nf_states** target_states);
+int pullState(uint16_t nf_id, uint8_t port, void* callback_arg, struct ipv4_5tuple* ip_5tuple,
+              struct nf_indexs* target_indexs, struct nf_states** target_states);
+int pullStateCallback(struct nf_states* state, void* callback_arg);
 int port_init(uint8_t port, struct rte_mempool *mbuf_pool, struct rte_mempool *manager_mbuf_pool);
 int parse_args(int argc, char **argv);
 void setup_hash(const int socketid);
