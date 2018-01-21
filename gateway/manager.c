@@ -404,7 +404,7 @@ pullState(uint16_t nf_id, uint8_t port, void* callback_arg,
         port, target_indexs->backupip[0], nf_id, ip_5tuple, callback_arg
     );
 
-    if (rte_eth_tx_burst(port, 0, &pull_packet, 1) != 1) {
+    if (rte_eth_tx_burst(port, 3, &pull_packet, 1) != 1) {
         printf("mg: tx pullState failed!\n");
         rte_pktmbuf_free(pull_packet);
     }
@@ -414,7 +414,7 @@ pullState(uint16_t nf_id, uint8_t port, void* callback_arg,
         pull_packet = build_pull_packet(
             port, target_indexs->backupip[1], nf_id, ip_5tuple, callback_arg
         );
-        if (rte_eth_tx_burst(port, 0, &pull_packet, 1) != 1) {
+        if (rte_eth_tx_burst(port, 3, &pull_packet, 1) != 1) {
             printf("mg: tx pullState2 failed!\n");
             rte_pktmbuf_free(pull_packet);
         }
@@ -455,7 +455,7 @@ backup_to_remote(struct ipv4_5tuple* ip_5tuple, uint8_t backup_num)
             ip_5tuple, backup_states
         );
         /* Send control message from port 0 queue 2 */
-        if (rte_eth_tx_burst(0, 2, &backup_packet, 1) != 1) {
+        if (rte_eth_tx_burst(0, 1, &backup_packet, 1) != 1) {
             printf("mg: tx backup_packet failed!\n");
             rte_pktmbuf_free(backup_packet);
         }
@@ -470,7 +470,7 @@ backup_to_remote(struct ipv4_5tuple* ip_5tuple, uint8_t backup_num)
             topo[idx].ip, indexs, 0, ip_5tuple
         );
         /* Send control message from port 0 queue 2 */
-        if (rte_eth_tx_burst(0, 2, &keyset_packet, 1) != 1) {
+        if (rte_eth_tx_burst(0, 1, &keyset_packet, 1) != 1) {
             printf("mg: tx keyset_packet failed!\n");
             rte_pktmbuf_free(keyset_packet);
         }

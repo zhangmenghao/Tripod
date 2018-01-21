@@ -184,7 +184,7 @@ pullStateCallback(struct nf_states* state, void* callback_arg)
            IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
     #endif
 
-    if (rte_eth_tx_burst(0, 1, &packet, 1) != 1) {
+    if (rte_eth_tx_burst(0, 4, &packet, 1) != 1) {
         printf("nf: tx burst in data!\n");
         rte_pktmbuf_free(packet);
         return -1;
