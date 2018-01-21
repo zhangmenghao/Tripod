@@ -32,6 +32,8 @@ struct indexs_5tuple_pair {
     struct nf_indexs indexs;
 };
 
+static uint32_t drop_packet_counts = 0;
+
 static struct rte_timer manager_timer;
 static unsigned long long ctrl_bytes = 0;
 static unsigned long long last_ctrl_bytes = 0;
@@ -48,6 +50,7 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
     printf("ctrl_pkts_sec: %llu\n", ctrl_pkts - last_ctrl_pkts);
     printf("ctrl_pkts: %llu\n", ctrl_pkts);
     printf("malicious_packet_counts: %u\n", malicious_packet_counts);
+    printf("drop_packet_counts(timeout): %u\n", drop_packet_counts);
     printf("flow_counts: %u\n\n", flow_counts);
     last_ctrl_bytes = ctrl_bytes;
     last_ctrl_pkts = ctrl_pkts;
@@ -351,7 +354,10 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
         cur_tsc = rte_rdtsc();
         diff_tsc = cur_tsc - prev_tsc;
         if (diff_tsc >= TIMER_RESOLUTION_CYCLES/50000) {
+            drop_packet_counts += 1;
+            #ifdef __DEBUG_LV1
             printf("mg: timeout in pullState\n");
+            #endif
             return -1;
         }
     }
@@ -434,7 +440,7 @@ lcore_manager(__attribute__((unused)) void *arg)
 	rte_timer_subsystem_init();
 	rte_timer_init(&manager_timer);
 	rte_timer_reset(
-        &manager_timer, rte_get_timer_hz(), PERIODICAL,
+        &manager_timer, rte_get_timer_hz()/5, PERIODICAL,
         rte_lcore_id(), manager_timer_cb, NULL
     );
 
