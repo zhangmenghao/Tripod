@@ -76,6 +76,11 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
     printf("drop_packet_counts(timeout): %u\n", drop_packet_counts);
     printf("flow_counts: %u, flow_counts_sec: %u\n\n",
            flow_counts, flow_counts - last_flow_counts);
+
+    last_ctrl_rx_bytes = ctrl_rx_bytes;
+    last_ctrl_rx_pkts = ctrl_rx_pkts;
+    last_ctrl_tx_bytes = ctrl_tx_bytes;
+    last_ctrl_tx_pkts = ctrl_tx_pkts;
     last_nf_rx_bytes = nf_rx_bytes;
     last_nf_rx_pkts = nf_rx_pkts;
     last_nf_tx_bytes = nf_tx_bytes;
