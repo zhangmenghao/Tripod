@@ -291,7 +291,7 @@ lcore_nf(__attribute__((unused)) void *arg)
                 printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
                 printf("nf: this is very important! port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
                 #endif
-                if (tcp_hdrs->tcp_flags == 2) {
+                if (tcp_hdrs->tcp_flags == 0x02 || tcp_hdrs->tcp_flags == 0x12) {
                     #ifdef __DEBUG_LV1
                     printf("nf: recerive a new flow!\n");
                     #endif
