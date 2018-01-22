@@ -682,6 +682,8 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
                 #ifdef __DEBUG_LV1
                 printf("\n");
                 #endif
+                ctrl_tx_pkts += 1;
+                ctrl_tx_bytes += probing_packet->data_len;
                 if (rte_eth_tx_burst(port, 1, &probing_packet, 1) != 1) {
                     printf("mg-slave: tx probing_packet failed!\n");
                     rte_pktmbuf_free(probing_packet);
