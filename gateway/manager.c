@@ -62,7 +62,7 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
            ctrl_rx_pkts, ctrl_tx_pkts);
     printf("malicious_packet_counts: %u\n", malicious_packet_counts);
     printf("drop_packet_counts(timeout): %u\n", drop_packet_counts);
-    printf("flow_counts: %u, flow_counts_sec: %u\n\n",
+    printf("flow_counts: %u, flow_counts_sec: %u\n",
            flow_counts, flow_counts - last_flow_counts);
     printf("nf statistics\n");
     printf("nf_rx_throughput: %llu Mbps, nf_tx_throughput: %llu Mbps\n",
@@ -73,7 +73,7 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
     printf("nf_rx_pkts_sec: %llu, nf_tx_pkts_sec: %llu\n",
            nf_rx_pkts - last_nf_rx_pkts,
            nf_tx_pkts - last_nf_tx_pkts);
-    printf("nf_rx_pkts: %llu, nf_tx_pkts: %llu\n", 
+    printf("nf_rx_pkts: %llu, nf_tx_pkts: %llu\n\n", 
            nf_rx_pkts, nf_tx_pkts);
     last_nf_rx_bytes = nf_rx_bytes;
     last_nf_rx_pkts = nf_rx_pkts;
