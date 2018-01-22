@@ -33,26 +33,53 @@ struct indexs_5tuple_pair {
 static uint32_t drop_packet_counts = 0;
 
 static struct rte_timer manager_timer;
-static unsigned long long ctrl_bytes = 0;
-static unsigned long long last_ctrl_bytes = 0;
-static unsigned long long ctrl_pkts = 0;
-static unsigned long long last_ctrl_pkts = 0;
+/* Control message received statistics */
+static unsigned long long ctrl_rx_bytes = 0;
+static unsigned long long last_ctrl_rx_bytes = 0;
+static unsigned long long ctrl_rx_pkts = 0;
+static unsigned long long last_ctrl_rx_pkts = 0;
+/* Control message transmitted statistics */
+static unsigned long long ctrl_tx_bytes = 0;
+static unsigned long long last_ctrl_tx_bytes = 0;
+static unsigned long long ctrl_tx_pkts = 0;
+static unsigned long long last_ctrl_tx_pkts = 0;
 
 static void
 manager_timer_cb(__attribute__((unused)) struct rte_timer *tim, 
                  __attribute__((unused)) void *arg)
 {
     //return;
-    printf("ctrl_throughput: %llu Mbps\n",
-           (ctrl_bytes - last_ctrl_bytes) * 8 / 1024 / 1024);
-    printf("ctrl_bytes: %llu\n", ctrl_bytes);
-    printf("ctrl_pkts_sec: %llu\n", ctrl_pkts - last_ctrl_pkts);
-    printf("ctrl_pkts: %llu\n", ctrl_pkts);
+    printf("manager statistics\n");
+    printf("ctrl_rx_throughput: %llu Mbps, ctrl_tx_throughput: %llu Mbps\n",
+           (ctrl_rx_bytes - last_ctrl_rx_bytes) * 8 / 1024 / 1024,
+           (ctrl_tx_bytes - last_ctrl_tx_bytes) * 8 / 1024 / 1024);
+    printf("ctrl_rx_bytes: %llu, ctrl_tx_bytes: %llu\n",
+           ctrl_rx_bytes, ctrl_tx_bytes);
+    printf("ctrl_rx_pkts_sec: %llu, ctrl_tx_pkts_sec: %llu\n",
+           ctrl_rx_pkts - last_ctrl_rx_pkts,
+           ctrl_tx_pkts - last_ctrl_tx_pkts);
+    printf("ctrl_rx_pkts: %llu, ctrl_tx_pkts: %llu\n", 
+           ctrl_rx_pkts, ctrl_tx_pkts);
     printf("malicious_packet_counts: %u\n", malicious_packet_counts);
     printf("drop_packet_counts(timeout): %u\n", drop_packet_counts);
-    printf("flow_counts: %u\n\n", flow_counts);
-    last_ctrl_bytes = ctrl_bytes;
-    last_ctrl_pkts = ctrl_pkts;
+    printf("flow_counts: %u, flow_counts_sec: %u\n\n",
+           flow_counts, flow_counts - last_flow_counts);
+    printf("nf statistics\n");
+    printf("nf_rx_throughput: %llu Mbps, nf_tx_throughput: %llu Mbps\n",
+           (nf_rx_bytes - last_nf_rx_bytes) * 8 / 1024 / 1024,
+           (nf_tx_bytes - last_nf_tx_bytes) * 8 / 1024 / 1024);
+    printf("nf_rx_bytes: %llu, nf_tx_bytes: %llu\n",
+           nf_rx_bytes, nf_tx_bytes);
+    printf("nf_rx_pkts_sec: %llu, nf_tx_pkts_sec: %llu\n",
+           nf_rx_pkts - last_nf_rx_pkts,
+           nf_tx_pkts - last_nf_tx_pkts);
+    printf("nf_rx_pkts: %llu, nf_tx_pkts: %llu\n", 
+           nf_rx_pkts, nf_tx_pkts);
+    last_nf_rx_bytes = nf_rx_bytes;
+    last_nf_rx_pkts = nf_rx_pkts;
+    last_nf_tx_bytes = nf_tx_bytes;
+    last_nf_tx_pkts = nf_tx_pkts;
+    last_flow_counts = flow_counts;
 }
 
 /*
@@ -87,7 +114,7 @@ managerGetStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state) {
         printf("mg: get state success!\n");
         #endif
     }
-    else{
+    else {
         #ifdef __DEBUG_LV2
         printf("mg: get state error!\n");
         #endif
@@ -153,6 +180,8 @@ build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
         payload->states.dport = states->dport;
         payload->states.bip = states->bip;
     }
+    ctrl_tx_pkts += 1;
+    ctrl_tx_bytes += backup_packet->data_len;
     return backup_packet;
 }
 
@@ -205,6 +234,8 @@ build_pull_packet(void* callback_arg, uint8_t port,
     payload->port_src = ip_5tuple->port_src;
     payload->proto = ip_5tuple->proto;
     *((void**)((u_char*)payload + sizeof(struct ipv4_5tuple))) = callback_arg;
+    ctrl_tx_pkts += 1;
+    ctrl_tx_bytes += pull_packet->data_len;
     return pull_packet;
 }
 
@@ -252,6 +283,8 @@ build_keyset_packet(uint32_t target_ip, struct nf_indexs* indexs,
     payload->l4_5tuple.proto = ip_5tuple->proto;
     payload->indexs.backupip[0] = indexs->backupip[0];
     payload->indexs.backupip[1] = indexs->backupip[1];
+    ctrl_tx_pkts += 1;
+    ctrl_tx_bytes += keyset_packet->data_len;
     return keyset_packet;
 }
 
@@ -320,6 +353,8 @@ build_pullback_packet(uint8_t port,uint32_t backup_machine_ip,
     }
     *((void**)
     ((u_char*)payload + sizeof(struct states_5tuple_pair))) = callback_arg;
+    ctrl_tx_pkts += 1;
+    ctrl_tx_bytes += backup_packet->data_len;
     return backup_packet;
 }
 
@@ -473,8 +508,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                 /* Control message about state backup */
                 /* Destination ip is 172.16.X.Y */
                 /* This is state backup message */
-                ctrl_pkts += 1;
-                ctrl_bytes += bufs[i]->data_len;
+                ctrl_rx_pkts += 1;
+                ctrl_rx_bytes += bufs[i]->data_len;
                 #ifdef __DEBUG_LV1
                 printf("mg: This is state backup message\n");
                 #endif
@@ -501,8 +536,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                 struct ether_addr self_eth_addr;
                 uint32_t request_ip;
                 void* callback_arg;
-                ctrl_pkts += 1;
-                ctrl_bytes += bufs[i]->data_len;
+                ctrl_rx_pkts += 1;
+                ctrl_rx_bytes += bufs[i]->data_len;
                 payload = (u_char*)ip_h + ((ip_h->version_ihl)&0x0F)*4;
                 /* Get the 5tuple and relevant state, build and send */
                 ip_5tuple = (struct ipv4_5tuple*)payload;

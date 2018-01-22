@@ -113,7 +113,18 @@ extern uint8_t debug_mode;
 extern uint32_t dip_pool[DIP_POOL_SIZE];
 
 extern uint32_t flow_counts;
+extern uint32_t last_flow_counts;
 extern uint32_t malicious_packet_counts;
+/* Data nf received statistics */
+extern unsigned long long nf_rx_bytes;
+extern unsigned long long last_nf_rx_bytes;
+extern unsigned long long nf_rx_pkts;
+extern unsigned long long last_nf_rx_pkts;
+/* Data nf transmitted statistics */
+extern unsigned long long nf_tx_bytes;
+extern unsigned long long last_nf_tx_bytes;
+extern unsigned long long nf_tx_pkts;
+extern unsigned long long last_nf_tx_pkts;
 
 extern struct rte_hash *state_hash_table[NB_SOCKETS];
 extern struct rte_hash *index_hash_table[NB_SOCKETS];

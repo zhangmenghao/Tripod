@@ -25,7 +25,19 @@ struct rte_hash *state_hash_table[NB_SOCKETS];
 struct rte_hash *index_hash_table[NB_SOCKETS];
 
 uint32_t flow_counts = 0;
+uint32_t last_flow_counts = 0;
 uint32_t malicious_packet_counts = 0;
+
+/* Data nf received statistics */
+unsigned long long nf_rx_bytes = 0;
+unsigned long long last_nf_rx_bytes = 0;
+unsigned long long nf_rx_pkts = 0;
+unsigned long long last_nf_rx_pkts = 0;
+/* Data nf transmitted statistics */
+unsigned long long nf_tx_bytes = 0;
+unsigned long long last_nf_tx_bytes = 0;
+unsigned long long nf_tx_pkts = 0;
+unsigned long long last_nf_tx_pkts = 0;
 
 void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
@@ -155,6 +167,9 @@ getStatesCallback(struct nf_states* state, void* callback_arg)
         rte_pktmbuf_free(packet);
     }
 
+    nf_tx_pkts += 1;
+    nf_tx_bytes += packet->data_len;
+
     return 0;
 }
 
@@ -265,6 +280,8 @@ lcore_nf(__attribute__((unused)) void *arg)
                 #endif
             }
             else if (ip_5tuples.proto == 6) {
+                nf_rx_pkts += 1;
+                nf_rx_bytes += bufs[i]->data_len;
                 struct tcp_hdr * tcp_hdrs;
                 tcp_hdrs = (struct tcp_hdr*)
                            ((char*)ip_hdr + sizeof(struct ipv4_hdr));
@@ -309,6 +326,8 @@ lcore_nf(__attribute__((unused)) void *arg)
                     end_tsc = rte_rdtsc();
                     //printf("monitor: syn latency is %lu cycles\n", end_tsc - start_tsc);
                     //rte_pktmbuf_free(bufs[i]);
+                    nf_tx_pkts += 1;
+                    nf_tx_bytes += bufs[i]->data_len;
                     flow_counts ++;
                     //if (flow_counts >= 13000) {
                         //rte_exit(EXIT_FAILURE, "this is just a test\n");
