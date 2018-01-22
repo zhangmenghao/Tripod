@@ -28,6 +28,17 @@ struct rte_hash *index_hash_table[NB_SOCKETS];
 uint32_t flow_counts = 0;
 uint32_t last_flow_counts = 0;
 uint32_t malicious_packet_counts = 0;
+/* Data nf received statistics */
+
+unsigned long long nf_rx_bytes = 0;
+unsigned long long last_nf_rx_bytes = 0;
+unsigned long long nf_rx_pkts = 0;
+unsigned long long last_nf_rx_pkts = 0;
+/* Data nf transmitted statistics */
+unsigned long long nf_tx_bytes = 0;
+unsigned long long last_nf_tx_bytes = 0;
+unsigned long long nf_tx_pkts = 0;
+unsigned long long last_nf_tx_pkts = 0;
 
 void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
@@ -261,13 +272,15 @@ lcore_nf(__attribute__((unused)) void *arg)
 					printf("nf: udp packets! pass!\n");	
 				}
 				else if (ip_5tuples.proto == 6){
+					nf_rx_pkts += 1;
+					nf_rx_bytes += bufs[i]->data_len;
 					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
 					ip_5tuples.port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
 					ip_5tuples.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
 					#ifdef __DEBUG_LV1
 					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					#endif
-					if (tcp_hdrs->tcp_flags == 0x12 || tcp_hdrs->tcp_flags == 0x02 )
+					if (tcp_hdrs->tcp_flags == 0x12 || tcp_hdrs->tcp_flags == 0x02 ) {
 						#ifdef __DEBUG_LV1
 						printf("nf: recerive a new flow!\n");
 						#endif
@@ -299,6 +312,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 							printf("nf: error in tx packets\n");
 						}
 						//rte_pktmbuf_free(bufs[i]);
+						nf_tx_pkts += 1;
+						nf_tx_bytes += bufs[i]->data_len;
 						flow_counts ++;
 						//if (flow_counts >= 73000){
 							//rte_exit(EXIT_FAILURE, "this is just a test\n");
@@ -323,6 +338,8 @@ lcore_nf(__attribute__((unused)) void *arg)
 								rte_pktmbuf_free(bufs[i]);
 								printf("nf: error in tx packets\n");
 							}
+							nf_tx_pkts += 1;
+							nf_tx_bytes += bufs[i]->data_len;
 						}
 						else{
 							rte_pktmbuf_free(bufs[i]);
