@@ -458,6 +458,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                         /* This is ECMP predict request message */
                         struct rte_mbuf* probing_packet;
                         probing_packet = backup_receive_probe_packet(bufs[i]);
+                        ctrl_tx_pkts += 1;
+                        ctrl_tx_bytes += probing_packet->data_len;
                         if (rte_eth_tx_burst(port,2,&probing_packet,1) != 1) {
                             printf("mg: tx probing_packet failed!\n");
                             rte_pktmbuf_free(probing_packet);
