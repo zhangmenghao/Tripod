@@ -124,7 +124,18 @@ extern uint32_t broadcast_ip;
 extern uint32_t this_machine_index;
 
 extern uint32_t flow_counts;
+extern uint32_t last_flow_counts;
 extern uint32_t malicious_packet_counts;
+/* Data nf received statistics */
+extern unsigned long long nf_rx_bytes;
+extern unsigned long long last_nf_rx_bytes;
+extern unsigned long long nf_rx_pkts;
+extern unsigned long long last_nf_rx_pkts;
+/* Data nf transmitted statistics */
+extern unsigned long long nf_tx_bytes;
+extern unsigned long long last_nf_tx_bytes;
+extern unsigned long long nf_tx_pkts;
+extern unsigned long long last_nf_tx_pkts;
 
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
