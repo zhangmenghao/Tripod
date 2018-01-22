@@ -409,6 +409,12 @@ pullState(uint16_t nf_id, uint8_t port, void* callback_arg,
         rte_pktmbuf_free(pull_packet);
     }
 
+    /* This is just temporary method */
+    if (target_indexs->backupip[0] == IPv4(172, 16, 0, 2)) {
+        rte_pktmbuf_free((struct rte_mbuf*)callback_arg);
+       return 0;
+    }
+
     /* If the second index is set, send 2 pull request packet */
     if (target_indexs->backupip[1] != 0) {
         pull_packet = build_pull_packet(
@@ -574,9 +580,6 @@ lcore_manager(__attribute__((unused)) void *arg)
                                 *((void**)
                                 ((u_char*)payload + sizeof(struct states_5tuple_pair)))
                             );
-                            if (ret < 0) {
-                                printf("mg: enqueue failed!\n");
-                            }
                         }
                     }
                 }
