@@ -124,7 +124,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, void* callback_arg)
     
     pull_packet = build_pull_packet(callback_arg, 1, 1, ip_5tuple);
 
-    if (rte_eth_tx_burst(1, 2, &pull_packet, 1) != 1) {
+    if (rte_eth_tx_burst(0, 0, &pull_packet, 1) != 1) {
         printf("mg: tx pullState failed!\n");
         rte_pktmbuf_free(pull_packet);
         return -1;
@@ -245,7 +245,7 @@ lcore_nf(__attribute__((unused)) void *arg)
                 ip_addr = arp_h->arp_data.arp_sip;
                 arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
                 arp_h->arp_data.arp_tip = ip_addr;
-                if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1) {
+                if (rte_eth_tx_burst(port, queue, &bufs[i], 1) != 1) {
                     printf("nf: tx failed in arp!\n");
                     rte_pktmbuf_free(bufs[i]);
                 }
@@ -319,7 +319,7 @@ lcore_nf(__attribute__((unused)) void *arg)
                     printf("nf: tcp_syn new_ip_dst is "IPv4_BYTES_FMT " \n",
                            IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
                     #endif
-                    if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1) {
+                    if (rte_eth_tx_burst(port, queue, &bufs[i], 1) != 1) {
                         printf("nf: tx burst in syn!\n");
                         rte_pktmbuf_free(bufs[i]);
                     }

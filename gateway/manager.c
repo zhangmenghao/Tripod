@@ -428,8 +428,8 @@ keyset_to_machine(struct indexs_5tuple_pair* keyset_pair)
 int
 lcore_manager(__attribute__((unused)) void *arg)
 {
-    uint8_t port = 1;
-    uint16_t queue = 0;
+    uint8_t port = 0;
+    uint16_t queue = 1;
     int i;
     struct ether_hdr* eth_h;
     struct ipv4_hdr* ip_h;
@@ -492,7 +492,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                 ip_addr = arp_h->arp_data.arp_sip;
                 arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
                 arp_h->arp_data.arp_tip = ip_addr;
-                if (rte_eth_tx_burst(port, 1, &bufs[i], 1) != 1) {
+                if (rte_eth_tx_burst(port, queue, &bufs[i], 1) != 1) {
                     printf("nf: tx failed in arp!\n");
                     rte_pktmbuf_free(bufs[i]);
                 }
@@ -582,7 +582,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                         request_states, callback_arg
                     );
                 }
-                if (rte_eth_tx_burst(port, 1, &backup_packet, 1) != 1) {
+                if (rte_eth_tx_burst(port, queue, &backup_packet, 1) != 1) {
                     printf("mg: tx backup_packet failed!\n");
                     rte_pktmbuf_free(backup_packet);
                 }
@@ -599,7 +599,8 @@ lcore_manager(__attribute__((unused)) void *arg)
 int
 lcore_manager_slave(__attribute__((unused)) void *arg)
 {
-    uint8_t port = 1;
+    uint8_t port = 0;
+    uint16_t queue = 2;
     struct ipv4_5tuple* ip_5tuple;
     struct nf_states* state;
     #ifdef __DEBUG_LV1
@@ -629,7 +630,7 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
             #ifdef __DEBUG_LV1
             printf("\n");
             #endif
-            if (rte_eth_tx_burst(port, 0, &backup_packet, 1) != 1) {
+            if (rte_eth_tx_burst(port, queue, &backup_packet, 1) != 1) {
                 printf("mg-slave: tx backup_packet failed!\n");
                 rte_pktmbuf_free(backup_packet);
             }
