@@ -364,7 +364,7 @@ lcore_manager(__attribute__((unused)) void *arg)
 	rte_timer_subsystem_init();
 	rte_timer_init(&manager_timer);
 	rte_timer_reset(
-        &manager_timer, rte_get_timer_hz(), PERIODICAL,
+        &manager_timer, rte_get_timer_hz()/5, PERIODICAL,
         rte_lcore_id(), manager_timer_cb, NULL
     );
 

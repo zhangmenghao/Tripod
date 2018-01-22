@@ -267,7 +267,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					#ifdef __DEBUG_LV1
 					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
 					#endif
-					if (tcp_hdrs->tcp_flags == 0x02){
+					if (tcp_hdrs->tcp_flags == 0x12 || tcp_hdrs->tcp_flags == 0x02 )
 						#ifdef __DEBUG_LV1
 						printf("nf: recerive a new flow!\n");
 						#endif
@@ -300,6 +300,10 @@ lcore_nf(__attribute__((unused)) void *arg)
 						}
 						//rte_pktmbuf_free(bufs[i]);
 						flow_counts ++;
+						//if (flow_counts >= 73000){
+							//rte_exit(EXIT_FAILURE, "this is just a test\n");
+ 						//}
+
 					}
 					else{
 						struct nf_states *state;
