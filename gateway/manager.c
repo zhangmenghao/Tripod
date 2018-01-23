@@ -725,7 +725,7 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
                 #ifdef __DEBUG_LV1
                 printf("\n");
                 #endif
-                backup_to_remote(ip_5tuple, 1);
+                backup_to_remote(ip_5tuple, 2);
             }
         }
     }
