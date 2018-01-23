@@ -136,6 +136,16 @@ extern unsigned long long nf_tx_bytes;
 extern unsigned long long last_nf_tx_bytes;
 extern unsigned long long nf_tx_pkts;
 extern unsigned long long last_nf_tx_pkts;
+/* Data transmitted by manager statistics */
+extern unsigned long long mg_nf_tx_bytes;
+extern unsigned long long last_mg_nf_tx_bytes;
+extern unsigned long long mg_nf_tx_pkts;
+extern unsigned long long last_mg_nf_tx_pkts;
+/* Control message transmitted by nf statistics */
+extern unsigned long long nf_ctrl_tx_bytes;
+extern unsigned long long last_nf_ctrl_tx_bytes;
+extern unsigned long long nf_ctrl_tx_pkts;
+extern unsigned long long last_nf_ctrl_tx_pkts;
 
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);

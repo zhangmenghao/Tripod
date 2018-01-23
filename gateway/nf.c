@@ -39,6 +39,11 @@ unsigned long long nf_tx_bytes = 0;
 unsigned long long last_nf_tx_bytes = 0;
 unsigned long long nf_tx_pkts = 0;
 unsigned long long last_nf_tx_pkts = 0;
+/* Control message transmitted by nf statistics */
+unsigned long long nf_ctrl_tx_bytes = 0;
+unsigned long long last_nf_ctrl_tx_bytes = 0;
+unsigned long long nf_ctrl_tx_pkts = 0;
+unsigned long long last_nf_ctrl_tx_pkts = 0;
 
 void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
@@ -185,25 +190,24 @@ pullStateCallback(struct nf_states* state, void* callback_arg)
     if (state->ipserver == 0) {
         malicious_packet_counts += 1;
     }
-
-    ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
-    ip_hdr->hdr_checksum = 0;
-    ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
-    ether_addr_copy(&eth_s_addr,&eth_hdr->d_addr);
-    ether_addr_copy(&eth_d_addr,&eth_hdr->s_addr);
-    #ifdef __DEBUG_LV1
-    printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n",
-           IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
-    #endif
-
-    if (rte_eth_tx_burst(0, 4, &packet, 1) != 1) {
-        printf("nf: tx burst in data!\n");
-        rte_pktmbuf_free(packet);
-        return -1;
+    else {
+        mg_nf_tx_pkts += 1;
+        mg_nf_tx_bytes += packet->data_len;
+        ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
+        ip_hdr->hdr_checksum = 0;
+        ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
+        ether_addr_copy(&eth_s_addr,&eth_hdr->d_addr);
+        ether_addr_copy(&eth_d_addr,&eth_hdr->s_addr);
+        #ifdef __DEBUG_LV1
+        printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n",
+               IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+        #endif
+        if (rte_eth_tx_burst(0, 4, &packet, 1) != 1) {
+            printf("nf: tx burst in data!\n");
+            rte_pktmbuf_free(packet);
+            return -1;
+        }
     }
-
-    nf_tx_pkts += 1;
-    nf_tx_bytes += packet->data_len;
 
     return 0;
 }

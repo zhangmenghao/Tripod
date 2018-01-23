@@ -45,6 +45,11 @@ static unsigned long long ctrl_tx_bytes = 0;
 static unsigned long long last_ctrl_tx_bytes = 0;
 static unsigned long long ctrl_tx_pkts = 0;
 static unsigned long long last_ctrl_tx_pkts = 0;
+/* Data transmitted by manager statistics */
+unsigned long long mg_nf_tx_bytes = 0;
+unsigned long long last_mg_nf_tx_bytes = 0;
+unsigned long long mg_nf_tx_pkts = 0;
+unsigned long long last_mg_nf_tx_pkts = 0;
 
 static void
 manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
@@ -53,25 +58,28 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
     printf("Manager Statistics\n");
     printf("ctrl_rx_throughput: %llu Mbps, ctrl_tx_throughput: %llu Mbps\n",
            (ctrl_rx_bytes - last_ctrl_rx_bytes) * 8 / 1024 / 1024,
-           (ctrl_tx_bytes - last_ctrl_tx_bytes) * 8 / 1024 / 1024);
+           (ctrl_tx_bytes - last_ctrl_tx_bytes +
+            nf_ctrl_tx_bytes - last_nf_ctrl_tx_bytes) * 8 / 1024 / 1024);
     printf("ctrl_rx_bytes: %llu, ctrl_tx_bytes: %llu\n",
-           ctrl_rx_bytes, ctrl_tx_bytes);
+           ctrl_rx_bytes, ctrl_tx_bytes + nf_ctrl_tx_bytes);
     printf("ctrl_rx_pkts_sec: %llu, ctrl_tx_pkts_sec: %llu\n",
            ctrl_rx_pkts - last_ctrl_rx_pkts,
-           ctrl_tx_pkts - last_ctrl_tx_pkts);
-    printf("ctrl_rx_pkts: %llu, ctrl_tx_pkts: %llu\n", 
-           ctrl_rx_pkts, ctrl_tx_pkts);
+           ctrl_tx_pkts - last_ctrl_tx_pkts +
+           nf_ctrl_tx_pkts - last_nf_ctrl_tx_pkts);
+    printf("ctrl_rx_pkts: %llu, ctrl_tx_pkts: %llu\n",
+           ctrl_rx_pkts, ctrl_tx_pkts + nf_ctrl_tx_pkts);
     printf("NF Statistics\n");
     printf("nf_rx_throughput: %llu Mbps, nf_tx_throughput: %llu Mbps\n",
            (nf_rx_bytes - last_nf_rx_bytes) * 8 / 1024 / 1024,
-           (nf_tx_bytes - last_nf_tx_bytes) * 8 / 1024 / 1024);
+           (nf_tx_bytes - last_nf_tx_bytes +
+            mg_nf_tx_bytes - last_mg_nf_tx_bytes) * 8 / 1024 / 1024);
     printf("nf_rx_bytes: %llu, nf_tx_bytes: %llu\n",
-           nf_rx_bytes, nf_tx_bytes);
+           nf_rx_bytes, nf_tx_bytes + mg_nf_tx_bytes);
     printf("nf_rx_pkts_sec: %llu, nf_tx_pkts_sec: %llu\n",
            nf_rx_pkts - last_nf_rx_pkts,
-           nf_tx_pkts - last_nf_tx_pkts);
-    printf("nf_rx_pkts: %llu, nf_tx_pkts: %llu\n", 
-           nf_rx_pkts, nf_tx_pkts);
+           nf_tx_pkts - last_nf_tx_pkts + mg_nf_tx_pkts - last_mg_nf_tx_pkts);
+    printf("nf_rx_pkts: %llu, nf_tx_pkts: %llu\n",
+           nf_rx_pkts, nf_tx_pkts + mg_nf_tx_pkts);
     printf("Other Statistics\n");
     printf("malicious_packet_counts: %u\n", malicious_packet_counts);
     printf("drop_packet_counts(timeout): %u\n", drop_packet_counts);
@@ -82,10 +90,14 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
     last_ctrl_rx_pkts = ctrl_rx_pkts;
     last_ctrl_tx_bytes = ctrl_tx_bytes;
     last_ctrl_tx_pkts = ctrl_tx_pkts;
+    last_nf_ctrl_tx_bytes = nf_ctrl_tx_bytes;
+    last_nf_ctrl_tx_pkts = nf_ctrl_tx_pkts;
     last_nf_rx_bytes = nf_rx_bytes;
     last_nf_rx_pkts = nf_rx_pkts;
     last_nf_tx_bytes = nf_tx_bytes;
     last_nf_tx_pkts = nf_tx_pkts;
+    last_mg_nf_tx_bytes = mg_nf_tx_bytes;
+    last_mg_nf_tx_pkts = mg_nf_tx_pkts;
     last_flow_counts = flow_counts;
 }
 
@@ -251,8 +263,8 @@ build_pull_packet(uint8_t port, uint32_t target_ip, uint16_t nf_id,
     payload->port_src = ip_5tuple->port_src;
     payload->proto = ip_5tuple->proto;
     *((void**)((u_char*)payload + sizeof(struct ipv4_5tuple))) = callback_arg;
-    ctrl_tx_pkts += 1;
-    ctrl_tx_bytes += pull_packet->data_len;
+    nf_ctrl_tx_pkts += 1;
+    nf_ctrl_tx_bytes += pull_packet->data_len;
     return pull_packet;
 }
 
@@ -450,12 +462,6 @@ pullState(uint16_t nf_id, uint8_t port, void* callback_arg,
         rte_pktmbuf_free(pull_packet);
     }
 
-    /* This is just temporary method */
-    if (target_indexs->backupip[0] == IPv4(172, 16, 0, 2)) {
-        rte_pktmbuf_free((struct rte_mbuf*)callback_arg);
-       return 0;
-    }
-
     /* If the second index is set, send 2 pull request packet */
     if (target_indexs->backupip[1] != 0) {
         pull_packet = build_pull_packet(
@@ -465,6 +471,11 @@ pullState(uint16_t nf_id, uint8_t port, void* callback_arg,
             printf("mg: tx pullState2 failed!\n");
             rte_pktmbuf_free(pull_packet);
         }
+    }
+    /* This is just temporary method */
+    else if (target_indexs->backupip[0] == IPv4(172, 16, 0, 2)) {
+        rte_pktmbuf_free((struct rte_mbuf*)callback_arg);
+        return 0;
     }
 
     return 0;
@@ -477,7 +488,8 @@ backup_to_remote(struct ipv4_5tuple* ip_5tuple, uint8_t backup_num)
     struct nf_states* backup_states;
     struct rte_mbuf* keyset_packet;
     struct nf_indexs *indexs;
-    int i, idx, ret = managerGetStates(ip_5tuple, &backup_states);
+    int ret = managerGetStates(ip_5tuple, &backup_states);
+    int i, idx, rnd, last_rnd = this_machine_index;
     if (ret < 0) {
         printf("mg: state not found!\n");
         return ret;
@@ -491,11 +503,11 @@ backup_to_remote(struct ipv4_5tuple* ip_5tuple, uint8_t backup_num)
     }
 
     for (i = 0; i < backup_num; i++) {
-        int rnd;
         do {
             rnd = rand() % N_MACHINE;
         }
-        while (rnd == this_machine_index);
+        while (rnd == this_machine_index || rnd == last_rnd);
+        last_rnd = rnd;
         indexs->backupip[i] = topo[rnd].ip;
         backup_packet = build_backup_packet(
             0, indexs->backupip[i], 0x00,
