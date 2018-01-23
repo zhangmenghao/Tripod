@@ -38,6 +38,11 @@ unsigned long long nf_tx_bytes = 0;
 unsigned long long last_nf_tx_bytes = 0;
 unsigned long long nf_tx_pkts = 0;
 unsigned long long last_nf_tx_pkts = 0;
+/* Control message transmitted by nf statistics */
+unsigned long long nf_ctrl_tx_bytes = 0;
+unsigned long long last_nf_ctrl_tx_bytes = 0;
+unsigned long long nf_ctrl_tx_pkts = 0;
+unsigned long long last_nf_ctrl_tx_pkts = 0;
 
 void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
@@ -167,8 +172,8 @@ getStatesCallback(struct nf_states* state, void* callback_arg)
         rte_pktmbuf_free(packet);
     }
 
-    nf_tx_pkts += 1;
-    nf_tx_bytes += packet->data_len;
+    mg_nf_tx_pkts += 1;
+    mg_nf_tx_bytes += packet->data_len;
 
     return 0;
 }

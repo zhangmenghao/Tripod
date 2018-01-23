@@ -43,34 +43,41 @@ static unsigned long long ctrl_tx_bytes = 0;
 static unsigned long long last_ctrl_tx_bytes = 0;
 static unsigned long long ctrl_tx_pkts = 0;
 static unsigned long long last_ctrl_tx_pkts = 0;
+/* Data transmitted by manager statistics */
+unsigned long long mg_nf_tx_bytes = 0;
+unsigned long long last_mg_nf_tx_bytes = 0;
+unsigned long long mg_nf_tx_pkts = 0;
+unsigned long long last_mg_nf_tx_pkts = 0;
 
 static void
 manager_timer_cb(__attribute__((unused)) struct rte_timer *tim, 
                  __attribute__((unused)) void *arg)
 {
-    //return;
     printf("Manager Statistics\n");
     printf("ctrl_rx_throughput: %llu Mbps, ctrl_tx_throughput: %llu Mbps\n",
            (ctrl_rx_bytes - last_ctrl_rx_bytes) * 8 / 1024 / 1024,
-           (ctrl_tx_bytes - last_ctrl_tx_bytes) * 8 / 1024 / 1024);
+           (ctrl_tx_bytes - last_ctrl_tx_bytes +
+            nf_ctrl_tx_bytes - last_nf_ctrl_tx_bytes) * 8 / 1024 / 1024);
     printf("ctrl_rx_bytes: %llu, ctrl_tx_bytes: %llu\n",
-           ctrl_rx_bytes, ctrl_tx_bytes);
+           ctrl_rx_bytes, ctrl_tx_bytes + nf_ctrl_tx_bytes);
     printf("ctrl_rx_pkts_sec: %llu, ctrl_tx_pkts_sec: %llu\n",
            ctrl_rx_pkts - last_ctrl_rx_pkts,
-           ctrl_tx_pkts - last_ctrl_tx_pkts);
-    printf("ctrl_rx_pkts: %llu, ctrl_tx_pkts: %llu\n", 
-           ctrl_rx_pkts, ctrl_tx_pkts);
+           ctrl_tx_pkts - last_ctrl_tx_pkts +
+           nf_ctrl_tx_pkts - last_nf_ctrl_tx_pkts);
+    printf("ctrl_rx_pkts: %llu, ctrl_tx_pkts: %llu\n",
+           ctrl_rx_pkts, ctrl_tx_pkts + nf_ctrl_tx_pkts);
     printf("NF Statistics\n");
     printf("nf_rx_throughput: %llu Mbps, nf_tx_throughput: %llu Mbps\n",
            (nf_rx_bytes - last_nf_rx_bytes) * 8 / 1024 / 1024,
-           (nf_tx_bytes - last_nf_tx_bytes) * 8 / 1024 / 1024);
+           (nf_tx_bytes - last_nf_tx_bytes +
+            mg_nf_tx_bytes - last_mg_nf_tx_bytes) * 8 / 1024 / 1024);
     printf("nf_rx_bytes: %llu, nf_tx_bytes: %llu\n",
-           nf_rx_bytes, nf_tx_bytes);
+           nf_rx_bytes, nf_tx_bytes + mg_nf_tx_bytes);
     printf("nf_rx_pkts_sec: %llu, nf_tx_pkts_sec: %llu\n",
            nf_rx_pkts - last_nf_rx_pkts,
-           nf_tx_pkts - last_nf_tx_pkts);
-    printf("nf_rx_pkts: %llu, nf_tx_pkts: %llu\n", 
-           nf_rx_pkts, nf_tx_pkts);
+           nf_tx_pkts - last_nf_tx_pkts + mg_nf_tx_pkts - last_mg_nf_tx_pkts);
+    printf("nf_rx_pkts: %llu, nf_tx_pkts: %llu\n",
+           nf_rx_pkts, nf_tx_pkts + mg_nf_tx_pkts);
     printf("Other Statistics\n");
     printf("malicious_packet_counts: %u\n", malicious_packet_counts);
     printf("drop_packet_counts(timeout): %u\n", drop_packet_counts);
@@ -81,10 +88,14 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
     last_ctrl_rx_pkts = ctrl_rx_pkts;
     last_ctrl_tx_bytes = ctrl_tx_bytes;
     last_ctrl_tx_pkts = ctrl_tx_pkts;
+    last_nf_ctrl_tx_bytes = nf_ctrl_tx_bytes;
+    last_nf_ctrl_tx_pkts = nf_ctrl_tx_pkts;
     last_nf_rx_bytes = nf_rx_bytes;
     last_nf_rx_pkts = nf_rx_pkts;
     last_nf_tx_bytes = nf_tx_bytes;
     last_nf_tx_pkts = nf_tx_pkts;
+    last_mg_nf_tx_bytes = mg_nf_tx_bytes;
+    last_mg_nf_tx_pkts = mg_nf_tx_pkts;
     last_flow_counts = flow_counts;
 }
 
@@ -240,8 +251,8 @@ build_pull_packet(void* callback_arg, uint8_t port,
     payload->port_src = ip_5tuple->port_src;
     payload->proto = ip_5tuple->proto;
     *((void**)((u_char*)payload + sizeof(struct ipv4_5tuple))) = callback_arg;
-    ctrl_tx_pkts += 1;
-    ctrl_tx_bytes += pull_packet->data_len;
+    nf_ctrl_tx_pkts += 1;
+    nf_ctrl_tx_bytes += pull_packet->data_len;
     return pull_packet;
 }
 
