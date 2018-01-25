@@ -72,7 +72,7 @@ legend = plt.legend(loc='lower left', shadow=False, fontsize='medium')
 plt.xlabel('Time(s)')
 plt.ylabel('Throughput(MBps)')
 
-plt.savefig('troughput_baseline_per_machine')
+plt.savefig('troughput_baseline_per_machine.pdf')
 plt.show()
 
 
