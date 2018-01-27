@@ -5,6 +5,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import brewer2mpl
 from scipy.interpolate import spline
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 
 bmap = brewer2mpl.get_map('Set1', 'qualitative', 5)
 colors = bmap.mpl_colors
@@ -127,23 +128,43 @@ r_detail = spline(timeline,r[1:61],timeline_detail)
 s_detail = spline(timeline,s[4:64],timeline_detail)
 
 
-plt.figure()
-plt.plot([0], [0])
+xmajorLocator   = MultipleLocator(1)
+xmajorFormatter = FormatStrFormatter('%1.0f')
+xminorLocator   = MultipleLocator(0.5)
+  
+ymajorLocator   = MultipleLocator(2500)
+ymajorFormatter = FormatStrFormatter('%1.0f')
+yminorLocator   = MultipleLocator(1250)
+
+plt.figure(1)
+ax = plt.subplot(111)
+
+ax.xaxis.set_major_locator(xmajorLocator)  
+ax.xaxis.set_major_formatter(xmajorFormatter)  
+  
+ax.yaxis.set_major_locator(ymajorLocator)  
+ax.yaxis.set_major_formatter(ymajorFormatter)  
+  
+ax.xaxis.set_minor_locator(xminorLocator)  
+ax.yaxis.set_minor_locator(yminorLocator)  
+  
+ax.xaxis.grid(True, which='major')
+ax.yaxis.grid(True, which='major')
 #plt.plot([0], [0])
 #plt.plot([0], [0])
 
 #plt.yscale('log')
-plt.ylim(0,40000) 
-plt.xlim(1, 6)
-plt.plot(timeline_detail, m_detail, '-', label="TRIPOD", linewidth=1)
-plt.plot(timeline_detail, b_detail, '-', label="baseline", linewidth=1)
-plt.plot(timeline_detail, r_detail, '-', label="random", linewidth=1)
-plt.plot(timeline_detail, s_detail, '-', label="stateless", linewidth=1)
+plt.ylim(0,27500) 
+plt.xlim(0, 6)
+plt.plot(timeline_detail, m_detail, '-', label="Tripod", linewidth=3)
+plt.plot(timeline_detail, b_detail, '-', label="B", linewidth=3)
+plt.plot(timeline_detail, r_detail, '-', label="R", linewidth=3)
+plt.plot(timeline_detail, s_detail, '-', label="D", linewidth=3)
 
-legend = plt.legend(loc='lower left', shadow=False, fontsize='medium')
+legend = plt.legend(loc='lower left', shadow=False, fontsize='large')
 
-plt.xlabel('Time(s)')
-plt.ylabel('Throughput(MBps)')
+plt.xlabel('Time(s)', fontsize='large')
+plt.ylabel('Throughput(Mbps)', fontsize='large')
 
 plt.savefig('total_throughput.pdf')
 plt.show()

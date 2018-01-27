@@ -81,13 +81,13 @@ plt.plot([0], [0])
 #plt.yscale('log')
 plt.ylim(0,6000) 
 plt.xlim(1, 7)
-plt.plot(timeline_detail, m_detail, '-', label="TRIPOD", linewidth=1)
-plt.plot(timeline_detail, r_detail, '-', label="Random", linewidth=1)
+plt.plot(timeline_detail, m_detail, '-', label="Tripod", linewidth=3)
+plt.plot(timeline_detail, r_detail, '-', label="R", linewidth=3)
 
-legend = plt.legend(loc='lower left', shadow=False, fontsize='medium')
+legend = plt.legend(loc='lower left', shadow=False, fontsize='large')
 
-plt.xlabel('Time(s)')
-plt.ylabel('Throughput(MBps)')
+plt.xlabel('Time(s)', fontsize='large')
+plt.ylabel('Throughput(Mbps)', fontsize='large')
 
 plt.savefig('total_ctrlmsg_large_abnormal.pdf')
 plt.show()
