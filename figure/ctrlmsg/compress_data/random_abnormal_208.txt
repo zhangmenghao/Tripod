@@ -1,0 +1,4298 @@
+EAL: Probing VFIO support...
+EAL: PCI device 0000:82:00.0 on NUMA socket 1
+EAL:   probe driver: 8086:10fb net_ixgbe
+EAL: PCI device 0000:82:00.1 on NUMA socket 1
+EAL:   Device is blacklisted, not initializing
+Init queue 0 for port 0
+Init queue 1 for port 0
+PMD: ixgbe_dev_link_status_print(): Port 0: Link Up - speed 0 Mbps - half-duplex
+flow_types_mask[0]: 00003cf0
+Port 0 MAC: 90:e2:ba:76:89:ac
+this machine.ip = 172.16.1.2 
+
+Checking link status
+done
+Port 0 Link Up - speed 10000 Mbps - full-duplex
+
+Core 2 process request from nf
+setup hash_table for state and index ipv4_state_hash_1
+
+Core 1 processing packets.
+setup hash_table for state and index ipv4_state_hash_0
+
+Core 0 manage states in gateway.
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+nf: not tcp and udp packets!
+nf: ip_dst is 0.0.0.0 
+nf: ip_src is 0.0.0.0 
+nf: next_proto_id is 0
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+nf: not tcp and udp packets!
+nf: ip_dst is 74.110.115.255 
+nf: ip_src is 0.0.0.0 
+nf: next_proto_id is 128
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+nf: not tcp and udp packets!
+nf: ip_dst is 74.110.115.255 
+nf: ip_src is 0.0.0.0 
+nf: next_proto_id is 128
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 0, ctrl_tx_bytes: 0
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 0, ctrl_tx_pkts: 0
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 0, nf_tx_bytes: 0
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 0, nf_tx_pkts: 0
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 0, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 13 Mbps, ctrl_tx_throughput: 13 Mbps
+ctrl_rx_bytes: 1735642, ctrl_tx_bytes: 1712154
+ctrl_rx_pkts_sec: 9339, ctrl_tx_pkts_sec: 9285
+ctrl_rx_pkts: 9339, ctrl_tx_pkts: 9285
+NF Statistics
+nf_rx_throughput: 75 Mbps, nf_tx_throughput: 75 Mbps
+nf_rx_bytes: 9865110, nf_tx_bytes: 9865110
+nf_rx_pkts_sec: 12787, nf_tx_pkts_sec: 12787
+nf_rx_pkts: 12787, nf_tx_pkts: 12787
+Other Statistics
+malicious_packet_counts: 0
+drop_packet_counts(timeout): 0
+flow_counts: 4377, flow_counts_sec: 4377
+
+Manager Statistics
+ctrl_rx_throughput: 15 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 3745556, ctrl_tx_bytes: 3758072
+ctrl_rx_pkts_sec: 10833, ctrl_tx_pkts_sec: 11095
+ctrl_rx_pkts: 20172, ctrl_tx_pkts: 20380
+NF Statistics
+nf_rx_throughput: 100 Mbps, nf_tx_throughput: 100 Mbps
+nf_rx_bytes: 22981065, nf_tx_bytes: 22980654
+nf_rx_pkts_sec: 17349, nf_tx_pkts_sec: 17344
+nf_rx_pkts: 30137, nf_tx_pkts: 30132
+Other Statistics
+malicious_packet_counts: 5
+drop_packet_counts(timeout): 0
+flow_counts: 8785, flow_counts_sec: 4408
+
+Manager Statistics
+ctrl_rx_throughput: 15 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 5768222, ctrl_tx_bytes: 5746826
+ctrl_rx_pkts_sec: 10899, ctrl_tx_pkts_sec: 10785
+ctrl_rx_pkts: 31071, ctrl_tx_pkts: 31165
+NF Statistics
+nf_rx_throughput: 118 Mbps, nf_tx_throughput: 118 Mbps
+nf_rx_bytes: 38491687, nf_tx_bytes: 38488308
+nf_rx_pkts_sec: 20190, nf_tx_pkts_sec: 20185
+nf_rx_pkts: 50327, nf_tx_pkts: 50317
+Other Statistics
+malicious_packet_counts: 10
+drop_packet_counts(timeout): 0
+flow_counts: 13048, flow_counts_sec: 4263
+
+Manager Statistics
+ctrl_rx_throughput: 14 Mbps, ctrl_tx_throughput: 14 Mbps
+ctrl_rx_bytes: 7664874, ctrl_tx_bytes: 7677494
+ctrl_rx_pkts_sec: 10217, ctrl_tx_pkts_sec: 10470
+ctrl_rx_pkts: 41288, ctrl_tx_pkts: 41635
+NF Statistics
+nf_rx_throughput: 119 Mbps, nf_tx_throughput: 119 Mbps
+nf_rx_bytes: 54139696, nf_tx_bytes: 54136098
+nf_rx_pkts_sec: 20102, nf_tx_pkts_sec: 20099
+nf_rx_pkts: 70429, nf_tx_pkts: 70416
+Other Statistics
+malicious_packet_counts: 13
+drop_packet_counts(timeout): 0
+flow_counts: 17026, flow_counts_sec: 3978
+
+Manager Statistics
+ctrl_rx_throughput: 14 Mbps, ctrl_tx_throughput: 14 Mbps
+ctrl_rx_bytes: 9529932, ctrl_tx_bytes: 9567594
+ctrl_rx_pkts_sec: 10062, ctrl_tx_pkts_sec: 10250
+ctrl_rx_pkts: 51350, ctrl_tx_pkts: 51885
+NF Statistics
+nf_rx_throughput: 114 Mbps, nf_tx_throughput: 114 Mbps
+nf_rx_bytes: 69150885, nf_tx_bytes: 69147071
+nf_rx_pkts_sec: 19764, nf_tx_pkts_sec: 19762
+nf_rx_pkts: 90194, nf_tx_pkts: 90179
+Other Statistics
+malicious_packet_counts: 15
+drop_packet_counts(timeout): 0
+flow_counts: 20913, flow_counts_sec: 3887
+
+Manager Statistics
+ctrl_rx_throughput: 14 Mbps, ctrl_tx_throughput: 14 Mbps
+ctrl_rx_bytes: 11416054, ctrl_tx_bytes: 11425424
+ctrl_rx_pkts_sec: 10120, ctrl_tx_pkts_sec: 10075
+ctrl_rx_pkts: 61470, ctrl_tx_pkts: 61960
+NF Statistics
+nf_rx_throughput: 113 Mbps, nf_tx_throughput: 113 Mbps
+nf_rx_bytes: 84045203, nf_tx_bytes: 84040929
+nf_rx_pkts_sec: 19810, nf_tx_pkts_sec: 19805
+nf_rx_pkts: 110004, nf_tx_pkts: 109984
+Other Statistics
+malicious_packet_counts: 20
+drop_packet_counts(timeout): 0
+flow_counts: 24697, flow_counts_sec: 3784
+
+Manager Statistics
+ctrl_rx_throughput: 12 Mbps, ctrl_tx_throughput: 12 Mbps
+ctrl_rx_bytes: 13094394, ctrl_tx_bytes: 13049988
+ctrl_rx_pkts_sec: 9080, ctrl_tx_pkts_sec: 8810
+ctrl_rx_pkts: 70550, ctrl_tx_pkts: 70770
+NF Statistics
+nf_rx_throughput: 112 Mbps, nf_tx_throughput: 112 Mbps
+nf_rx_bytes: 98802357, nf_tx_bytes: 98789199
+nf_rx_pkts_sec: 19227, nf_tx_pkts_sec: 19216
+nf_rx_pkts: 129231, nf_tx_pkts: 129200
+Other Statistics
+malicious_packet_counts: 31
+drop_packet_counts(timeout): 0
+flow_counts: 28145, flow_counts_sec: 3448
+
+Manager Statistics
+ctrl_rx_throughput: 12 Mbps, ctrl_tx_throughput: 12 Mbps
+ctrl_rx_bytes: 14707774, ctrl_tx_bytes: 14674552
+ctrl_rx_pkts_sec: 8730, ctrl_tx_pkts_sec: 8810
+ctrl_rx_pkts: 79280, ctrl_tx_pkts: 79580
+NF Statistics
+nf_rx_throughput: 102 Mbps, nf_tx_throughput: 102 Mbps
+nf_rx_bytes: 112299484, nf_tx_bytes: 112285748
+nf_rx_pkts_sec: 18341, nf_tx_pkts_sec: 18336
+nf_rx_pkts: 147572, nf_tx_pkts: 147536
+Other Statistics
+malicious_packet_counts: 35
+drop_packet_counts(timeout): 0
+flow_counts: 31620, flow_counts_sec: 3475
+
+Manager Statistics
+ctrl_rx_throughput: 12 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 16294234, ctrl_tx_bytes: 16244718
+ctrl_rx_pkts_sec: 8543, ctrl_tx_pkts_sec: 8515
+ctrl_rx_pkts: 87823, ctrl_tx_pkts: 88095
+NF Statistics
+nf_rx_throughput: 111 Mbps, nf_tx_throughput: 111 Mbps
+nf_rx_bytes: 126928657, nf_tx_bytes: 126914115
+nf_rx_pkts_sec: 18702, nf_tx_pkts_sec: 18695
+nf_rx_pkts: 166274, nf_tx_pkts: 166232
+Other Statistics
+malicious_packet_counts: 42
+drop_packet_counts(timeout): 0
+flow_counts: 35320, flow_counts_sec: 3700
+
+Manager Statistics
+ctrl_rx_throughput: 12 Mbps, ctrl_tx_throughput: 12 Mbps
+ctrl_rx_bytes: 17900098, ctrl_tx_bytes: 17884034
+ctrl_rx_pkts_sec: 8678, ctrl_tx_pkts_sec: 8890
+ctrl_rx_pkts: 96501, ctrl_tx_pkts: 96985
+NF Statistics
+nf_rx_throughput: 105 Mbps, nf_tx_throughput: 105 Mbps
+nf_rx_bytes: 140790044, nf_tx_bytes: 140775268
+nf_rx_pkts_sec: 18257, nf_tx_pkts_sec: 18254
+nf_rx_pkts: 184531, nf_tx_pkts: 184486
+Other Statistics
+malicious_packet_counts: 45
+drop_packet_counts(timeout): 0
+flow_counts: 38633, flow_counts_sec: 3313
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 19355336, ctrl_tx_bytes: 19350014
+ctrl_rx_pkts_sec: 7837, ctrl_tx_pkts_sec: 7950
+ctrl_rx_pkts: 104338, ctrl_tx_pkts: 104935
+NF Statistics
+nf_rx_throughput: 103 Mbps, nf_tx_throughput: 103 Mbps
+nf_rx_bytes: 154391639, nf_tx_bytes: 154376420
+nf_rx_pkts_sec: 18041, nf_tx_pkts_sec: 18036
+nf_rx_pkts: 202572, nf_tx_pkts: 202522
+Other Statistics
+malicious_packet_counts: 50
+drop_packet_counts(timeout): 0
+flow_counts: 42182, flow_counts_sec: 3549
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 20903786, ctrl_tx_bytes: 20898974
+ctrl_rx_pkts_sec: 8302, ctrl_tx_pkts_sec: 8400
+ctrl_rx_pkts: 112640, ctrl_tx_pkts: 113335
+NF Statistics
+nf_rx_throughput: 111 Mbps, nf_tx_throughput: 111 Mbps
+nf_rx_bytes: 169027627, nf_tx_bytes: 169012186
+nf_rx_pkts_sec: 19334, nf_tx_pkts_sec: 19331
+nf_rx_pkts: 221906, nf_tx_pkts: 221853
+Other Statistics
+malicious_packet_counts: 53
+drop_packet_counts(timeout): 0
+flow_counts: 45737, flow_counts_sec: 3555
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 12 Mbps
+ctrl_rx_bytes: 22462842, ctrl_tx_bytes: 22473750
+ctrl_rx_pkts_sec: 8484, ctrl_tx_pkts_sec: 8540
+ctrl_rx_pkts: 121124, ctrl_tx_pkts: 121875
+NF Statistics
+nf_rx_throughput: 104 Mbps, nf_tx_throughput: 104 Mbps
+nf_rx_bytes: 182787945, nf_tx_bytes: 182754822
+nf_rx_pkts_sec: 18597, nf_tx_pkts_sec: 18577
+nf_rx_pkts: 240503, nf_tx_pkts: 240430
+Other Statistics
+malicious_packet_counts: 73
+drop_packet_counts(timeout): 0
+flow_counts: 49355, flow_counts_sec: 3618
+
+Manager Statistics
+ctrl_rx_throughput: 12 Mbps, ctrl_tx_throughput: 12 Mbps
+ctrl_rx_bytes: 24057768, ctrl_tx_bytes: 24068810
+ctrl_rx_pkts_sec: 8637, ctrl_tx_pkts_sec: 8650
+ctrl_rx_pkts: 129761, ctrl_tx_pkts: 130525
+NF Statistics
+nf_rx_throughput: 113 Mbps, nf_tx_throughput: 113 Mbps
+nf_rx_bytes: 197683868, nf_tx_bytes: 197648741
+nf_rx_pkts_sec: 19121, nf_tx_pkts_sec: 19113
+nf_rx_pkts: 259624, nf_tx_pkts: 259543
+Other Statistics
+malicious_packet_counts: 81
+drop_packet_counts(timeout): 0
+flow_counts: 52650, flow_counts_sec: 3295
+
+Manager Statistics
+ctrl_rx_throughput: 13 Mbps, ctrl_tx_throughput: 12 Mbps
+ctrl_rx_bytes: 25775972, ctrl_tx_bytes: 25718268
+ctrl_rx_pkts_sec: 9242, ctrl_tx_pkts_sec: 8945
+ctrl_rx_pkts: 139003, ctrl_tx_pkts: 139470
+NF Statistics
+nf_rx_throughput: 105 Mbps, nf_tx_throughput: 105 Mbps
+nf_rx_bytes: 211541737, nf_tx_bytes: 211505382
+nf_rx_pkts_sec: 18643, nf_tx_pkts_sec: 18640
+nf_rx_pkts: 278267, nf_tx_pkts: 278183
+Other Statistics
+malicious_packet_counts: 84
+drop_packet_counts(timeout): 0
+flow_counts: 56028, flow_counts_sec: 3378
+
+Manager Statistics
+ctrl_rx_throughput: 12 Mbps, ctrl_tx_throughput: 12 Mbps
+ctrl_rx_bytes: 27407598, ctrl_tx_bytes: 27405528
+ctrl_rx_pkts_sec: 8830, ctrl_tx_pkts_sec: 9150
+ctrl_rx_pkts: 147833, ctrl_tx_pkts: 148620
+NF Statistics
+nf_rx_throughput: 107 Mbps, nf_tx_throughput: 107 Mbps
+nf_rx_bytes: 225602590, nf_tx_bytes: 225558402
+nf_rx_pkts_sec: 18833, nf_tx_pkts_sec: 18820
+nf_rx_pkts: 297100, nf_tx_pkts: 297003
+Other Statistics
+malicious_packet_counts: 97
+drop_packet_counts(timeout): 0
+flow_counts: 59517, flow_counts_sec: 3489
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 28974552, ctrl_tx_bytes: 28890870
+ctrl_rx_pkts_sec: 8422, ctrl_tx_pkts_sec: 8055
+ctrl_rx_pkts: 156255, ctrl_tx_pkts: 156675
+NF Statistics
+nf_rx_throughput: 106 Mbps, nf_tx_throughput: 106 Mbps
+nf_rx_bytes: 239600914, nf_tx_bytes: 239556269
+nf_rx_pkts_sec: 18459, nf_tx_pkts_sec: 18454
+nf_rx_pkts: 315560, nf_tx_pkts: 315457
+Other Statistics
+malicious_packet_counts: 103
+drop_packet_counts(timeout): 0
+flow_counts: 62619, flow_counts_sec: 3102
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 30522078, ctrl_tx_bytes: 30449050
+ctrl_rx_pkts_sec: 8318, ctrl_tx_pkts_sec: 8450
+ctrl_rx_pkts: 164573, ctrl_tx_pkts: 165125
+NF Statistics
+nf_rx_throughput: 112 Mbps, nf_tx_throughput: 112 Mbps
+nf_rx_bytes: 254300306, nf_tx_bytes: 254255583
+nf_rx_pkts_sec: 19387, nf_tx_pkts_sec: 19385
+nf_rx_pkts: 334947, nf_tx_pkts: 334843
+Other Statistics
+malicious_packet_counts: 104
+drop_packet_counts(timeout): 0
+flow_counts: 65770, flow_counts_sec: 3151
+
+Manager Statistics
+ctrl_rx_throughput: 12 Mbps, ctrl_tx_throughput: 12 Mbps
+ctrl_rx_bytes: 32098278, ctrl_tx_bytes: 32080990
+ctrl_rx_pkts_sec: 8529, ctrl_tx_pkts_sec: 8850
+ctrl_rx_pkts: 173102, ctrl_tx_pkts: 173975
+NF Statistics
+nf_rx_throughput: 114 Mbps, nf_tx_throughput: 114 Mbps
+nf_rx_bytes: 269258700, nf_tx_bytes: 269211857
+nf_rx_pkts_sec: 19586, nf_tx_pkts_sec: 19581
+nf_rx_pkts: 354533, nf_tx_pkts: 354424
+Other Statistics
+malicious_packet_counts: 109
+drop_packet_counts(timeout): 0
+flow_counts: 68997, flow_counts_sec: 3227
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 33612982, ctrl_tx_bytes: 33527608
+ctrl_rx_pkts_sec: 8153, ctrl_tx_pkts_sec: 7845
+ctrl_rx_pkts: 181255, ctrl_tx_pkts: 181820
+NF Statistics
+nf_rx_throughput: 113 Mbps, nf_tx_throughput: 113 Mbps
+nf_rx_bytes: 284081514, nf_tx_bytes: 284034377
+nf_rx_pkts_sec: 18990, nf_tx_pkts_sec: 18986
+nf_rx_pkts: 373523, nf_tx_pkts: 373410
+Other Statistics
+malicious_packet_counts: 113
+drop_packet_counts(timeout): 0
+flow_counts: 72214, flow_counts_sec: 3217
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 35105978, ctrl_tx_bytes: 34976992
+ctrl_rx_pkts_sec: 8011, ctrl_tx_pkts_sec: 7860
+ctrl_rx_pkts: 189266, ctrl_tx_pkts: 189680
+NF Statistics
+nf_rx_throughput: 104 Mbps, nf_tx_throughput: 104 Mbps
+nf_rx_bytes: 297717698, nf_tx_bytes: 297669916
+nf_rx_pkts_sec: 18699, nf_tx_pkts_sec: 18697
+nf_rx_pkts: 392222, nf_tx_pkts: 392107
+Other Statistics
+malicious_packet_counts: 115
+drop_packet_counts(timeout): 0
+flow_counts: 75413, flow_counts_sec: 3199
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 36635400, ctrl_tx_bytes: 36512122
+ctrl_rx_pkts_sec: 8257, ctrl_tx_pkts_sec: 8325
+ctrl_rx_pkts: 197523, ctrl_tx_pkts: 198005
+NF Statistics
+nf_rx_throughput: 106 Mbps, nf_tx_throughput: 106 Mbps
+nf_rx_bytes: 311614599, nf_tx_bytes: 311566524
+nf_rx_pkts_sec: 19076, nf_tx_pkts_sec: 19073
+nf_rx_pkts: 411298, nf_tx_pkts: 411180
+Other Statistics
+malicious_packet_counts: 118
+drop_packet_counts(timeout): 0
+flow_counts: 78629, flow_counts_sec: 3216
+
+Manager Statistics
+ctrl_rx_throughput: 9 Mbps, ctrl_tx_throughput: 9 Mbps
+ctrl_rx_bytes: 37861376, ctrl_tx_bytes: 37693204
+ctrl_rx_pkts_sec: 6596, ctrl_tx_pkts_sec: 6405
+ctrl_rx_pkts: 204119, ctrl_tx_pkts: 204410
+NF Statistics
+nf_rx_throughput: 90 Mbps, nf_tx_throughput: 90 Mbps
+nf_rx_bytes: 323473613, nf_tx_bytes: 323424704
+nf_rx_pkts_sec: 15302, nf_tx_pkts_sec: 15298
+nf_rx_pkts: 426601, nf_tx_pkts: 426479
+Other Statistics
+malicious_packet_counts: 122
+drop_packet_counts(timeout): 0
+flow_counts: 81162, flow_counts_sec: 2533
+
+Manager Statistics
+ctrl_rx_throughput: 9 Mbps, ctrl_tx_throughput: 9 Mbps
+ctrl_rx_bytes: 39116648, ctrl_tx_bytes: 38906556
+ctrl_rx_pkts_sec: 6697, ctrl_tx_pkts_sec: 6580
+ctrl_rx_pkts: 210816, ctrl_tx_pkts: 210990
+NF Statistics
+nf_rx_throughput: 95 Mbps, nf_tx_throughput: 95 Mbps
+nf_rx_bytes: 335951256, nf_tx_bytes: 335902269
+nf_rx_pkts_sec: 15949, nf_tx_pkts_sec: 15948
+nf_rx_pkts: 442550, nf_tx_pkts: 442427
+Other Statistics
+malicious_packet_counts: 123
+drop_packet_counts(timeout): 0
+flow_counts: 83797, flow_counts_sec: 2635
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 40658748, ctrl_tx_bytes: 40408494
+ctrl_rx_pkts_sec: 8327, ctrl_tx_pkts_sec: 8140
+ctrl_rx_pkts: 219143, ctrl_tx_pkts: 219135
+NF Statistics
+nf_rx_throughput: 114 Mbps, nf_tx_throughput: 114 Mbps
+nf_rx_bytes: 350990914, nf_tx_bytes: 350939549
+nf_rx_pkts_sec: 19201, nf_tx_pkts_sec: 19192
+nf_rx_pkts: 461751, nf_tx_pkts: 461619
+Other Statistics
+malicious_packet_counts: 132
+drop_packet_counts(timeout): 0
+flow_counts: 86889, flow_counts_sec: 3092
+
+Manager Statistics
+ctrl_rx_throughput: 17 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 42956288, ctrl_tx_bytes: 42742076
+ctrl_rx_pkts_sec: 12335, ctrl_tx_pkts_sec: 12655
+ctrl_rx_pkts: 231478, ctrl_tx_pkts: 231790
+NF Statistics
+nf_rx_throughput: 160 Mbps, nf_tx_throughput: 160 Mbps
+nf_rx_bytes: 372008521, nf_tx_bytes: 371951641
+nf_rx_pkts_sec: 27933, nf_tx_pkts_sec: 27925
+nf_rx_pkts: 489684, nf_tx_pkts: 489544
+Other Statistics
+malicious_packet_counts: 140
+drop_packet_counts(timeout): 0
+flow_counts: 91654, flow_counts_sec: 4765
+
+Manager Statistics
+ctrl_rx_throughput: 18 Mbps, ctrl_tx_throughput: 18 Mbps
+ctrl_rx_bytes: 45345412, ctrl_tx_bytes: 45172468
+ctrl_rx_pkts_sec: 12888, ctrl_tx_pkts_sec: 13180
+ctrl_rx_pkts: 244366, ctrl_tx_pkts: 244970
+NF Statistics
+nf_rx_throughput: 172 Mbps, nf_tx_throughput: 172 Mbps
+nf_rx_bytes: 394593946, nf_tx_bytes: 394535290
+nf_rx_pkts_sec: 30025, nf_tx_pkts_sec: 30021
+nf_rx_pkts: 519709, nf_tx_pkts: 519565
+Other Statistics
+malicious_packet_counts: 144
+drop_packet_counts(timeout): 0
+flow_counts: 96559, flow_counts_sec: 4905
+
+Manager Statistics
+ctrl_rx_throughput: 17 Mbps, ctrl_tx_throughput: 18 Mbps
+ctrl_rx_bytes: 47663698, ctrl_tx_bytes: 47567824
+ctrl_rx_pkts_sec: 12529, ctrl_tx_pkts_sec: 12990
+ctrl_rx_pkts: 256895, ctrl_tx_pkts: 257960
+NF Statistics
+nf_rx_throughput: 160 Mbps, nf_tx_throughput: 160 Mbps
+nf_rx_bytes: 415677471, nf_tx_bytes: 415619507
+nf_rx_pkts_sec: 28998, nf_tx_pkts_sec: 28993
+nf_rx_pkts: 548707, nf_tx_pkts: 548558
+Other Statistics
+malicious_packet_counts: 149
+drop_packet_counts(timeout): 0
+flow_counts: 101330, flow_counts_sec: 4771
+
+Manager Statistics
+ctrl_rx_throughput: 17 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 49934320, ctrl_tx_bytes: 49863604
+ctrl_rx_pkts_sec: 12237, ctrl_tx_pkts_sec: 12450
+ctrl_rx_pkts: 269132, ctrl_tx_pkts: 270410
+NF Statistics
+nf_rx_throughput: 165 Mbps, nf_tx_throughput: 165 Mbps
+nf_rx_bytes: 437378070, nf_tx_bytes: 437319241
+nf_rx_pkts_sec: 29097, nf_tx_pkts_sec: 29085
+nf_rx_pkts: 577805, nf_tx_pkts: 577643
+Other Statistics
+malicious_packet_counts: 161
+drop_packet_counts(timeout): 0
+flow_counts: 106521, flow_counts_sec: 5191
+
+Manager Statistics
+ctrl_rx_throughput: 17 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 52276402, ctrl_tx_bytes: 52147398
+ctrl_rx_pkts_sec: 12643, ctrl_tx_pkts_sec: 12385
+ctrl_rx_pkts: 281775, ctrl_tx_pkts: 282796
+NF Statistics
+nf_rx_throughput: 170 Mbps, nf_tx_throughput: 170 Mbps
+nf_rx_bytes: 459726040, nf_tx_bytes: 459666620
+nf_rx_pkts_sec: 29750, nf_tx_pkts_sec: 29741
+nf_rx_pkts: 607556, nf_tx_pkts: 607386
+Other Statistics
+malicious_packet_counts: 170
+drop_packet_counts(timeout): 0
+flow_counts: 111370, flow_counts_sec: 4849
+
+Manager Statistics
+ctrl_rx_throughput: 16 Mbps, ctrl_tx_throughput: 16 Mbps
+ctrl_rx_bytes: 54476562, ctrl_tx_bytes: 54358354
+ctrl_rx_pkts_sec: 11968, ctrl_tx_pkts_sec: 11985
+ctrl_rx_pkts: 293743, ctrl_tx_pkts: 294785
+NF Statistics
+nf_rx_throughput: 174 Mbps, nf_tx_throughput: 174 Mbps
+nf_rx_bytes: 482629204, nf_tx_bytes: 482569272
+nf_rx_pkts_sec: 29109, nf_tx_pkts_sec: 29104
+nf_rx_pkts: 636665, nf_tx_pkts: 636491
+Other Statistics
+malicious_packet_counts: 174
+drop_packet_counts(timeout): 0
+flow_counts: 116026, flow_counts_sec: 4656
+
+Manager Statistics
+ctrl_rx_throughput: 17 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 56743934, ctrl_tx_bytes: 56663354
+ctrl_rx_pkts_sec: 12209, ctrl_tx_pkts_sec: 12500
+ctrl_rx_pkts: 305952, ctrl_tx_pkts: 307285
+NF Statistics
+nf_rx_throughput: 162 Mbps, nf_tx_throughput: 162 Mbps
+nf_rx_bytes: 503971982, nf_tx_bytes: 503907636
+nf_rx_pkts_sec: 28764, nf_tx_pkts_sec: 28759
+nf_rx_pkts: 665429, nf_tx_pkts: 665250
+Other Statistics
+malicious_packet_counts: 179
+drop_packet_counts(timeout): 0
+flow_counts: 120727, flow_counts_sec: 4701
+
+Manager Statistics
+ctrl_rx_throughput: 17 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 59023682, ctrl_tx_bytes: 58970198
+ctrl_rx_pkts_sec: 12342, ctrl_tx_pkts_sec: 12510
+ctrl_rx_pkts: 318294, ctrl_tx_pkts: 319795
+NF Statistics
+nf_rx_throughput: 167 Mbps, nf_tx_throughput: 167 Mbps
+nf_rx_bytes: 525862659, nf_tx_bytes: 525798313
+nf_rx_pkts_sec: 28962, nf_tx_pkts_sec: 28962
+nf_rx_pkts: 694391, nf_tx_pkts: 694212
+Other Statistics
+malicious_packet_counts: 179
+drop_packet_counts(timeout): 0
+flow_counts: 125419, flow_counts_sec: 4692
+
+Manager Statistics
+ctrl_rx_throughput: 18 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 61410608, ctrl_tx_bytes: 61266900
+ctrl_rx_pkts_sec: 12888, ctrl_tx_pkts_sec: 12455
+ctrl_rx_pkts: 331182, ctrl_tx_pkts: 332250
+NF Statistics
+nf_rx_throughput: 168 Mbps, nf_tx_throughput: 168 Mbps
+nf_rx_bytes: 547886824, nf_tx_bytes: 547822136
+nf_rx_pkts_sec: 29379, nf_tx_pkts_sec: 29373
+nf_rx_pkts: 723770, nf_tx_pkts: 723585
+Other Statistics
+malicious_packet_counts: 184
+drop_packet_counts(timeout): 0
+flow_counts: 130153, flow_counts_sec: 4734
+
+Manager Statistics
+ctrl_rx_throughput: 17 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 63745400, ctrl_tx_bytes: 63618000
+ctrl_rx_pkts_sec: 12600, ctrl_tx_pkts_sec: 12746
+ctrl_rx_pkts: 343782, ctrl_tx_pkts: 345000
+NF Statistics
+nf_rx_throughput: 163 Mbps, nf_tx_throughput: 163 Mbps
+nf_rx_bytes: 569260807, nf_tx_bytes: 569191387
+nf_rx_pkts_sec: 29330, nf_tx_pkts_sec: 29321
+nf_rx_pkts: 753102, nf_tx_pkts: 752908
+Other Statistics
+malicious_packet_counts: 193
+drop_packet_counts(timeout): 0
+flow_counts: 134955, flow_counts_sec: 4802
+
+Manager Statistics
+ctrl_rx_throughput: 16 Mbps, ctrl_tx_throughput: 16 Mbps
+ctrl_rx_bytes: 65924786, ctrl_tx_bytes: 65762572
+ctrl_rx_pkts_sec: 11784, ctrl_tx_pkts_sec: 11630
+ctrl_rx_pkts: 355566, ctrl_tx_pkts: 356630
+NF Statistics
+nf_rx_throughput: 168 Mbps, nf_tx_throughput: 168 Mbps
+nf_rx_bytes: 591408524, nf_tx_bytes: 591332153
+nf_rx_pkts_sec: 29188, nf_tx_pkts_sec: 29179
+nf_rx_pkts: 782290, nf_tx_pkts: 782088
+Other Statistics
+malicious_packet_counts: 202
+drop_packet_counts(timeout): 0
+flow_counts: 139527, flow_counts_sec: 4572
+
+Manager Statistics
+ctrl_rx_throughput: 17 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 68248572, ctrl_tx_bytes: 68042678
+ctrl_rx_pkts_sec: 12516, ctrl_tx_pkts_sec: 12365
+ctrl_rx_pkts: 368082, ctrl_tx_pkts: 368995
+NF Statistics
+nf_rx_throughput: 173 Mbps, nf_tx_throughput: 173 Mbps
+nf_rx_bytes: 614189544, nf_tx_bytes: 614112220
+nf_rx_pkts_sec: 29414, nf_tx_pkts_sec: 29407
+nf_rx_pkts: 811704, nf_tx_pkts: 811495
+Other Statistics
+malicious_packet_counts: 208
+drop_packet_counts(timeout): 0
+flow_counts: 144115, flow_counts_sec: 4588
+
+Manager Statistics
+ctrl_rx_throughput: 16 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 70472492, ctrl_tx_bytes: 70285904
+ctrl_rx_pkts_sec: 12050, ctrl_tx_pkts_sec: 12165
+ctrl_rx_pkts: 380132, ctrl_tx_pkts: 381160
+NF Statistics
+nf_rx_throughput: 164 Mbps, nf_tx_throughput: 164 Mbps
+nf_rx_bytes: 635742050, nf_tx_bytes: 635662836
+nf_rx_pkts_sec: 28441, nf_tx_pkts_sec: 28434
+nf_rx_pkts: 840146, nf_tx_pkts: 839931
+Other Statistics
+malicious_packet_counts: 215
+drop_packet_counts(timeout): 0
+flow_counts: 148684, flow_counts_sec: 4569
+
+Manager Statistics
+ctrl_rx_throughput: 17 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 72744442, ctrl_tx_bytes: 72571542
+ctrl_rx_pkts_sec: 12301, ctrl_tx_pkts_sec: 12395
+ctrl_rx_pkts: 392433, ctrl_tx_pkts: 393555
+NF Statistics
+nf_rx_throughput: 163 Mbps, nf_tx_throughput: 163 Mbps
+nf_rx_bytes: 657126937, nf_tx_bytes: 657038726
+nf_rx_pkts_sec: 28606, nf_tx_pkts_sec: 28577
+nf_rx_pkts: 868752, nf_tx_pkts: 868508
+Other Statistics
+malicious_packet_counts: 243
+drop_packet_counts(timeout): 0
+flow_counts: 153565, flow_counts_sec: 4881
+
+Manager Statistics
+ctrl_rx_throughput: 17 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 75097482, ctrl_tx_bytes: 74889450
+ctrl_rx_pkts_sec: 12632, ctrl_tx_pkts_sec: 12570
+ctrl_rx_pkts: 405065, ctrl_tx_pkts: 406125
+NF Statistics
+nf_rx_throughput: 168 Mbps, nf_tx_throughput: 168 Mbps
+nf_rx_bytes: 679220188, nf_tx_bytes: 679128833
+nf_rx_pkts_sec: 28861, nf_tx_pkts_sec: 28857
+nf_rx_pkts: 897614, nf_tx_pkts: 897367
+Other Statistics
+malicious_packet_counts: 247
+drop_packet_counts(timeout): 0
+flow_counts: 158232, flow_counts_sec: 4667
+
+Manager Statistics
+ctrl_rx_throughput: 8 Mbps, ctrl_tx_throughput: 8 Mbps
+ctrl_rx_bytes: 76254464, ctrl_tx_bytes: 75996772
+ctrl_rx_pkts_sec: 6184, ctrl_tx_pkts_sec: 6005
+ctrl_rx_pkts: 411249, ctrl_tx_pkts: 412130
+NF Statistics
+nf_rx_throughput: 74 Mbps, nf_tx_throughput: 74 Mbps
+nf_rx_bytes: 688984124, nf_tx_bytes: 688884621
+nf_rx_pkts_sec: 13299, nf_tx_pkts_sec: 13283
+nf_rx_pkts: 910913, nf_tx_pkts: 910650
+Other Statistics
+malicious_packet_counts: 263
+drop_packet_counts(timeout): 0
+flow_counts: 160408, flow_counts_sec: 2176
+
+Manager Statistics
+ctrl_rx_throughput: 9 Mbps, ctrl_tx_throughput: 9 Mbps
+ctrl_rx_bytes: 77533646, ctrl_tx_bytes: 77212890
+ctrl_rx_pkts_sec: 6860, ctrl_tx_pkts_sec: 6595
+ctrl_rx_pkts: 418109, ctrl_tx_pkts: 418725
+NF Statistics
+nf_rx_throughput: 95 Mbps, nf_tx_throughput: 95 Mbps
+nf_rx_bytes: 701473746, nf_tx_bytes: 701370709
+nf_rx_pkts_sec: 16622, nf_tx_pkts_sec: 16614
+nf_rx_pkts: 927535, nf_tx_pkts: 927264
+Other Statistics
+malicious_packet_counts: 271
+drop_packet_counts(timeout): 0
+flow_counts: 162927, flow_counts_sec: 2519
+
+Manager Statistics
+ctrl_rx_throughput: 9 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 78756362, ctrl_tx_bytes: 78720360
+ctrl_rx_pkts_sec: 6594, ctrl_tx_pkts_sec: 8175
+ctrl_rx_pkts: 424703, ctrl_tx_pkts: 426900
+NF Statistics
+nf_rx_throughput: 101 Mbps, nf_tx_throughput: 101 Mbps
+nf_rx_bytes: 714831519, nf_tx_bytes: 714722320
+nf_rx_pkts_sec: 18279, nf_tx_pkts_sec: 18272
+nf_rx_pkts: 945814, nf_tx_pkts: 945536
+Other Statistics
+malicious_packet_counts: 278
+drop_packet_counts(timeout): 0
+flow_counts: 165822, flow_counts_sec: 2895
+
+Manager Statistics
+ctrl_rx_throughput: 7 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 79798082, ctrl_tx_bytes: 80248114
+ctrl_rx_pkts_sec: 5587, ctrl_tx_pkts_sec: 8285
+ctrl_rx_pkts: 430290, ctrl_tx_pkts: 435185
+NF Statistics
+nf_rx_throughput: 103 Mbps, nf_tx_throughput: 103 Mbps
+nf_rx_bytes: 728457748, nf_tx_bytes: 728327892
+nf_rx_pkts_sec: 18782, nf_tx_pkts_sec: 18760
+nf_rx_pkts: 964596, nf_tx_pkts: 964296
+Other Statistics
+malicious_packet_counts: 300
+drop_packet_counts(timeout): 0
+flow_counts: 168709, flow_counts_sec: 2887
+
+Manager Statistics
+ctrl_rx_throughput: 16 Mbps, ctrl_tx_throughput: 23 Mbps
+ctrl_rx_bytes: 81935490, ctrl_tx_bytes: 83338884
+ctrl_rx_pkts_sec: 13020, ctrl_tx_pkts_sec: 18660
+ctrl_rx_pkts: 443310, ctrl_tx_pkts: 453845
+NF Statistics
+nf_rx_throughput: 136 Mbps, nf_tx_throughput: 126 Mbps
+nf_rx_bytes: 746317223, nf_tx_bytes: 744890970
+nf_rx_pkts_sec: 23510, nf_tx_pkts_sec: 21642
+nf_rx_pkts: 988106, nf_tx_pkts: 985938
+Other Statistics
+malicious_packet_counts: 1953
+drop_packet_counts(timeout): 0
+flow_counts: 172323, flow_counts_sec: 3614
+
+Manager Statistics
+ctrl_rx_throughput: 14 Mbps, ctrl_tx_throughput: 21 Mbps
+ctrl_rx_bytes: 83792526, ctrl_tx_bytes: 86094690
+ctrl_rx_pkts_sec: 10956, ctrl_tx_pkts_sec: 16250
+ctrl_rx_pkts: 454266, ctrl_tx_pkts: 470096
+NF Statistics
+nf_rx_throughput: 139 Mbps, nf_tx_throughput: 130 Mbps
+nf_rx_bytes: 764606442, nf_tx_bytes: 761977611
+nf_rx_pkts_sec: 24033, nf_tx_pkts_sec: 22523
+nf_rx_pkts: 1012139, nf_tx_pkts: 1008461
+Other Statistics
+malicious_packet_counts: 3283
+drop_packet_counts(timeout): 0
+flow_counts: 176036, flow_counts_sec: 3713
+
+Manager Statistics
+ctrl_rx_throughput: 13 Mbps, ctrl_tx_throughput: 20 Mbps
+ctrl_rx_bytes: 85574158, ctrl_tx_bytes: 88761302
+ctrl_rx_pkts_sec: 10387, ctrl_tx_pkts_sec: 15437
+ctrl_rx_pkts: 464653, ctrl_tx_pkts: 485536
+NF Statistics
+nf_rx_throughput: 145 Mbps, nf_tx_throughput: 138 Mbps
+nf_rx_bytes: 783723261, nf_tx_bytes: 780178224
+nf_rx_pkts_sec: 25213, nf_tx_pkts_sec: 24029
+nf_rx_pkts: 1037353, nf_tx_pkts: 1032492
+Other Statistics
+malicious_packet_counts: 4356
+drop_packet_counts(timeout): 0
+flow_counts: 179915, flow_counts_sec: 3879
+
+Manager Statistics
+ctrl_rx_throughput: 13 Mbps, ctrl_tx_throughput: 20 Mbps
+ctrl_rx_bytes: 87371266, ctrl_tx_bytes: 91461310
+ctrl_rx_pkts_sec: 10319, ctrl_tx_pkts_sec: 15407
+ctrl_rx_pkts: 474972, ctrl_tx_pkts: 500943
+NF Statistics
+nf_rx_throughput: 134 Mbps, nf_tx_throughput: 127 Mbps
+nf_rx_bytes: 801371817, nf_tx_bytes: 796868812
+nf_rx_pkts_sec: 24307, nf_tx_pkts_sec: 23055
+nf_rx_pkts: 1061661, nf_tx_pkts: 1055548
+Other Statistics
+malicious_packet_counts: 5525
+drop_packet_counts(timeout): 0
+flow_counts: 184010, flow_counts_sec: 4095
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 16 Mbps
+ctrl_rx_bytes: 88814598, ctrl_tx_bytes: 93656384
+ctrl_rx_pkts_sec: 8244, ctrl_tx_pkts_sec: 12440
+ctrl_rx_pkts: 483216, ctrl_tx_pkts: 513388
+NF Statistics
+nf_rx_throughput: 141 Mbps, nf_tx_throughput: 135 Mbps
+nf_rx_bytes: 819860782, nf_tx_bytes: 814574706
+nf_rx_pkts_sec: 24152, nf_tx_pkts_sec: 23076
+nf_rx_pkts: 1085813, nf_tx_pkts: 1078624
+Other Statistics
+malicious_packet_counts: 6547
+drop_packet_counts(timeout): 0
+flow_counts: 187762, flow_counts_sec: 3752
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 90384478, ctrl_tx_bytes: 95940098
+ctrl_rx_pkts_sec: 8880, ctrl_tx_pkts_sec: 12961
+ctrl_rx_pkts: 492096, ctrl_tx_pkts: 526349
+NF Statistics
+nf_rx_throughput: 134 Mbps, nf_tx_throughput: 129 Mbps
+nf_rx_bytes: 837527496, nf_tx_bytes: 831579206
+nf_rx_pkts_sec: 24235, nf_tx_pkts_sec: 23254
+nf_rx_pkts: 1110049, nf_tx_pkts: 1101878
+Other Statistics
+malicious_packet_counts: 7462
+drop_packet_counts(timeout): 0
+flow_counts: 191718, flow_counts_sec: 3956
+
+Manager Statistics
+ctrl_rx_throughput: 12 Mbps, ctrl_tx_throughput: 18 Mbps
+ctrl_rx_bytes: 92000328, ctrl_tx_bytes: 98349424
+ctrl_rx_pkts_sec: 9087, ctrl_tx_pkts_sec: 13552
+ctrl_rx_pkts: 501183, ctrl_tx_pkts: 539901
+NF Statistics
+nf_rx_throughput: 138 Mbps, nf_tx_throughput: 133 Mbps
+nf_rx_bytes: 855683028, nf_tx_bytes: 849069625
+nf_rx_pkts_sec: 25060, nf_tx_pkts_sec: 24018
+nf_rx_pkts: 1135110, nf_tx_pkts: 1125897
+Other Statistics
+malicious_packet_counts: 8455
+drop_packet_counts(timeout): 0
+flow_counts: 195732, flow_counts_sec: 4014
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 16 Mbps
+ctrl_rx_bytes: 93473800, ctrl_tx_bytes: 100514136
+ctrl_rx_pkts_sec: 8213, ctrl_tx_pkts_sec: 12092
+ctrl_rx_pkts: 509396, ctrl_tx_pkts: 551993
+NF Statistics
+nf_rx_throughput: 136 Mbps, nf_tx_throughput: 132 Mbps
+nf_rx_bytes: 873557927, nf_tx_bytes: 866374198
+nf_rx_pkts_sec: 24053, nf_tx_pkts_sec: 23310
+nf_rx_pkts: 1159164, nf_tx_pkts: 1149208
+Other Statistics
+malicious_packet_counts: 9171
+drop_packet_counts(timeout): 0
+flow_counts: 199525, flow_counts_sec: 3793
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 16 Mbps
+ctrl_rx_bytes: 94937806, ctrl_tx_bytes: 102735266
+ctrl_rx_pkts_sec: 8204, ctrl_tx_pkts_sec: 12405
+ctrl_rx_pkts: 517600, ctrl_tx_pkts: 564398
+NF Statistics
+nf_rx_throughput: 147 Mbps, nf_tx_throughput: 144 Mbps
+nf_rx_bytes: 892911272, nf_tx_bytes: 885258562
+nf_rx_pkts_sec: 25148, nf_tx_pkts_sec: 24391
+nf_rx_pkts: 1184312, nf_tx_pkts: 1173599
+Other Statistics
+malicious_packet_counts: 9900
+drop_packet_counts(timeout): 0
+flow_counts: 203296, flow_counts_sec: 3771
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 16 Mbps
+ctrl_rx_bytes: 96390976, ctrl_tx_bytes: 104834928
+ctrl_rx_pkts_sec: 8069, ctrl_tx_pkts_sec: 11699
+ctrl_rx_pkts: 525669, ctrl_tx_pkts: 576097
+NF Statistics
+nf_rx_throughput: 139 Mbps, nf_tx_throughput: 135 Mbps
+nf_rx_bytes: 911233595, nf_tx_bytes: 903017725
+nf_rx_pkts_sec: 24847, nf_tx_pkts_sec: 24029
+nf_rx_pkts: 1209159, nf_tx_pkts: 1197628
+Other Statistics
+malicious_packet_counts: 10685
+drop_packet_counts(timeout): 0
+flow_counts: 207123, flow_counts_sec: 3827
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 17 Mbps
+ctrl_rx_bytes: 97879250, ctrl_tx_bytes: 107158160
+ctrl_rx_pkts_sec: 8225, ctrl_tx_pkts_sec: 12882
+ctrl_rx_pkts: 533894, ctrl_tx_pkts: 588979
+NF Statistics
+nf_rx_throughput: 136 Mbps, nf_tx_throughput: 131 Mbps
+nf_rx_bytes: 929163386, nf_tx_bytes: 920208510
+nf_rx_pkts_sec: 24926, nf_tx_pkts_sec: 23996
+nf_rx_pkts: 1234085, nf_tx_pkts: 1221624
+Other Statistics
+malicious_packet_counts: 11598
+drop_packet_counts(timeout): 0
+flow_counts: 211526, flow_counts_sec: 4403
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 16 Mbps
+ctrl_rx_bytes: 99323352, ctrl_tx_bytes: 109299502
+ctrl_rx_pkts_sec: 7970, ctrl_tx_pkts_sec: 11887
+ctrl_rx_pkts: 541864, ctrl_tx_pkts: 600866
+NF Statistics
+nf_rx_throughput: 140 Mbps, nf_tx_throughput: 135 Mbps
+nf_rx_bytes: 947571878, nf_tx_bytes: 938016514
+nf_rx_pkts_sec: 25023, nf_tx_pkts_sec: 24187
+nf_rx_pkts: 1259108, nf_tx_pkts: 1245811
+Other Statistics
+malicious_packet_counts: 12403
+drop_packet_counts(timeout): 0
+flow_counts: 215867, flow_counts_sec: 4341
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 16 Mbps
+ctrl_rx_bytes: 100808218, ctrl_tx_bytes: 111450614
+ctrl_rx_pkts_sec: 8174, ctrl_tx_pkts_sec: 11944
+ctrl_rx_pkts: 550038, ctrl_tx_pkts: 612810
+NF Statistics
+nf_rx_throughput: 142 Mbps, nf_tx_throughput: 136 Mbps
+nf_rx_bytes: 966267385, nf_tx_bytes: 955935115
+nf_rx_pkts_sec: 24806, nf_tx_pkts_sec: 23904
+nf_rx_pkts: 1283914, nf_tx_pkts: 1269715
+Other Statistics
+malicious_packet_counts: 13286
+drop_packet_counts(timeout): 0
+flow_counts: 219889, flow_counts_sec: 4022
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 102173340, ctrl_tx_bytes: 113485044
+ctrl_rx_pkts_sec: 7509, ctrl_tx_pkts_sec: 11303
+ctrl_rx_pkts: 557547, ctrl_tx_pkts: 624113
+NF Statistics
+nf_rx_throughput: 143 Mbps, nf_tx_throughput: 138 Mbps
+nf_rx_bytes: 985113669, nf_tx_bytes: 974066019
+nf_rx_pkts_sec: 24923, nf_tx_pkts_sec: 24075
+nf_rx_pkts: 1308837, nf_tx_pkts: 1293790
+Other Statistics
+malicious_packet_counts: 14100
+drop_packet_counts(timeout): 0
+flow_counts: 223894, flow_counts_sec: 4005
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 103594574, ctrl_tx_bytes: 115575510
+ctrl_rx_pkts_sec: 7871, ctrl_tx_pkts_sec: 11581
+ctrl_rx_pkts: 565418, ctrl_tx_pkts: 635694
+NF Statistics
+nf_rx_throughput: 138 Mbps, nf_tx_throughput: 134 Mbps
+nf_rx_bytes: 1003309491, nf_tx_bytes: 991685454
+nf_rx_pkts_sec: 25055, nf_tx_pkts_sec: 24256
+nf_rx_pkts: 1333892, nf_tx_pkts: 1318046
+Other Statistics
+malicious_packet_counts: 14876
+drop_packet_counts(timeout): 0
+flow_counts: 228010, flow_counts_sec: 4116
+
+Manager Statistics
+ctrl_rx_throughput: 11 Mbps, ctrl_tx_throughput: 16 Mbps
+ctrl_rx_bytes: 105093150, ctrl_tx_bytes: 117759396
+ctrl_rx_pkts_sec: 8198, ctrl_tx_pkts_sec: 12055
+ctrl_rx_pkts: 573616, ctrl_tx_pkts: 647749
+NF Statistics
+nf_rx_throughput: 138 Mbps, nf_tx_throughput: 133 Mbps
+nf_rx_bytes: 1021524868, nf_tx_bytes: 1009157485
+nf_rx_pkts_sec: 25205, nf_tx_pkts_sec: 24326
+nf_rx_pkts: 1359099, nf_tx_pkts: 1342374
+Other Statistics
+malicious_packet_counts: 15743
+drop_packet_counts(timeout): 0
+flow_counts: 232094, flow_counts_sec: 4084
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 106499750, ctrl_tx_bytes: 119807352
+ctrl_rx_pkts_sec: 7740, ctrl_tx_pkts_sec: 11290
+ctrl_rx_pkts: 581356, ctrl_tx_pkts: 659039
+NF Statistics
+nf_rx_throughput: 143 Mbps, nf_tx_throughput: 138 Mbps
+nf_rx_bytes: 1040309047, nf_tx_bytes: 1027285719
+nf_rx_pkts_sec: 25204, nf_tx_pkts_sec: 24429
+nf_rx_pkts: 1384304, nf_tx_pkts: 1366804
+Other Statistics
+malicious_packet_counts: 16507
+drop_packet_counts(timeout): 0
+flow_counts: 236105, flow_counts_sec: 4011
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 107867776, ctrl_tx_bytes: 121818796
+ctrl_rx_pkts_sec: 7502, ctrl_tx_pkts_sec: 11082
+ctrl_rx_pkts: 588858, ctrl_tx_pkts: 670121
+NF Statistics
+nf_rx_throughput: 141 Mbps, nf_tx_throughput: 137 Mbps
+nf_rx_bytes: 1058857184, nf_tx_bytes: 1045356697
+nf_rx_pkts_sec: 25157, nf_tx_pkts_sec: 24454
+nf_rx_pkts: 1409462, nf_tx_pkts: 1391259
+Other Statistics
+malicious_packet_counts: 17196
+drop_packet_counts(timeout): 0
+flow_counts: 240064, flow_counts_sec: 3959
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 109289182, ctrl_tx_bytes: 123867006
+ctrl_rx_pkts_sec: 7823, ctrl_tx_pkts_sec: 11341
+ctrl_rx_pkts: 596681, ctrl_tx_pkts: 681462
+NF Statistics
+nf_rx_throughput: 141 Mbps, nf_tx_throughput: 138 Mbps
+nf_rx_bytes: 1077444199, nf_tx_bytes: 1063491240
+nf_rx_pkts_sec: 25172, nf_tx_pkts_sec: 24566
+nf_rx_pkts: 1434634, nf_tx_pkts: 1415825
+Other Statistics
+malicious_packet_counts: 17775
+drop_packet_counts(timeout): 0
+flow_counts: 244101, flow_counts_sec: 4037
+
+Manager Statistics
+ctrl_rx_throughput: 9 Mbps, ctrl_tx_throughput: 14 Mbps
+ctrl_rx_bytes: 110575370, ctrl_tx_bytes: 125802198
+ctrl_rx_pkts_sec: 7041, ctrl_tx_pkts_sec: 10652
+ctrl_rx_pkts: 603722, ctrl_tx_pkts: 692114
+NF Statistics
+nf_rx_throughput: 134 Mbps, nf_tx_throughput: 130 Mbps
+nf_rx_bytes: 1095091772, nf_tx_bytes: 1080550696
+nf_rx_pkts_sec: 23693, nf_tx_pkts_sec: 23001
+nf_rx_pkts: 1458327, nf_tx_pkts: 1438826
+Other Statistics
+malicious_packet_counts: 18446
+drop_packet_counts(timeout): 0
+flow_counts: 247840, flow_counts_sec: 3739
+
+Manager Statistics
+ctrl_rx_throughput: 9 Mbps, ctrl_tx_throughput: 14 Mbps
+ctrl_rx_bytes: 111848198, ctrl_tx_bytes: 127688842
+ctrl_rx_pkts_sec: 6978, ctrl_tx_pkts_sec: 10390
+ctrl_rx_pkts: 610700, ctrl_tx_pkts: 702504
+NF Statistics
+nf_rx_throughput: 138 Mbps, nf_tx_throughput: 135 Mbps
+nf_rx_bytes: 1113226688, nf_tx_bytes: 1098367233
+nf_rx_pkts_sec: 23782, nf_tx_pkts_sec: 23334
+nf_rx_pkts: 1482109, nf_tx_pkts: 1462161
+Other Statistics
+malicious_packet_counts: 18882
+drop_packet_counts(timeout): 0
+flow_counts: 251635, flow_counts_sec: 3795
+
+Manager Statistics
+ctrl_rx_throughput: 14 Mbps, ctrl_tx_throughput: 21 Mbps
+ctrl_rx_bytes: 113730830, ctrl_tx_bytes: 130485320
+ctrl_rx_pkts_sec: 10301, ctrl_tx_pkts_sec: 15401
+ctrl_rx_pkts: 621001, ctrl_tx_pkts: 717905
+NF Statistics
+nf_rx_throughput: 204 Mbps, nf_tx_throughput: 201 Mbps
+nf_rx_bytes: 1140014836, nf_tx_bytes: 1124806833
+nf_rx_pkts_sec: 34965, nf_tx_pkts_sec: 34346
+nf_rx_pkts: 1517076, nf_tx_pkts: 1496508
+Other Statistics
+malicious_packet_counts: 19486
+drop_packet_counts(timeout): 0
+flow_counts: 257323, flow_counts_sec: 5688
+
+Manager Statistics
+ctrl_rx_throughput: 16 Mbps, ctrl_tx_throughput: 25 Mbps
+ctrl_rx_bytes: 115868818, ctrl_tx_bytes: 133798676
+ctrl_rx_pkts_sec: 11781, ctrl_tx_pkts_sec: 18242
+ctrl_rx_pkts: 632782, ctrl_tx_pkts: 736147
+NF Statistics
+nf_rx_throughput: 224 Mbps, nf_tx_throughput: 221 Mbps
+nf_rx_bytes: 1169430116, nf_tx_bytes: 1153892567
+nf_rx_pkts_sec: 38787, nf_tx_pkts_sec: 38102
+nf_rx_pkts: 1555863, nf_tx_pkts: 1534610
+Other Statistics
+malicious_packet_counts: 20133
+drop_packet_counts(timeout): 0
+flow_counts: 263495, flow_counts_sec: 6172
+
+Manager Statistics
+ctrl_rx_throughput: 16 Mbps, ctrl_tx_throughput: 24 Mbps
+ctrl_rx_bytes: 117979108, ctrl_tx_bytes: 136973874
+ctrl_rx_pkts_sec: 11617, ctrl_tx_pkts_sec: 17441
+ctrl_rx_pkts: 644399, ctrl_tx_pkts: 753588
+NF Statistics
+nf_rx_throughput: 217 Mbps, nf_tx_throughput: 214 Mbps
+nf_rx_bytes: 1197894466, nf_tx_bytes: 1181967001
+nf_rx_pkts_sec: 38195, nf_tx_pkts_sec: 37521
+nf_rx_pkts: 1594059, nf_tx_pkts: 1572131
+Other Statistics
+malicious_packet_counts: 20790
+drop_packet_counts(timeout): 0
+flow_counts: 270002, flow_counts_sec: 6507
+
+Manager Statistics
+ctrl_rx_throughput: 15 Mbps, ctrl_tx_throughput: 23 Mbps
+ctrl_rx_bytes: 120050428, ctrl_tx_bytes: 140038682
+ctrl_rx_pkts_sec: 11350, ctrl_tx_pkts_sec: 16864
+ctrl_rx_pkts: 655749, ctrl_tx_pkts: 770452
+NF Statistics
+nf_rx_throughput: 223 Mbps, nf_tx_throughput: 220 Mbps
+nf_rx_bytes: 1227202784, nf_tx_bytes: 1210895286
+nf_rx_pkts_sec: 38402, nf_tx_pkts_sec: 37757
+nf_rx_pkts: 1632461, nf_tx_pkts: 1609888
+Other Statistics
+malicious_packet_counts: 21419
+drop_packet_counts(timeout): 0
+flow_counts: 276666, flow_counts_sec: 6664
+
+Manager Statistics
+ctrl_rx_throughput: 15 Mbps, ctrl_tx_throughput: 24 Mbps
+ctrl_rx_bytes: 122120302, ctrl_tx_bytes: 143285318
+ctrl_rx_pkts_sec: 11329, ctrl_tx_pkts_sec: 17827
+ctrl_rx_pkts: 667078, ctrl_tx_pkts: 788279
+NF Statistics
+nf_rx_throughput: 221 Mbps, nf_tx_throughput: 218 Mbps
+nf_rx_bytes: 1256218272, nf_tx_bytes: 1239585636
+nf_rx_pkts_sec: 38887, nf_tx_pkts_sec: 38278
+nf_rx_pkts: 1671348, nf_tx_pkts: 1648167
+Other Statistics
+malicious_packet_counts: 22014
+drop_packet_counts(timeout): 0
+flow_counts: 282864, flow_counts_sec: 6198
+
+Manager Statistics
+ctrl_rx_throughput: 15 Mbps, ctrl_tx_throughput: 22 Mbps
+ctrl_rx_bytes: 124152312, ctrl_tx_bytes: 146281138
+ctrl_rx_pkts_sec: 11165, ctrl_tx_pkts_sec: 16481
+ctrl_rx_pkts: 678243, ctrl_tx_pkts: 804760
+NF Statistics
+nf_rx_throughput: 228 Mbps, nf_tx_throughput: 226 Mbps
+nf_rx_bytes: 1286190313, nf_tx_bytes: 1269253234
+nf_rx_pkts_sec: 38273, nf_tx_pkts_sec: 37685
+nf_rx_pkts: 1709621, nf_tx_pkts: 1685852
+Other Statistics
+malicious_packet_counts: 22576
+drop_packet_counts(timeout): 0
+flow_counts: 288823, flow_counts_sec: 5959
+
+Manager Statistics
+ctrl_rx_throughput: 15 Mbps, ctrl_tx_throughput: 22 Mbps
+ctrl_rx_bytes: 126142572, ctrl_tx_bytes: 149164916
+ctrl_rx_pkts_sec: 10924, ctrl_tx_pkts_sec: 15841
+ctrl_rx_pkts: 689167, ctrl_tx_pkts: 820601
+NF Statistics
+nf_rx_throughput: 215 Mbps, nf_tx_throughput: 212 Mbps
+nf_rx_bytes: 1314398186, nf_tx_bytes: 1297118245
+nf_rx_pkts_sec: 37468, nf_tx_pkts_sec: 36832
+nf_rx_pkts: 1747090, nf_tx_pkts: 1722684
+Other Statistics
+malicious_packet_counts: 23196
+drop_packet_counts(timeout): 0
+flow_counts: 294462, flow_counts_sec: 5639
+
+Manager Statistics
+ctrl_rx_throughput: 16 Mbps, ctrl_tx_throughput: 24 Mbps
+ctrl_rx_bytes: 128328334, ctrl_tx_bytes: 152314662
+ctrl_rx_pkts_sec: 11909, ctrl_tx_pkts_sec: 17347
+ctrl_rx_pkts: 701076, ctrl_tx_pkts: 837948
+NF Statistics
+nf_rx_throughput: 212 Mbps, nf_tx_throughput: 208 Mbps
+nf_rx_bytes: 1342256057, nf_tx_bytes: 1324478022
+nf_rx_pkts_sec: 37380, nf_tx_pkts_sec: 36689
+nf_rx_pkts: 1784471, nf_tx_pkts: 1759374
+Other Statistics
+malicious_packet_counts: 23848
+drop_packet_counts(timeout): 0
+flow_counts: 300152, flow_counts_sec: 5690
+
+Manager Statistics
+ctrl_rx_throughput: 15 Mbps, ctrl_tx_throughput: 24 Mbps
+ctrl_rx_bytes: 130418202, ctrl_tx_bytes: 155508288
+ctrl_rx_pkts_sec: 11336, ctrl_tx_pkts_sec: 17475
+ctrl_rx_pkts: 712412, ctrl_tx_pkts: 855423
+NF Statistics
+nf_rx_throughput: 211 Mbps, nf_tx_throughput: 208 Mbps
+nf_rx_bytes: 1369922361, nf_tx_bytes: 1351831894
+nf_rx_pkts_sec: 37805, nf_tx_pkts_sec: 37188
+nf_rx_pkts: 1822277, nf_tx_pkts: 1796564
+Other Statistics
+malicious_packet_counts: 24454
+drop_packet_counts(timeout): 0
+flow_counts: 305680, flow_counts_sec: 5528
+
+Manager Statistics
+ctrl_rx_throughput: 15 Mbps, ctrl_tx_throughput: 24 Mbps
+ctrl_rx_bytes: 132485730, ctrl_tx_bytes: 158664502
+ctrl_rx_pkts_sec: 11274, ctrl_tx_pkts_sec: 17283
+ctrl_rx_pkts: 723686, ctrl_tx_pkts: 872706
+NF Statistics
+nf_rx_throughput: 218 Mbps, nf_tx_throughput: 215 Mbps
+nf_rx_bytes: 1398510124, nf_tx_bytes: 1380040007
+nf_rx_pkts_sec: 38003, nf_tx_pkts_sec: 37374
+nf_rx_pkts: 1860280, nf_tx_pkts: 1833938
+Other Statistics
+malicious_packet_counts: 25075
+drop_packet_counts(timeout): 0
+flow_counts: 311378, flow_counts_sec: 5698
+
+Manager Statistics
+ctrl_rx_throughput: 15 Mbps, ctrl_tx_throughput: 22 Mbps
+ctrl_rx_bytes: 134517696, ctrl_tx_bytes: 161659354
+ctrl_rx_pkts_sec: 11104, ctrl_tx_pkts_sec: 16402
+ctrl_rx_pkts: 734790, ctrl_tx_pkts: 889108
+NF Statistics
+nf_rx_throughput: 221 Mbps, nf_tx_throughput: 219 Mbps
+nf_rx_bytes: 1427590470, nf_tx_bytes: 1408814539
+nf_rx_pkts_sec: 37656, nf_tx_pkts_sec: 37100
+nf_rx_pkts: 1897938, nf_tx_pkts: 1871040
+Other Statistics
+malicious_packet_counts: 25624
+drop_packet_counts(timeout): 0
+flow_counts: 317214, flow_counts_sec: 5836
+
+Manager Statistics
+ctrl_rx_throughput: 15 Mbps, ctrl_tx_throughput: 23 Mbps
+ctrl_rx_bytes: 136540948, ctrl_tx_bytes: 164678504
+ctrl_rx_pkts_sec: 11037, ctrl_tx_pkts_sec: 16543
+ctrl_rx_pkts: 745827, ctrl_tx_pkts: 905651
+NF Statistics
+nf_rx_throughput: 212 Mbps, nf_tx_throughput: 210 Mbps
+nf_rx_bytes: 1455404311, nf_tx_bytes: 1436436214
+nf_rx_pkts_sec: 37059, nf_tx_pkts_sec: 36615
+nf_rx_pkts: 1934998, nf_tx_pkts: 1907656
+Other Statistics
+malicious_packet_counts: 26056
+drop_packet_counts(timeout): 0
+flow_counts: 322917, flow_counts_sec: 5703
+
+Manager Statistics
+ctrl_rx_throughput: 14 Mbps, ctrl_tx_throughput: 22 Mbps
+ctrl_rx_bytes: 138479462, ctrl_tx_bytes: 167643740
+ctrl_rx_pkts_sec: 10624, ctrl_tx_pkts_sec: 16282
+ctrl_rx_pkts: 756451, ctrl_tx_pkts: 921933
+NF Statistics
+nf_rx_throughput: 218 Mbps, nf_tx_throughput: 216 Mbps
+nf_rx_bytes: 1484024357, nf_tx_bytes: 1464770150
+nf_rx_pkts_sec: 38058, nf_tx_pkts_sec: 37511
+nf_rx_pkts: 1973056, nf_tx_pkts: 1945167
+Other Statistics
+malicious_packet_counts: 26583
+drop_packet_counts(timeout): 0
+flow_counts: 328400, flow_counts_sec: 5483
+
+Manager Statistics
+ctrl_rx_throughput: 14 Mbps, ctrl_tx_throughput: 21 Mbps
+ctrl_rx_bytes: 140342384, ctrl_tx_bytes: 170496188
+ctrl_rx_pkts_sec: 10183, ctrl_tx_pkts_sec: 15650
+ctrl_rx_pkts: 766634, ctrl_tx_pkts: 937583
+NF Statistics
+nf_rx_throughput: 216 Mbps, nf_tx_throughput: 214 Mbps
+nf_rx_bytes: 1512459844, nf_tx_bytes: 1492891045
+nf_rx_pkts_sec: 37042, nf_tx_pkts_sec: 36521
+nf_rx_pkts: 2010098, nf_tx_pkts: 1981688
+Other Statistics
+malicious_packet_counts: 27091
+drop_packet_counts(timeout): 0
+flow_counts: 333763, flow_counts_sec: 5363
+
+Manager Statistics
+ctrl_rx_throughput: 15 Mbps, ctrl_tx_throughput: 24 Mbps
+ctrl_rx_bytes: 142431516, ctrl_tx_bytes: 173643592
+ctrl_rx_pkts_sec: 11422, ctrl_tx_pkts_sec: 17271
+ctrl_rx_pkts: 778056, ctrl_tx_pkts: 954854
+NF Statistics
+nf_rx_throughput: 220 Mbps, nf_tx_throughput: 219 Mbps
+nf_rx_bytes: 1541402654, nf_tx_bytes: 1521622333
+nf_rx_pkts_sec: 38309, nf_tx_pkts_sec: 37835
+nf_rx_pkts: 2048407, nf_tx_pkts: 2019523
+Other Statistics
+malicious_packet_counts: 27543
+drop_packet_counts(timeout): 0
+flow_counts: 339629, flow_counts_sec: 5866
+
+Manager Statistics
+ctrl_rx_throughput: 7 Mbps, ctrl_tx_throughput: 11 Mbps
+ctrl_rx_bytes: 143424490, ctrl_tx_bytes: 175087784
+ctrl_rx_pkts_sec: 5425, ctrl_tx_pkts_sec: 7920
+ctrl_rx_pkts: 783481, ctrl_tx_pkts: 962774
+NF Statistics
+nf_rx_throughput: 109 Mbps, nf_tx_throughput: 108 Mbps
+nf_rx_bytes: 1555762905, nf_tx_bytes: 1535881966
+nf_rx_pkts_sec: 19283, nf_tx_pkts_sec: 19064
+nf_rx_pkts: 2067690, nf_tx_pkts: 2038588
+Other Statistics
+malicious_packet_counts: 27749
+drop_packet_counts(timeout): 0
+flow_counts: 342517, flow_counts_sec: 2888
+
+Manager Statistics
+ctrl_rx_throughput: 8 Mbps, ctrl_tx_throughput: 13 Mbps
+ctrl_rx_bytes: 144596630, ctrl_tx_bytes: 176837242
+ctrl_rx_pkts_sec: 6442, ctrl_tx_pkts_sec: 9614
+ctrl_rx_pkts: 789923, ctrl_tx_pkts: 972388
+NF Statistics
+nf_rx_throughput: 124 Mbps, nf_tx_throughput: 124 Mbps
+nf_rx_bytes: 1572140105, nf_tx_bytes: 1552149769
+nf_rx_pkts_sec: 21629, nf_tx_pkts_sec: 21365
+nf_rx_pkts: 2089319, nf_tx_pkts: 2059953
+Other Statistics
+malicious_packet_counts: 28001
+drop_packet_counts(timeout): 0
+flow_counts: 345647, flow_counts_sec: 3130
+
+Manager Statistics
+ctrl_rx_throughput: 9 Mbps, ctrl_tx_throughput: 14 Mbps
+ctrl_rx_bytes: 145873388, ctrl_tx_bytes: 178781366
+ctrl_rx_pkts_sec: 6967, ctrl_tx_pkts_sec: 10657
+ctrl_rx_pkts: 796890, ctrl_tx_pkts: 983045
+NF Statistics
+nf_rx_throughput: 144 Mbps, nf_tx_throughput: 143 Mbps
+nf_rx_bytes: 1591095374, nf_tx_bytes: 1570993706
+nf_rx_pkts_sec: 25323, nf_tx_pkts_sec: 24991
+nf_rx_pkts: 2114643, nf_tx_pkts: 2084944
+Other Statistics
+malicious_packet_counts: 28325
+drop_packet_counts(timeout): 0
+flow_counts: 349341, flow_counts_sec: 3694
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 147229106, ctrl_tx_bytes: 180751764
+ctrl_rx_pkts_sec: 7404, ctrl_tx_pkts_sec: 10807
+ctrl_rx_pkts: 804294, ctrl_tx_pkts: 993852
+NF Statistics
+nf_rx_throughput: 142 Mbps, nf_tx_throughput: 141 Mbps
+nf_rx_bytes: 1609834427, nf_tx_bytes: 1589593176
+nf_rx_pkts_sec: 24871, nf_tx_pkts_sec: 24578
+nf_rx_pkts: 2139514, nf_tx_pkts: 2109522
+Other Statistics
+malicious_packet_counts: 28606
+drop_packet_counts(timeout): 0
+flow_counts: 352941, flow_counts_sec: 3600
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 148554780, ctrl_tx_bytes: 182768648
+ctrl_rx_pkts_sec: 7239, ctrl_tx_pkts_sec: 11026
+ctrl_rx_pkts: 811533, ctrl_tx_pkts: 1004878
+NF Statistics
+nf_rx_throughput: 140 Mbps, nf_tx_throughput: 139 Mbps
+nf_rx_bytes: 1628243745, nf_tx_bytes: 1607866943
+nf_rx_pkts_sec: 24793, nf_tx_pkts_sec: 24506
+nf_rx_pkts: 2164308, nf_tx_pkts: 2134028
+Other Statistics
+malicious_packet_counts: 28889
+drop_packet_counts(timeout): 0
+flow_counts: 356744, flow_counts_sec: 3803
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 149888962, ctrl_tx_bytes: 184764598
+ctrl_rx_pkts_sec: 7317, ctrl_tx_pkts_sec: 10919
+ctrl_rx_pkts: 818850, ctrl_tx_pkts: 1015797
+NF Statistics
+nf_rx_throughput: 142 Mbps, nf_tx_throughput: 140 Mbps
+nf_rx_bytes: 1646889657, nf_tx_bytes: 1626312373
+nf_rx_pkts_sec: 25070, nf_tx_pkts_sec: 24706
+nf_rx_pkts: 2189378, nf_tx_pkts: 2158734
+Other Statistics
+malicious_packet_counts: 29244
+drop_packet_counts(timeout): 0
+flow_counts: 360549, flow_counts_sec: 3805
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 151214914, ctrl_tx_bytes: 186763774
+ctrl_rx_pkts_sec: 7235, ctrl_tx_pkts_sec: 10924
+ctrl_rx_pkts: 826085, ctrl_tx_pkts: 1026721
+NF Statistics
+nf_rx_throughput: 151 Mbps, nf_tx_throughput: 150 Mbps
+nf_rx_bytes: 1666755045, nf_tx_bytes: 1646019568
+nf_rx_pkts_sec: 25553, nf_tx_pkts_sec: 25222
+nf_rx_pkts: 2214931, nf_tx_pkts: 2183956
+Other Statistics
+malicious_packet_counts: 29568
+drop_packet_counts(timeout): 0
+flow_counts: 364286, flow_counts_sec: 3737
+
+Manager Statistics
+ctrl_rx_throughput: 9 Mbps, ctrl_tx_throughput: 14 Mbps
+ctrl_rx_bytes: 152512852, ctrl_tx_bytes: 188722244
+ctrl_rx_pkts_sec: 7099, ctrl_tx_pkts_sec: 10715
+ctrl_rx_pkts: 833184, ctrl_tx_pkts: 1037436
+NF Statistics
+nf_rx_throughput: 136 Mbps, nf_tx_throughput: 135 Mbps
+nf_rx_bytes: 1684644974, nf_tx_bytes: 1663764446
+nf_rx_pkts_sec: 24101, nf_tx_pkts_sec: 23812
+nf_rx_pkts: 2239032, nf_tx_pkts: 2207768
+Other Statistics
+malicious_packet_counts: 29851
+drop_packet_counts(timeout): 0
+flow_counts: 368043, flow_counts_sec: 3757
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 153855778, ctrl_tx_bytes: 190766672
+ctrl_rx_pkts_sec: 7352, ctrl_tx_pkts_sec: 11190
+ctrl_rx_pkts: 840536, ctrl_tx_pkts: 1048626
+NF Statistics
+nf_rx_throughput: 140 Mbps, nf_tx_throughput: 139 Mbps
+nf_rx_bytes: 1703079138, nf_tx_bytes: 1682051094
+nf_rx_pkts_sec: 24852, nf_tx_pkts_sec: 24574
+nf_rx_pkts: 2263884, nf_tx_pkts: 2232342
+Other Statistics
+malicious_packet_counts: 30121
+drop_packet_counts(timeout): 0
+flow_counts: 371815, flow_counts_sec: 3772
+
+Manager Statistics
+ctrl_rx_throughput: 9 Mbps, ctrl_tx_throughput: 14 Mbps
+ctrl_rx_bytes: 155107676, ctrl_tx_bytes: 192629424
+ctrl_rx_pkts_sec: 6781, ctrl_tx_pkts_sec: 10200
+ctrl_rx_pkts: 847317, ctrl_tx_pkts: 1058826
+NF Statistics
+nf_rx_throughput: 148 Mbps, nf_tx_throughput: 146 Mbps
+nf_rx_bytes: 1722583867, nf_tx_bytes: 1701314765
+nf_rx_pkts_sec: 24936, nf_tx_pkts_sec: 24624
+nf_rx_pkts: 2288821, nf_tx_pkts: 2256966
+Other Statistics
+malicious_packet_counts: 30421
+drop_packet_counts(timeout): 0
+flow_counts: 375424, flow_counts_sec: 3609
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 156461450, ctrl_tx_bytes: 194654356
+ctrl_rx_pkts_sec: 7341, ctrl_tx_pkts_sec: 11062
+ctrl_rx_pkts: 854658, ctrl_tx_pkts: 1069889
+NF Statistics
+nf_rx_throughput: 142 Mbps, nf_tx_throughput: 140 Mbps
+nf_rx_bytes: 1741215211, nf_tx_bytes: 1719762831
+nf_rx_pkts_sec: 24963, nf_tx_pkts_sec: 24674
+nf_rx_pkts: 2313789, nf_tx_pkts: 2281645
+Other Statistics
+malicious_packet_counts: 30701
+drop_packet_counts(timeout): 0
+flow_counts: 378992, flow_counts_sec: 3568
+
+Manager Statistics
+ctrl_rx_throughput: 10 Mbps, ctrl_tx_throughput: 15 Mbps
+ctrl_rx_bytes: 157831444, ctrl_tx_bytes: 196667404
+ctrl_rx_pkts_sec: 7457, ctrl_tx_pkts_sec: 11005
+ctrl_rx_pkts: 862115, ctrl_tx_pkts: 1080896
+NF Statistics
+nf_rx_throughput: 149 Mbps, nf_tx_throughput: 148 Mbps
+nf_rx_bytes: 1760823326, nf_tx_bytes: 1739279833
+nf_rx_pkts_sec: 25228, nf_tx_pkts_sec: 25002
+nf_rx_pkts: 2339017, nf_tx_pkts: 2306647
+Other Statistics
+malicious_packet_counts: 30920
+drop_packet_counts(timeout): 0
+flow_counts: 382643, flow_counts_sec: 3651
+
+Manager Statistics
+ctrl_rx_throughput: 5 Mbps, ctrl_tx_throughput: 8 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 3923, ctrl_tx_pkts_sec: 5927
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 80 Mbps, nf_tx_throughput: 79 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 13920, nf_tx_pkts_sec: 13757
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 2046
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 197748826
+ctrl_rx_pkts_sec: 0, ctrl_tx_pkts_sec: 0
+ctrl_rx_pkts: 866038, ctrl_tx_pkts: 1086823
+NF Statistics
+nf_rx_throughput: 0 Mbps, nf_tx_throughput: 0 Mbps
+nf_rx_bytes: 1771356292, nf_tx_bytes: 1749725827
+nf_rx_pkts_sec: 0, nf_tx_pkts_sec: 0
+nf_rx_pkts: 2352937, nf_tx_pkts: 2320404
+Other Statistics
+malicious_packet_counts: 31072
+drop_packet_counts(timeout): 0
+flow_counts: 384689, flow_counts_sec: 0
+
+Manager Statistics
+ctrl_rx_throughput: 0 Mbps, ctrl_tx_throughput: 0 Mbps
+ctrl_rx_bytes: 158550834, ctrl_tx_bytes: 1977
