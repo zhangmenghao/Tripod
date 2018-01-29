@@ -5,6 +5,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import brewer2mpl
 from scipy.interpolate import spline
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 
 bmap = brewer2mpl.get_map('Set1', 'qualitative', 5)
 colors = bmap.mpl_colors
@@ -73,10 +74,28 @@ m_detail = spline(timeline,m[0:counts],timeline_detail)
 r_detail = spline(timeline,r[0:counts],timeline_detail)
 
 
-plt.figure()
-plt.plot([0], [0])
-#plt.plot([0], [0])
-#plt.plot([0], [0])
+xmajorLocator   = MultipleLocator(1)
+xmajorFormatter = FormatStrFormatter('%1.0f')
+xminorLocator   = MultipleLocator(0.5)
+  
+ymajorLocator   = MultipleLocator(500)
+ymajorFormatter = FormatStrFormatter('%1.0f')
+yminorLocator   = MultipleLocator(250)
+
+plt.figure(1)
+ax = plt.subplot(111)
+
+ax.xaxis.set_major_locator(xmajorLocator)  
+ax.xaxis.set_major_formatter(xmajorFormatter)  
+  
+ax.yaxis.set_major_locator(ymajorLocator)  
+ax.yaxis.set_major_formatter(ymajorFormatter)  
+  
+ax.xaxis.set_minor_locator(xminorLocator)  
+ax.yaxis.set_minor_locator(yminorLocator)  
+
+ax.xaxis.grid(True, which='major')
+ax.yaxis.grid(True, which='major')
 
 #plt.yscale('log')
 plt.ylim(0,6000) 
