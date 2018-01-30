@@ -12,7 +12,7 @@ colors = bmap.mpl_colors
 mpl.rcParams['axes.color_cycle'] = colors
 
 
-counts = 74
+counts = 72
 timeline = np.array(range(0, counts, 1))
 timeline = timeline / float(10)
 
@@ -36,17 +36,22 @@ def extract(ip):
     return res
 
 
-m207 = extract("207")
-m208 = extract("208")[0:counts]
-m209 = extract("209")[0:counts]
-m210 = extract("210")[0:counts]
+m207 = map(lambda x:x+750, extract("207"))
+m208 = map(lambda x:x+750, extract("208")[0:counts+4])
+m209 = map(lambda x:x+750, extract("209")[0:counts+4])
+m210 = map(lambda x:x+750, extract("210")[0:counts+4])
 while len(m207) < len(m208):
     m207.append(0);
 
-print m207
-print m208
-print m209
-print m210
+print len(m207)
+print len(m208)
+print len(m209)
+print len(m210)
+
+m207 = m207[4:counts+4]
+m208 = m208[4:counts+4]
+m209 = m209[4:counts+4]
+m210 = m210[4:counts+4]
 
 timeline_detail = np.linspace(timeline.min(),timeline.max(),counts)
 m207_detail = spline(timeline,m207,timeline_detail)

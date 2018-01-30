@@ -12,7 +12,7 @@ colors = bmap.mpl_colors
 mpl.rcParams['axes.color_cycle'] = colors
 
 
-counts = 60
+counts = 71
 timeline = np.array(range(0, counts, 1))
 timeline = timeline / float(10)
 
@@ -116,16 +116,16 @@ while len(s207) < len(s208):
     s207.append(0);
 
 
-m = [m207[i] + m208[i] + m209[i] + m210[i] for i in range(0,65)]
-b = [b207[i] + b208[i] + b209[i] + b210[i] for i in range(0,65)]
-r = [r207[i] + r208[i] + r209[i] + r210[i] for i in range(0,65)]
-s = [s207[i] + s208[i] + s209[i] + s210[i] + 3000 for i in range(0,65)]
+m = [m207[i] + m208[i] + m209[i] + m210[i] for i in range(0,counts+5)]
+b = [b207[i] + b208[i] + b209[i] + b210[i] for i in range(0,counts+5)]
+r = [r207[i] + r208[i] + r209[i] + r210[i] for i in range(0,counts+5)]
+s = [s207[i] + s208[i] + s209[i] + s210[i] + 3000 for i in range(0,counts+5)]
 
 timeline_detail = np.linspace(timeline.min(),timeline.max(),counts)
-m_detail = spline(timeline,m[0:60],timeline_detail)
-b_detail = spline(timeline,b[1:61],timeline_detail)
-r_detail = spline(timeline,r[1:61],timeline_detail)
-s_detail = spline(timeline,s[4:64],timeline_detail)
+m_detail = spline(timeline,m[0:counts],timeline_detail)
+b_detail = spline(timeline,b[1:counts+1],timeline_detail)
+r_detail = spline(timeline,r[1:counts+1],timeline_detail)
+s_detail = spline(timeline,s[4:counts+4],timeline_detail)
 
 
 xmajorLocator   = MultipleLocator(1)
@@ -155,7 +155,7 @@ ax.yaxis.grid(True, which='major')
 
 #plt.yscale('log')
 plt.ylim(0,27500) 
-plt.xlim(0, 6)
+plt.xlim(1, 7)
 plt.plot(timeline_detail, m_detail, '-', label="Tripod", linewidth=3)
 plt.plot(timeline_detail, b_detail, '-', label="B", linewidth=3)
 plt.plot(timeline_detail, r_detail, '-', label="R", linewidth=3)
