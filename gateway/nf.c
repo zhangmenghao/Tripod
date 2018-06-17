@@ -168,6 +168,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state, void* callba
     }
     else {
         printf("nf: get state error!\n");
+		ret = -2;
     }
     return ret;
 }
@@ -383,7 +384,17 @@ lcore_nf(__attribute__((unused)) void *arg)
                         }
                         else {
                             rte_pktmbuf_free(bufs[i]);
-                            malicious_packet_counts ++;
+                            //malicious_packet_counts ++;
+							if(tcp_hdrs->dst_port == rte_cpu_to_be_16(80)){
+								struct nf_states** state;
+								struct nf_indexs* index;
+								index = rte_malloc(NULL,sizeof(struct nf_indexs),0);
+								int machine_id = rand() % 4;
+								index->backupip[0] = topo[machine_id].ip;
+								index->backupip[1] = 0;
+								pullState(1,0,(void*)bufs[i],&ip_5tuples,index,state);
+                            	malicious_packet_counts ++;
+							}
                             #ifdef __DEBUG_LV1
                             printf("nf: state not found!%d %d\n",flow_counts ,malicious_packet_counts);
                             #endif
@@ -393,11 +404,12 @@ lcore_nf(__attribute__((unused)) void *arg)
                     printf("nf: this is very important! port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
                     #endif
                 }
-                else {
+                else {/*
                     printf("nf: not tcp and udp packets!\n");
                     printf("nf: ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_dst));
                     printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_src));
                     printf("nf: next_proto_id is %u\n", ip_5tuples.proto);
+					*/
                     rte_pktmbuf_free(bufs[i]);
                 }
                 #ifdef __DEBUG_LV1

@@ -64,7 +64,7 @@ struct nf_states{
     uint16_t dport;
 
     uint32_t bip; // Backup Machine IP
-
+    uint32_t x[50];
 };
 
 struct nf_indexs{

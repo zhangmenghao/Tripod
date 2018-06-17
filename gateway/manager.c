@@ -655,7 +655,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                     callback_arg = *((void**)(payload + sizeof(struct ipv4_5tuple)));
                     int ret = managerGetStates(ip_5tuple, &request_states);
                     if (ret < 0) {
-                        printf("mg: state not found for remote machine!\n");
+                        //printf("mg: state not found for remote machine!\n");
                         backup_packet = build_pullback_packet(
                             port, rte_be_to_cpu_32(ip_h->src_addr),
                             rte_be_to_cpu_16(ip_h->packet_id), ip_5tuple,
