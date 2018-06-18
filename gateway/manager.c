@@ -532,6 +532,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                             rte_pktmbuf_free(bufs[i]);
                             continue;
                         }
+						int ii;
+						for(ii = 0;ii < 1;ii++){
                         if (backup_ip1 ==  this_machine->ip) {
                             indexs->backupip[0] = backup_ip2;
                             // indexs->backupip[0] = topo[3].ip;
@@ -584,6 +586,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                                 rte_pktmbuf_free(backup_packet);
                             }
                         }
+						}
+
                         for (idx = 0; idx < 4; idx++) {
                             if (idx == this_machine_index)
                                 continue;
