@@ -165,7 +165,7 @@ struct rte_mbuf* backup_receive_probe_packet(struct rte_mbuf* mbuf);
 void master_receive_probe_reply(struct rte_mbuf* mbuf, uint32_t* machine_ip1, uint32_t* machine_ip2, struct ipv4_5tuple** ip_5tuple);
 void ecmp_predict_init(struct rte_mempool * mbuf_pool);
 
-int lcore_nf(__attribute__((unused)) void *arg);
+int lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_info);
 int lcore_manager(__attribute__((unused)) void *arg);
 int lcore_manager_slave(__attribute__((unused)) void *arg);
 int lcore_main_loop(__attribute__((unused)) void *arg);
