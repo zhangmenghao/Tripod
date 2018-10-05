@@ -88,7 +88,7 @@ void ecmp_predict_init(struct rte_mempool * mbuf_pool) {
     topo[3].id = 4;
     topo[3].ip = IPv4(172,16,3,2);
 
-    this_machine_index = 1;
+    this_machine_index = 0;
 
     this_machine = &(topo[this_machine_index]);
 

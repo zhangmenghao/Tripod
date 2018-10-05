@@ -146,6 +146,11 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		#endif
 		//ask index table
 		struct nf_indexs *index;
+	/*
+		index = rte_malloc(NULL,sizeof(struct nf_indexs),0);
+		index->backupip[0] = topo[1].ip;	
+		ret = 1;
+		*/
 		ret =  getIndexs(ip_5tuple, &index);
 		if (ret >= 0){
 			//getRemoteState(index, state);
@@ -309,7 +314,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						#endif
 						if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1){
 							rte_pktmbuf_free(bufs[i]);
-							printf("nf: error in tx packets\n");
+							//printf("nf: error in tx packets\n");
 						}
 						//rte_pktmbuf_free(bufs[i]);
 						nf_tx_pkts += 1;
@@ -336,7 +341,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 							#endif
 							if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1){
 								rte_pktmbuf_free(bufs[i]);
-								printf("nf: error in tx packets\n");
+								//printf("nf: error in tx packets\n");
 							}
 							nf_tx_pkts += 1;
 							nf_tx_bytes += bufs[i]->data_len;

@@ -18,6 +18,7 @@
 #include <rte_debug.h>
 #include <rte_timer.h>
 
+
 #include "main.h"
 
 struct states_5tuple_pair {
@@ -42,6 +43,15 @@ static unsigned long long last_ctrl_tx_bytes = 0;
 static unsigned long long ctrl_tx_pkts = 0;
 static unsigned long long last_ctrl_tx_pkts = 0;
 
+static unsigned long long ecmp_ctrl_tx_bytes = 0;
+static unsigned long long last_ecmp_ctrl_tx_bytes = 0;
+static unsigned long long keyset_ctrl_tx_bytes = 0;
+static unsigned long long last_keyset_ctrl_tx_bytes = 0;
+static unsigned long long state_backup_ctrl_tx_bytes = 0;
+static unsigned long long last_state_backup_ctrl_tx_bytes = 0;
+static unsigned long long state_pull_ctrl_tx_bytes = 0;
+static unsigned long long last_state_pull_ctrl_tx_bytes = 0;
+
 static void
 manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
          __attribute__((unused)) void *arg)
@@ -52,6 +62,13 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
            (ctrl_tx_bytes - last_ctrl_tx_bytes) * 8 / 1024 / 1024);
     printf("ctrl_rx_bytes: %llu, ctrl_tx_bytes: %llu\n",
            ctrl_rx_bytes, ctrl_tx_bytes);
+
+    printf("ctrl_tx_bytes_sec: %llu\n",ctrl_tx_bytes - last_ctrl_tx_bytes);
+    printf("state_pull_ctrl_tx_bytes_sec: %llu\n",state_pull_ctrl_tx_bytes - last_state_pull_ctrl_tx_bytes);
+    printf("ecmp_ctrl_tx_bytes_sec: %llu\n",ecmp_ctrl_tx_bytes - last_ecmp_ctrl_tx_bytes);
+    printf("state_backup_ctrl_tx_bytes_sec: %llu\n",state_backup_ctrl_tx_bytes - last_state_backup_ctrl_tx_bytes);
+
+    printf("keyset_ctrl_tx_bytes_sec: %llu\n",keyset_ctrl_tx_bytes - last_keyset_ctrl_tx_bytes);
     printf("ctrl_rx_pkts_sec: %llu, ctrl_tx_pkts_sec: %llu\n",
            ctrl_rx_pkts - last_ctrl_rx_pkts,
            ctrl_tx_pkts - last_ctrl_tx_pkts);
@@ -77,6 +94,14 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
     last_ctrl_rx_pkts = ctrl_rx_pkts;
     last_ctrl_tx_bytes = ctrl_tx_bytes;
     last_ctrl_tx_pkts = ctrl_tx_pkts;
+
+
+	last_ecmp_ctrl_tx_bytes = ecmp_ctrl_tx_bytes;
+	last_state_pull_ctrl_tx_bytes = state_pull_ctrl_tx_bytes;
+	last_state_backup_ctrl_tx_bytes = state_backup_ctrl_tx_bytes;
+	last_keyset_ctrl_tx_bytes=keyset_ctrl_tx_bytes;
+
+
     last_nf_rx_bytes = nf_rx_bytes;
     last_nf_rx_pkts = nf_rx_pkts;
     last_nf_tx_bytes = nf_tx_bytes;
@@ -192,6 +217,7 @@ build_backup_packet(uint8_t port,uint32_t backup_machine_ip,uint16_t packet_id,
     }
     ctrl_tx_pkts += 1;
     ctrl_tx_bytes += backup_packet->data_len;
+   	state_backup_ctrl_tx_bytes += backup_packet->data_len;
     return backup_packet;
 }
 
@@ -243,6 +269,7 @@ build_pull_packet(uint8_t port, struct nf_indexs* indexs,
     payload->proto = ip_5tuple->proto;
     ctrl_tx_pkts += 1;
     ctrl_tx_bytes += pull_packet->data_len;
+    state_pull_ctrl_tx_bytes += pull_packet->data_len;
     return pull_packet;
 }
 
@@ -292,6 +319,7 @@ build_keyset_packet(uint32_t target_ip, struct nf_indexs* indexs,
     payload->indexs.backupip[1] = indexs->backupip[1];
     ctrl_tx_pkts += 1;
     ctrl_tx_bytes += keyset_packet->data_len;
+    keyset_ctrl_tx_bytes+= keyset_packet->data_len;
     return keyset_packet;
 }
 
@@ -460,6 +488,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                         probing_packet = backup_receive_probe_packet(bufs[i]);
                         ctrl_tx_pkts += 1;
                         ctrl_tx_bytes += probing_packet->data_len;
+                        ecmp_ctrl_tx_bytes+= probing_packet->data_len;
                         if (rte_eth_tx_burst(port,2,&probing_packet,1) != 1) {
                             printf("mg: tx probing_packet failed!\n");
                             rte_pktmbuf_free(probing_packet);
@@ -503,6 +532,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                             rte_pktmbuf_free(bufs[i]);
                             continue;
                         }
+						int ii;
+						for(ii = 0;ii < 1;ii++){
                         if (backup_ip1 ==  this_machine->ip) {
                             indexs->backupip[0] = backup_ip2;
                             // indexs->backupip[0] = topo[3].ip;
@@ -555,6 +586,8 @@ lcore_manager(__attribute__((unused)) void *arg)
                                 rte_pktmbuf_free(backup_packet);
                             }
                         }
+						}
+
                         for (idx = 0; idx < 4; idx++) {
                             if (idx == this_machine_index)
                                 continue;
@@ -686,6 +719,7 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
                 #endif
                 ctrl_tx_pkts += 1;
                 ctrl_tx_bytes += probing_packet->data_len;
+                ecmp_ctrl_tx_bytes+= probing_packet->data_len;
                 if (rte_eth_tx_burst(port, 1, &probing_packet, 1) != 1) {
                     printf("mg-slave: tx probing_packet failed!\n");
                     rte_pktmbuf_free(probing_packet);
