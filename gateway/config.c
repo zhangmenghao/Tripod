@@ -268,7 +268,8 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
         return -1;
 
     /* Initialize nf_insts */
-    for(int i = 0;i < NF_CORE_COUNT;i++){
+    int i;
+    for(i = 0;i < NF_CORE_COUNT;i++){
         nf_insts[i].nf_id = i;
         nf_insts[i].rx_queue_id = i;
         nf_insts[i].tx_queue_id = i;
