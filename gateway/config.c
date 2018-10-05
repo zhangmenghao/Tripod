@@ -512,7 +512,7 @@ lcore_main_loop(__attribute__((unused)) void *arg)
     else if (lcore == MANAGER_CORE){
         lcore_manager_slave(NULL);
     }
-    elseif (lcore == MANAGER_SLAVE_CORE){
+    else if (lcore == MANAGER_SLAVE_CORE){
         setup_hash(lcore);
         lcore_manager(NULL);
 
