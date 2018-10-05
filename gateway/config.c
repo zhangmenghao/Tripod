@@ -507,7 +507,7 @@ lcore_main_loop(__attribute__((unused)) void *arg)
     if (lcore < NF_CORE_COUNT){
         setup_hash(lcore);
         // lcore is supposed to be 0 ~ NF_CORE_COUNT - 1
-        lcore_nf(NULL, &nf_insts[lcore]);
+        lcore_nf(/*NULL, */&nf_insts[lcore]);
     }
     else if (lcore == MANAGER_CORE){
         lcore_manager_slave(NULL);

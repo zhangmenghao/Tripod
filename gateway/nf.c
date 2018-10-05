@@ -183,7 +183,7 @@ print_ethaddr(const char *name, struct ether_addr *eth_addr)
  * gateway network funtions.
  */
 int
-lcore_nf(__attribute__((unused)) void *arg, struct nf_inst_info* nf_info)
+lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_info)
 {
 	const uint8_t nb_ports = rte_eth_dev_count();
 	uint8_t port;
