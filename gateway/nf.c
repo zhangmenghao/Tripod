@@ -18,7 +18,7 @@
 #include <rte_malloc.h>
 #include <rte_debug.h>
 
-	
+
 #include "main.h"
 
 //share variables
@@ -52,7 +52,7 @@ convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
 	key2->pad1 = 0;
 }
 
-void 
+void
 setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
@@ -95,7 +95,7 @@ getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index){
 	return ret;
 }
 
-void 
+void
 setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
@@ -148,7 +148,7 @@ getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
 		struct nf_indexs *index;
 	/*
 		index = rte_malloc(NULL,sizeof(struct nf_indexs),0);
-		index->backupip[0] = topo[1].ip;	
+		index->backupip[0] = topo[1].ip;
 		ret = 1;
 		*/
 		ret =  getIndexs(ip_5tuple, &index);
@@ -183,7 +183,7 @@ print_ethaddr(const char *name, struct ether_addr *eth_addr)
  * gateway network funtions.
  */
 int
-lcore_nf(__attribute__((unused)) void *arg)
+lcore_nf(__attribute__((unused)) void *arg, struct nf_inst_info* nf_info)
 {
 	const uint8_t nb_ports = rte_eth_dev_count();
 	uint8_t port;
@@ -207,16 +207,16 @@ lcore_nf(__attribute__((unused)) void *arg)
 				//printf("Skipping %u\n", port);
 				continue;
 			}
-        
+
 			struct rte_mbuf *bufs[BURST_SIZE];
-			const uint16_t nb_rx = rte_eth_rx_burst(port, 0,
+			const uint16_t nb_rx = rte_eth_rx_burst(port, nf_info->rx_queue_id,
 					bufs, BURST_SIZE);
 
 			if (unlikely(nb_rx == 0)){
-				continue;	
+				continue;
 			}
-			
-						
+
+
 			for (i = 0; i < nb_rx; i ++){
 				struct ether_hdr *eth_hdr;
 				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
@@ -249,7 +249,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 					ip_addr = arp_h->arp_data.arp_sip;
 					arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
 					arp_h->arp_data.arp_tip = ip_addr;
-					rte_eth_tx_burst(port, 0, &bufs[i], 1);
+					rte_eth_tx_burst(port, nf_info->tx_queue_id, &bufs[i], 1);
 					#ifdef __DEBUG_LV1
 					printf("This is arp request message\n");
 					printf("\n");
@@ -269,12 +269,12 @@ lcore_nf(__attribute__((unused)) void *arg)
 				printf("nf: ip_src is "IPv4_BYTES_FMT " \n", IPv4_BYTES(ip_5tuples.ip_src));
 				printf("nf: next_proto_id is %u\n", ip_5tuples.proto);
 				#endif
-				
+
 				if (ip_5tuples.proto == 17){
 					struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
 					ip_5tuples.port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
 					ip_5tuples.port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
-					printf("nf: udp packets! pass!\n");	
+					printf("nf: udp packets! pass!\n");
 				}
 				else if (ip_5tuples.proto == 6){
 					nf_rx_pkts += 1;
@@ -312,7 +312,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 						#ifdef __DEBUG_LV1
 						printf("nf: tcp_syn new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 						#endif
-						if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1){
+						if (rte_eth_tx_burst(port, nf_info->tx_queue_id, &bufs[i], 1) != 1){
 							rte_pktmbuf_free(bufs[i]);
 							//printf("nf: error in tx packets\n");
 						}
@@ -339,7 +339,7 @@ lcore_nf(__attribute__((unused)) void *arg)
 							#ifdef __DEBUG_LV1
 							printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							#endif
-							if (rte_eth_tx_burst(port, 0, &bufs[i], 1) != 1){
+							if (rte_eth_tx_burst(port, nf_info->tx_queue_id, &bufs[i], 1) != 1){
 								rte_pktmbuf_free(bufs[i]);
 								//printf("nf: error in tx packets\n");
 							}

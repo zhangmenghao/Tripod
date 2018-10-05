@@ -18,11 +18,12 @@
 
 #include "main.h"
 
+
 static const struct rte_eth_conf port_conf_default = {
 	.rxmode = {
         .max_rx_pkt_len = ETHER_MAX_LEN, //1518
         .mq_mode = ETH_MQ_RX_RSS,
-    }, 
+    },
     .rx_adv_conf = {
         .rss_conf = {
             .rss_key = NULL,
@@ -78,7 +79,7 @@ static struct rte_eth_fdir_filter fdir_filter_ecmp_tcp = {
         .flow = {
             .tcp4_flow = {
                 .ip = {
-                    // .src_ip = 0x0000000A, 
+                    // .src_ip = 0x0000000A,
                     .dst_ip = IPv4(0, 0, 16, 172),
                 },
                 // .src_port = rte_cpu_to_be_16(1024),
@@ -100,7 +101,7 @@ static struct rte_eth_fdir_filter fdir_filter_ecmp_udp = {
         .flow = {
             .udp4_flow = {
                 .ip = {
-                    // .src_ip = 0x0000000A, 
+                    // .src_ip = 0x0000000A,
                     .dst_ip = IPv4(0, 0, 16, 172),
                 },
                 // .src_port = rte_cpu_to_be_16(1024),
@@ -140,6 +141,10 @@ uint32_t dip_pool[DIP_POOL_SIZE] = {
     IPv4(100,10,0,3),
     IPv4(100,10,0,4),
 };
+
+// nf instance infos
+// TODO: initialize the structs below
+static struct nf_inst_info nf_insts[NF_CORE_COUNT];
 
 struct rte_ring* nf_manager_ring;
 struct rte_ring* nf_pull_wait_ring;
@@ -244,7 +249,7 @@ rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
  * coming from the mbuf_pool passed as a parameter.
  */
 int
-port_init(uint8_t port, struct rte_mempool *mbuf_pool, 
+port_init(uint8_t port, struct rte_mempool *mbuf_pool,
  		struct rte_mempool *manager_mbuf_pool)
 {
     if ((enabled_port_mask & (1 << port)) == 0) {
@@ -253,7 +258,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
     }
 
     struct rte_eth_conf port_conf = port_conf_default;
-    const uint16_t rx_rings = 2, tx_rings = 3;
+    const uint16_t rx_rings = RX_QUEUE_COUNT, tx_rings = TX_QUEUE_COUNT;
     uint16_t nb_rxd = RX_RING_SIZE;
     uint16_t nb_txd = TX_RING_SIZE;
     int retval;
@@ -261,6 +266,13 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 
     if (port >= rte_eth_dev_count())
         return -1;
+
+    /* Initialize nf_insts */
+    for(int i = 0;i < NF_CORE_COUNT;i++){
+        nf_insts[i].nf_id = i;
+        nf_insts[i].rx_queue_id = i;
+        nf_insts[i].tx_queue_id = i;
+    }
 
     /* Configure the Ethernet device. */
     retval = rte_eth_dev_configure(port, rx_rings, tx_rings, &port_conf);
@@ -298,26 +310,26 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
         return retval;
 
     /* Set FlowDirector flow filter on port */
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
                                        RTE_ETH_FILTER_ADD, &fdir_filter_state);
     if (retval < 0)
         return retval;
     // fdir_filter_ecmp.input.flow.tcp4_flow.src_port = rte_cpu_to_be_16(0),
     // fdir_filter_ecmp.input.flow.tcp4_flow.dst_port = rte_cpu_to_be_16(0),
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
                                         RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_tcp);
     if (retval < 0)
         return retval;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
                                         RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_udp);
     if (retval < 0)
         return retval;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
                                      RTE_ETH_FILTER_ADD, &fdir_filter_arp);
     if (retval < 0)
         return retval;
     struct rte_eth_fdir_info fdir_info;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, 
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
                                      RTE_ETH_FILTER_INFO, &fdir_info);
     if (retval < 0)
         return retval;
@@ -326,7 +338,7 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
         printf("flow_types_mask[%d]: %08x\n", j, fdir_info.flow_types_mask[j]);
 
     /* Set hash array of RSS */
-    retval = rss_hash_set(1, port);
+    retval = rss_hash_set(NF_CORE_COUNT, port);
     if (retval < 0)
         return retval;
 
@@ -482,20 +494,24 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
     }
 }
 
-int 
+int
 lcore_main_loop(__attribute__((unused)) void *arg)
 {
     unsigned lcore;
 
     lcore = rte_lcore_id();
-    if (lcore == 1){
+    // NP_CORE_COUNT cores for np
+    // the NP_CORE_COUNT-th core for manager
+    // the NP_CORE_COUNT + 1-th core for manager slave
+    if (lcore < NF_CORE_COUNT){
         setup_hash(lcore);
-        lcore_nf(NULL);
+        // lcore is supposed to be 0 ~ NF_CORE_COUNT - 1
+        lcore_nf(NULL, &nf_insts[lcore]);
     }
-    else if (lcore == 2){
+    else if (lcore == MANAGER_CORE){
         lcore_manager_slave(NULL);
     }
-    else{
+    elseif (lcore == MANAGER_SLAVE_CORE){
         setup_hash(lcore);
         lcore_manager(NULL);
 

@@ -72,7 +72,7 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
     printf("ctrl_rx_pkts_sec: %llu, ctrl_tx_pkts_sec: %llu\n",
            ctrl_rx_pkts - last_ctrl_rx_pkts,
            ctrl_tx_pkts - last_ctrl_tx_pkts);
-    printf("ctrl_rx_pkts: %llu, ctrl_tx_pkts: %llu\n", 
+    printf("ctrl_rx_pkts: %llu, ctrl_tx_pkts: %llu\n",
            ctrl_rx_pkts, ctrl_tx_pkts);
     printf("NF Statistics\n");
     printf("nf_rx_throughput: %llu Mbps, nf_tx_throughput: %llu Mbps\n",
@@ -83,7 +83,7 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
     printf("nf_rx_pkts_sec: %llu, nf_tx_pkts_sec: %llu\n",
            nf_rx_pkts - last_nf_rx_pkts,
            nf_tx_pkts - last_nf_tx_pkts);
-    printf("nf_rx_pkts: %llu, nf_tx_pkts: %llu\n", 
+    printf("nf_rx_pkts: %llu, nf_tx_pkts: %llu\n",
            nf_rx_pkts, nf_tx_pkts);
     printf("Other Statistics\n");
     printf("malicious_packet_counts: %u\n", malicious_packet_counts);
@@ -392,7 +392,7 @@ pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
         port, target_indexs, nf_id, ip_5tuple
     );
 
-    if (rte_eth_tx_burst(port, 2, &pull_packet, 1) != 1) {
+    if (rte_eth_tx_burst(port, MANAGER_TX_QUEUE, &pull_packet, 1) != 1) {
         printf("mg: tx pullState failed!\n");
         rte_pktmbuf_free(pull_packet);
     }
@@ -448,7 +448,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                 continue;
             }
             struct rte_mbuf *bufs[BURST_SIZE];
-            uint16_t nb_rx = rte_eth_rx_burst(port, 1, bufs, BURST_SIZE);
+            uint16_t nb_rx = rte_eth_rx_burst(port, MANAGER_RX_QUEUE, bufs, BURST_SIZE);
             if (unlikely(nb_rx == 0))
                 continue;
             /*
@@ -457,7 +457,7 @@ lcore_manager(__attribute__((unused)) void *arg)
              * }
              * continue;
              */
-             
+
             for (i = 0; i < nb_rx; i ++) {
                 #ifdef __DEBUG_LV1
                 printf("mg: packet comes from port %u queue 1\n", port);
@@ -489,7 +489,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                         ctrl_tx_pkts += 1;
                         ctrl_tx_bytes += probing_packet->data_len;
                         ecmp_ctrl_tx_bytes+= probing_packet->data_len;
-                        if (rte_eth_tx_burst(port,2,&probing_packet,1) != 1) {
+                        if (rte_eth_tx_burst(port,MANAGER_TX_QUEUE,&probing_packet,1) != 1) {
                             printf("mg: tx probing_packet failed!\n");
                             rte_pktmbuf_free(probing_packet);
                         }
@@ -546,7 +546,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                             //     port, topo[3].ip, 0x00,
                             //     ip_5tuple, backup_states
                             // );
-                            nb_tx = rte_eth_tx_burst(port,2,&backup_packet,1);
+                            nb_tx = rte_eth_tx_burst(port,MANAGER_TX_QUEUE,&backup_packet,1);
                             if (nb_tx != 1) {
                                 printf("mg: tx backup_packet failed!\n");
                                 rte_pktmbuf_free(backup_packet);
@@ -559,7 +559,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                             backup_packet = build_backup_packet(
                                 port, backup_ip1, 0x00, ip_5tuple, backup_states
                             );
-                            nb_tx = rte_eth_tx_burst(port,2,&backup_packet,1);
+                            nb_tx = rte_eth_tx_burst(port,MANAGER_TX_QUEUE,&backup_packet,1);
                             if (nb_tx != 1) {
                                 printf("mg: tx backup_packet failed!\n");
                                 rte_pktmbuf_free(backup_packet);
@@ -572,7 +572,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                             backup_packet = build_backup_packet(
                                 port, backup_ip1, 0x00, ip_5tuple, backup_states
                             );
-                            nb_tx = rte_eth_tx_burst(port,2,&backup_packet,1);
+                            nb_tx = rte_eth_tx_burst(port,MANAGER_TX_QUEUE,&backup_packet,1);
                             if (nb_tx != 1) {
                                 printf("mg: tx backup_packet failed!\n");
                                 rte_pktmbuf_free(backup_packet);
@@ -580,7 +580,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                             backup_packet = build_backup_packet(
                                 port, backup_ip2, 0x00, ip_5tuple, backup_states
                             );
-                            nb_tx = rte_eth_tx_burst(port,2,&backup_packet,1);
+                            nb_tx = rte_eth_tx_burst(port,MANAGER_TX_QUEUE,&backup_packet,1);
                             if (nb_tx != 1) {
                                 printf("mg: tx backup_packet failed!\n");
                                 rte_pktmbuf_free(backup_packet);
@@ -594,7 +594,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                             keyset_packet = build_keyset_packet(
                                 topo[idx].ip, indexs, port, ip_5tuple
                             );
-                            nb_tx = rte_eth_tx_burst(port,2,&keyset_packet,1);
+                            nb_tx = rte_eth_tx_burst(port,MANAGER_TX_QUEUE,&keyset_packet,1);
                             if (nb_tx != 1) {
                                 printf("mg: tx keyset_packet failed!\n");
                                 rte_pktmbuf_free(keyset_packet);
@@ -659,7 +659,7 @@ lcore_manager(__attribute__((unused)) void *arg)
                             request_states
                         );
                     }
-                    if (rte_eth_tx_burst(port, 2, &backup_packet, 1) != 1) {
+                    if (rte_eth_tx_burst(port, MANAGER_TX_QUEUE, &backup_packet, 1) != 1) {
                         printf("mg: tx backup_packet failed!\n");
                         rte_pktmbuf_free(backup_packet);
                     }
@@ -720,7 +720,7 @@ lcore_manager_slave(__attribute__((unused)) void *arg)
                 ctrl_tx_pkts += 1;
                 ctrl_tx_bytes += probing_packet->data_len;
                 ecmp_ctrl_tx_bytes+= probing_packet->data_len;
-                if (rte_eth_tx_burst(port, 1, &probing_packet, 1) != 1) {
+                if (rte_eth_tx_burst(port, MANAGER_SLAVE_TX_QUEUE, &probing_packet, 1) != 1) {
                     printf("mg-slave: tx probing_packet failed!\n");
                     rte_pktmbuf_free(probing_packet);
                 }

@@ -36,11 +36,26 @@
 
 #define TIMER_RESOLUTION_CYCLES 2399987461ULL
 
+// core distribution
+#define NF_CORE_COUNT 2
+#define MANAGER_CORE NF_CORE_COUNT
+#define MANAGER_SLAVE_CORE (MANAGER_CORE + 1)
+
+// queue on each port of a NIC
+#define RX_QUEUE_COUNT (NF_CORE_COUNT + 1)
+#define TX_QUEUE_COUNT (NF_CORE_COUNT + 2)
+// by default, the first NF_CORE_COUNT queues of rx/tx are reserved for nf
+// the last rx_queue is for manager
+// the last 2 tx_queues are for manager and its slave respectively
+#define MANAGER_RX_QUEUE (RX_QUEUE_COUNT - 1)
+#define MANAGER_TX_QUEUE (RX_QUEUE_COUNT - 1)
+#define MANAGER_SLAVE_TX_QUEUE (RX_QUEUE_COUNT - 2)
+
 /*
  * Configure debug output level
  * none debug output: nothing to do
  * debug output level 1: #define __DEBUG_LV1
- * debug output level 2: #define __DEBUG_LV1 
+ * debug output level 2: #define __DEBUG_LV1
  *                       #define __DEBUG_LV2
  */
 
@@ -92,12 +107,18 @@ struct machine_IP_pair{
     uint32_t ip;
 };
 
+struct nf_inst_info {
+    uint8_t nf_id;
+    uint16_t rx_queue_id;
+    uint16_t tx_queue_id;
+};
+
 extern struct port_param single_port_param;
 
 extern struct rte_ring* nf_manager_ring;
 extern struct rte_ring* nf_pull_wait_ring;
 
-extern int enabled_port_mask; 
+extern int enabled_port_mask;
 
 extern uint8_t debug_mode;
 
@@ -132,7 +153,7 @@ void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
 int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state);
 void setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index);
 int getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index);
-int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple, 
+int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
           struct nf_indexs* target_indexs, struct nf_states** target_states);
 int port_init(uint8_t port, struct rte_mempool *mbuf_pool, struct rte_mempool *manager_mbuf_pool);
 int parse_args(int argc, char **argv);
