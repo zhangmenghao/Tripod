@@ -15,6 +15,7 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 #include <rte_hash.h>
+#include <rte_errno.h>
 
 #include "main.h"
 
@@ -142,9 +143,6 @@ uint32_t dip_pool[DIP_POOL_SIZE] = {
     IPv4(100,10,0,4),
 };
 
-// nf instance infos
-// TODO: initialize the structs below
-static struct nf_inst_info nf_insts[NF_CORE_COUNT];
 
 struct rte_ring* nf_manager_ring;
 struct rte_ring* nf_pull_wait_ring;
@@ -163,26 +161,38 @@ static inline uint32_t
 ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,
               uint32_t init_val)
 {
+    // printf("CHECKPOINT: crc0\n");
     const union ipv4_5tuple_host *k;
     uint32_t t;
     const uint32_t *p;
-
+    // printf("CHECKPOINT: crc1\n");
     k = data;
     t = k->proto;
     p = (const uint32_t *)&k->port_src;
+    // printf("CHECKPOINT: crc2\n");
 
     #ifdef EM_HASH_CRC
     //printf("em-hash-crc\n");
+    // printf("CHECKPOINT: crc3\n");
     init_val = rte_hash_crc_4byte(t, init_val);
+    // printf("CHECKPOINT: crc4\n");
     init_val = rte_hash_crc_4byte(k->ip_src, init_val);
+    // printf("CHECKPOINT: crc5\n");
     init_val = rte_hash_crc_4byte(k->ip_dst, init_val);
+    // printf("CHECKPOINT: crc6\n");
     init_val = rte_hash_crc_4byte(*p, init_val);
+    // printf("CHECKPOINT: crc7\n");
     #else
     //printf("not em-hash-crc\n");
+    // printf("CHECKPOINT: crc8\n");
     init_val = rte_jhash_1word(t, init_val);
+    // printf("CHECKPOINT: crc9\n");
     init_val = rte_jhash_1word(k->ip_src, init_val);
+    // printf("CHECKPOINT: crc10\n");
     init_val = rte_jhash_1word(k->ip_dst, init_val);
+    // printf("CHECKPOINT: crc11\n");
     init_val = rte_jhash_1word(*p, init_val);
+    // printf("CHECKPOINT: crc12\n");
     #endif
 
     //printf("init_val = %u\n", init_val);
@@ -190,8 +200,9 @@ ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,
 }
 
 void
-setup_hash(const int socketid)
+setup_hash(const int lcore, const unsigned hash_table_index)
 {
+    int socketid = lcore % 2;
     struct rte_hash_parameters hash_params = {
         .name = NULL,
         .entries = HASH_ENTRIES,
@@ -200,11 +211,20 @@ setup_hash(const int socketid)
         .hash_func_init_val = 0,
     };
     char s[64];
-    snprintf(s, sizeof(s), "ipv4_state_hash_%d", socketid);
+    snprintf(s, sizeof(s), "ipv4_state_hash_%d", hash_table_index);
     hash_params.name = s;
     hash_params.socket_id = socketid;
-    state_hash_table[socketid] =
+    // hash_params.extra_flag = 0x06;
+    rte_errno = 0;
+    state_hash_table[hash_table_index] =
         rte_hash_create(&hash_params);
+
+
+    if (state_hash_table[hash_table_index] == NULL){
+        rte_exit(EXIT_FAILURE,
+            "Unable to create the state_hash on socket %d - %s\n",
+            socketid, rte_strerror(rte_errno));
+    }
 
     struct rte_hash_parameters hash_paramss = {
         .name = NULL,
@@ -214,16 +234,19 @@ setup_hash(const int socketid)
         .hash_func_init_val = 0,
     };
     char ss[64];
-    snprintf(ss, sizeof(ss), "ipv4_index_hash_%d", socketid);
+    snprintf(ss, sizeof(ss), "ipv4_index_hash_%d", hash_table_index);
     hash_paramss.name = ss;
     hash_paramss.socket_id = socketid;
-    index_hash_table[socketid] =
+    // hash_paramss.extra_flag = 0x06;
+    rte_errno = 0;
+    index_hash_table[hash_table_index] =
         rte_hash_create(&hash_paramss);
 
-    if (state_hash_table[socketid] == NULL||index_hash_table[socketid] == NULL)
+    if (index_hash_table[hash_table_index] == NULL){
         rte_exit(EXIT_FAILURE,
-            "Unable to create the hash on socket %d\n",
-            socketid);
+            "Unable to create the index_hash on socket %d - %s\n",
+            socketid, rte_strerror(rte_errno));
+    }
     printf("setup hash_table for state and index %s\n", s);
 }
 
@@ -267,13 +290,6 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
     if (port >= rte_eth_dev_count())
         return -1;
 
-    /* Initialize nf_insts */
-    int i;
-    for(i = 0;i < NF_CORE_COUNT;i++){
-        nf_insts[i].nf_id = i;
-        nf_insts[i].rx_queue_id = i;
-        nf_insts[i].tx_queue_id = i;
-    }
 
     /* Configure the Ethernet device. */
     retval = rte_eth_dev_configure(port, rx_rings, tx_rings, &port_conf);
@@ -501,20 +517,20 @@ lcore_main_loop(__attribute__((unused)) void *arg)
     unsigned lcore;
 
     lcore = rte_lcore_id();
-    // NP_CORE_COUNT cores for np
-    // the NP_CORE_COUNT-th core for manager
-    // the NP_CORE_COUNT + 1-th core for manager slave
-    if (lcore < NF_CORE_COUNT){
-        setup_hash(lcore);
-        // lcore is supposed to be 0 ~ NF_CORE_COUNT - 1
-        lcore_nf(/*NULL, */&nf_insts[lcore]);
+    // nfs, manager and manager-slave all use cores on NUMA 1
+    // by default,  manager uses core 1
+    //              manager-slave uses core 3
+    //              nfs use odd cores larger than or equal to 5
+    if (lcore > MANAGER_SLAVE_CORE && lcore % 2 == 1 && lcore <= MANAGER_SLAVE_CORE + 2 * NF_CORE_COUNT/*all odd cores on NUMA 1, lcore >= 5*/){
+        setup_hash(lcore, nf_insts[(lcore - MANAGER_SLAVE_CORE - 2) / 2].hash_table_index);
+        // lcore is supposed to be MANAGER_CORE + 1 ~ MANAGER_CORE + NF_CORE_COUNT
+        lcore_nf(/*NULL, */&nf_insts[(lcore - MANAGER_SLAVE_CORE - 2) / 2]);
     }
-    else if (lcore == MANAGER_CORE){
+    else if (lcore == MANAGER_SLAVE_CORE/*3*/){
         lcore_manager_slave(NULL);
     }
-    else if (lcore == MANAGER_SLAVE_CORE){
-        setup_hash(lcore);
+    else if (lcore == MANAGER_CORE/*1*/){
+        setup_hash(lcore, 0);/*manager always uses hash_table[0]*/
         lcore_manager(NULL);
-
     }
 }

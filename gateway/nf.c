@@ -19,6 +19,7 @@
 #include <rte_debug.h>
 
 
+
 #include "main.h"
 
 //share variables
@@ -30,15 +31,17 @@ uint32_t last_flow_counts = 0;
 uint32_t malicious_packet_counts = 0;
 /* Data nf received statistics */
 
-unsigned long long nf_rx_bytes = 0;
-unsigned long long last_nf_rx_bytes = 0;
-unsigned long long nf_rx_pkts = 0;
-unsigned long long last_nf_rx_pkts = 0;
+unsigned long long nf_rx_bytes[NF_CORE_COUNT];
+unsigned long long last_nf_rx_bytes[NF_CORE_COUNT];
+unsigned long long nf_rx_pkts[NF_CORE_COUNT];
+unsigned long long last_nf_rx_pkts[NF_CORE_COUNT];
 /* Data nf transmitted statistics */
-unsigned long long nf_tx_bytes = 0;
-unsigned long long last_nf_tx_bytes = 0;
-unsigned long long nf_tx_pkts = 0;
-unsigned long long last_nf_tx_pkts = 0;
+unsigned long long nf_tx_bytes[NF_CORE_COUNT];
+unsigned long long last_nf_tx_bytes[NF_CORE_COUNT];
+unsigned long long nf_tx_pkts[NF_CORE_COUNT];
+unsigned long long last_nf_tx_pkts[NF_CORE_COUNT];
+
+rte_rwlock_t numa_hash_lock;
 
 void
 convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2)
@@ -96,10 +99,14 @@ getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index){
 }
 
 void
-setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
+setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state, unsigned hash_table_index){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	int ret =  rte_hash_add_key_data(state_hash_table[1], &newkey, state);
+	// rte_rwlock_write_lock(&numa_hash_lock);
+	// printf("DEBUG: Table item set in table %d.\n", hash_table_index);
+	int ret =  rte_hash_add_key_data(state_hash_table[hash_table_index], &newkey, state);
+	// printf("DEBUG: setStates done\n");
+	// rte_rwlock_write_unlock(&numa_hash_lock);
 	if (ret == 0)
 	{
 		#ifdef __DEBUG_LV2
@@ -122,14 +129,28 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state){
 }
 
 int
-getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state){
+getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state, unsigned own_hash_table_index){
 	union ipv4_5tuple_host newkey;
 	convert_ipv4_5tuple(ip_5tuple, &newkey);
-	int ret = rte_hash_lookup_data(state_hash_table[1], &newkey, (void **) state);
-	if (ret < 0){
-		ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
+	int i;
+    int ret;
+	/* look up in its own table first */
+	ret = rte_hash_lookup_data(state_hash_table[own_hash_table_index], &newkey, (void **) state);
+    if(ret < 0){
+		/* table 0 for manager, 1~NF_CORE_COUNT for nfs */
+		for(i = NF_CORE_COUNT;i >= 0;i--){
+			if(i == own_hash_table_index)
+				continue;
+			ret = rte_hash_lookup_data(state_hash_table[i], &newkey, (void **) state);
+			if(ret >= 0)
+				break;
+		}
 	}
-	//printf("ret, EINVAL, ENOENT is %d, %u and %u\n", ret, EINVAL, ENOENT);
+	// int ret = rte_hash_lookup_data(state_hash_table[1], &newkey, (void **) state);
+	// if (ret < 0){
+	// 	ret = rte_hash_lookup_data(state_hash_table[0], &newkey, (void **) state);
+	// }
+	// // printf("ret, EINVAL, ENOENT is %d, %u and %u\n", ret, EINVAL, ENOENT);
 	if (ret >= 0){
 		#ifdef __DEBUG_LV2
 		printf("nf: get state success!\n");
@@ -195,7 +216,7 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 						(int)rte_socket_id())
 			printf("nf: WARNING, port %u is on remote NUMA node to "
 					"polling thread.\n\tPerformance will "
-					"not be optimal.\n", port);
+					"not be optimal.\n NF core id %u\n", port, rte_lcore_id());
 
 	printf("\nCore %u processing packets.\n",
 			rte_lcore_id());
@@ -277,8 +298,8 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 					printf("nf: udp packets! pass!\n");
 				}
 				else if (ip_5tuples.proto == 6){
-					nf_rx_pkts += 1;
-					nf_rx_bytes += bufs[i]->data_len;
+					nf_rx_pkts[nf_info->nf_id] += 1;
+					nf_rx_bytes[nf_info->nf_id] += bufs[i]->data_len;
 					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
 					ip_5tuples.port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
 					ip_5tuples.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
@@ -302,7 +323,7 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 						if (!state)
 							rte_panic("nf: state malloc failed!");
 						state->ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
-						setStates(ip_5tuple, state);
+						setStates(ip_5tuple, state, nf_info->hash_table_index);
 
 						ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
 						ip_hdr->hdr_checksum = 0;
@@ -317,8 +338,8 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 							//printf("nf: error in tx packets\n");
 						}
 						//rte_pktmbuf_free(bufs[i]);
-						nf_tx_pkts += 1;
-						nf_tx_bytes += bufs[i]->data_len;
+						nf_tx_pkts[nf_info->nf_id] += 1;
+						nf_tx_bytes[nf_info->nf_id] += bufs[i]->data_len;
 						flow_counts ++;
 						//if (flow_counts >= 73000){
 							//rte_exit(EXIT_FAILURE, "this is just a test\n");
@@ -327,7 +348,7 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 					}
 					else{
 						struct nf_states *state;
-						int ret =  getStates(&ip_5tuples, &state);
+						int ret =  getStates(&ip_5tuples, &state, nf_info->hash_table_index);
 						//printf("%x\n", state);
 						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
 						if (ret >= 0){
@@ -343,8 +364,8 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 								rte_pktmbuf_free(bufs[i]);
 								//printf("nf: error in tx packets\n");
 							}
-							nf_tx_pkts += 1;
-							nf_tx_bytes += bufs[i]->data_len;
+							nf_tx_pkts[nf_info->nf_id] += 1;
+							nf_tx_bytes[nf_info->nf_id] += bufs[i]->data_len;
 						}
 						else{
 							rte_pktmbuf_free(bufs[i]);
