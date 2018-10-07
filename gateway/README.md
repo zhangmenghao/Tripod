@@ -1,4 +1,4 @@
-# TRIPOD: Towards a Scalable, Efficient andResilient Cloud Gateway
+# TRIPOD: Towards a Scalable, Efficient and Resilient Cloud Gateway
 
 About
 --
