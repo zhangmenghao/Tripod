@@ -113,6 +113,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state, unsigned hash_
 		printf("nf: set state success!\n");
 		#endif
 		//communicate with Manager
+		/*
 		if (rte_ring_enqueue(nf_manager_ring, ip_5tuple) == 0) {
 			#ifdef __DEBUG_LV2
 			printf("nf: enqueue success in setStates!\n");
@@ -121,6 +122,7 @@ setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state, unsigned hash_
 		else{
 			printf("nf: enqueue failed in setStates!!!\n");
 		}
+		*/
 	}
 	else{
 		printf("nf: error found in setStates!\n");
@@ -200,6 +202,39 @@ print_ethaddr(const char *name, struct ether_addr *eth_addr)
 	#endif
 }
 
+void
+nf_arp_process(uint8_t port, struct ether_hdr *eth_hdr,
+	uint16_t tx_queue_id, struct rte_mbuf ** bufs_i)
+{
+	/* arp message to keep live with switch */
+	struct arp_hdr* arp_h;
+	struct ether_addr self_eth_addr;
+	uint32_t ip_addr;
+	arp_h = (struct arp_hdr*)
+			((u_char*)eth_hdr + sizeof(struct ether_hdr));
+	rte_eth_macaddr_get(port, &self_eth_addr);
+	ether_addr_copy(&(eth_hdr->s_addr), &(eth_hdr->d_addr));
+	ether_addr_copy(&(eth_hdr->s_addr), &interface_MAC);
+	/* Set source MAC address with MAC of TX Port */
+	ether_addr_copy(&self_eth_addr, &(eth_hdr->s_addr));
+	arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
+	ether_addr_copy(&(arp_h->arp_data.arp_sha)
+				, &(arp_h->arp_data.arp_tha));
+	ether_addr_copy(&(eth_hdr->s_addr)
+				, &(arp_h->arp_data.arp_sha));
+	/* Swap IP address in ARP payload */
+	ip_addr = arp_h->arp_data.arp_sip;
+	arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
+	arp_h->arp_data.arp_tip = ip_addr;
+	rte_eth_tx_burst(port, tx_queue_id, bufs_i, 1);
+	#ifdef __DEBUG_LV1
+	printf("This is arp request message\n");
+	printf("\n");
+	#endif
+	return;
+}
+
+
 /*
  * gateway network funtions.
  */
@@ -207,6 +242,8 @@ int
 lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_info)
 {
 	const uint8_t nb_ports = rte_eth_dev_count();
+	struct ipv4_5tuple *ip_5tuple;
+	struct nf_states * state;
 	uint8_t port;
 	int i;
 
@@ -239,6 +276,9 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 
 
 			for (i = 0; i < nb_rx; i ++){
+				//*************************/
+				/* extract ethernet       */
+				//*************************/
 				struct ether_hdr *eth_hdr;
 				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
 				struct ether_addr eth_s_addr;
@@ -250,34 +290,13 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 				//print_ethaddr("eth_d_addr", &eth_d_addr);
 
  				if (eth_hdr->ether_type == rte_be_to_cpu_16(ETHER_TYPE_ARP)) {
-					/* arp message to keep live with switch */
-					struct arp_hdr* arp_h;
-					struct ether_addr self_eth_addr;
-					uint32_t ip_addr;
-					arp_h = (struct arp_hdr*)
-							((u_char*)eth_hdr + sizeof(struct ether_hdr));
-					rte_eth_macaddr_get(port, &self_eth_addr);
-					ether_addr_copy(&(eth_hdr->s_addr), &(eth_hdr->d_addr));
-					ether_addr_copy(&(eth_hdr->s_addr), &interface_MAC);
-					/* Set source MAC address with MAC of TX Port */
-					ether_addr_copy(&self_eth_addr, &(eth_hdr->s_addr));
-					arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
-					ether_addr_copy(&(arp_h->arp_data.arp_sha)
-								, &(arp_h->arp_data.arp_tha));
-					ether_addr_copy(&(eth_hdr->s_addr)
-								, &(arp_h->arp_data.arp_sha));
-					/* Swap IP address in ARP payload */
-					ip_addr = arp_h->arp_data.arp_sip;
-					arp_h->arp_data.arp_sip = arp_h->arp_data.arp_tip;
-					arp_h->arp_data.arp_tip = ip_addr;
-					rte_eth_tx_burst(port, nf_info->tx_queue_id, &bufs[i], 1);
-					#ifdef __DEBUG_LV1
-					printf("This is arp request message\n");
-					printf("\n");
-					#endif
-					continue;
+					 nf_arp_process(port, eth_hdr, nf_info->tx_queue_id, &bufs[i]);
+					 continue;
   				}
 
+				//*************************/
+				/* extract ip             */
+				//*************************/
 				struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_hdr + sizeof(struct ether_hdr));
 
 				struct ipv4_5tuple ip_5tuples;
@@ -291,101 +310,140 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 				printf("nf: next_proto_id is %u\n", ip_5tuples.proto);
 				#endif
 
-				if (ip_5tuples.proto == 17){
-					struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
-					ip_5tuples.port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
-					ip_5tuples.port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
-					printf("nf: udp packets! pass!\n");
-				}
-				else if (ip_5tuples.proto == 6){
-					nf_rx_pkts[nf_info->nf_id] += 1;
-					nf_rx_bytes[nf_info->nf_id] += bufs[i]->data_len;
-					struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
-					ip_5tuples.port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
-					ip_5tuples.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
-					#ifdef __DEBUG_LV1
-					printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
-					#endif
-					if (tcp_hdrs->tcp_flags == 0x12 || tcp_hdrs->tcp_flags == 0x02 ) {
-						#ifdef __DEBUG_LV1
-						printf("nf: recerive a new flow!\n");
-						#endif
-
-						struct ipv4_5tuple *ip_5tuple = rte_malloc(NULL, sizeof(*ip_5tuple), 0);
-						if (!ip_5tuple)
-							rte_panic("nf: ip_5tuple malloc failed!");
-						ip_5tuple->ip_src = ip_5tuples.ip_src;
-						ip_5tuple->ip_dst = ip_5tuples.ip_dst;
-						ip_5tuple->proto = ip_5tuples.proto;
-						ip_5tuple->port_dst = ip_5tuples.port_dst;
-						ip_5tuple->port_src = ip_5tuples.port_src;
-						struct nf_states * state = rte_malloc(NULL, sizeof(*state), 0);
-						if (!state)
-							rte_panic("nf: state malloc failed!");
-						state->ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
-						setStates(ip_5tuple, state, nf_info->hash_table_index);
-
-						ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
-						ip_hdr->hdr_checksum = 0;
-						ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
-						ether_addr_copy(&eth_s_addr,&eth_hdr->d_addr);
-						ether_addr_copy(&eth_d_addr,&eth_hdr->s_addr);
-						#ifdef __DEBUG_LV1
-						printf("nf: tcp_syn new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
-						#endif
-						if (rte_eth_tx_burst(port, nf_info->tx_queue_id, &bufs[i], 1) != 1){
-							rte_pktmbuf_free(bufs[i]);
-							//printf("nf: error in tx packets\n");
-						}
-						//rte_pktmbuf_free(bufs[i]);
-						nf_tx_pkts[nf_info->nf_id] += 1;
-						nf_tx_bytes[nf_info->nf_id] += bufs[i]->data_len;
-						flow_counts ++;
-						//if (flow_counts >= 73000){
-							//rte_exit(EXIT_FAILURE, "this is just a test\n");
- 						//}
-
+				switch (ip_5tuples.proto){
+					case IP_PROTO_UDP:
+					{
+						//*************************/
+						/* extract udp            */
+						//*************************/
+						struct udp_hdr * upd_hdrs = (struct udp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+						ip_5tuples.port_src = rte_be_to_cpu_16(upd_hdrs->src_port);
+						ip_5tuples.port_dst = rte_be_to_cpu_16(upd_hdrs->dst_port);
+						printf("nf: udp packets! pass!\n");
+						break;
 					}
-					else{
-						struct nf_states *state;
-						int ret =  getStates(&ip_5tuples, &state, nf_info->hash_table_index);
-						//printf("%x\n", state);
-						//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
-						if (ret >= 0){
+					case IP_PROTO_TCP:
+					{
+						nf_rx_pkts[nf_info->nf_id] += 1;
+						nf_rx_bytes[nf_info->nf_id] += bufs[i]->data_len;
+						//*************************/
+						/* extract tcp            */
+						//*************************/
+						struct tcp_hdr * tcp_hdrs = (struct tcp_hdr*)((char*)ip_hdr + sizeof(struct ipv4_hdr));
+						ip_5tuples.port_src = rte_be_to_cpu_16(tcp_hdrs->src_port);
+						ip_5tuples.port_dst = rte_be_to_cpu_16(tcp_hdrs->dst_port);
+						#ifdef __DEBUG_LV1
+						printf("nf: tcp_flags is %u\n", tcp_hdrs->tcp_flags);
+						#endif
+
+						// if it's not the start of a flow
+						// getStates
+						if ((tcp_hdrs->tcp_flags & TCP_FLAG_SYN) == TCP_FLAG_SYN) {
+							// SYN or SYN+ACK
+							ip_5tuple = rte_malloc(NULL, sizeof(*ip_5tuple), 0);
+							if (!ip_5tuple)
+								rte_panic("nf: ip_5tuple malloc failed!");
+							ip_5tuple->ip_src = ip_5tuples.ip_src;
+							ip_5tuple->ip_dst = ip_5tuples.ip_dst;
+							ip_5tuple->proto = ip_5tuples.proto;
+							ip_5tuple->port_dst = ip_5tuples.port_dst;
+							ip_5tuple->port_src = ip_5tuples.port_src;
+							state = rte_malloc(NULL, sizeof(*state), 0);
+							if (!state)
+								rte_panic("nf: state malloc failed!");
+						}
+						else {
+							// SYN bit is 0
+							// not SYN nor SYN+ACK
+							struct nf_states *state;
+							int ret =  getStates(&ip_5tuples, &state, nf_info->hash_table_index);
+							if (ret < 0) {
+								rte_pktmbuf_free(bufs[i]);
+								malicious_packet_counts ++;
+								#ifdef __DEBUG_LV1
+								printf("nf: state not found!%d %d\n",flow_counts ,malicious_packet_counts);
+								#endif
+								continue;
+							}
+						}
+
+						// TODO
+						// nf_load_balance();
+						// nf_nat();
+						// nf_stateful_firewall();
+
+
+
+
+
+
+
+
+						if (tcp_hdrs->tcp_flags == 0x12 || tcp_hdrs->tcp_flags == 0x02) {
+							#ifdef __DEBUG_LV1
+							printf("nf: recerive a new flow!\n");
+							#endif
+
+
+							state->ipserver = dip_pool[flow_counts % DIP_POOL_SIZE];
+							setStates(ip_5tuple, state, nf_info->hash_table_index);
+
 							ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
 							ip_hdr->hdr_checksum = 0;
+							ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
 							ether_addr_copy(&eth_s_addr,&eth_hdr->d_addr);
 							ether_addr_copy(&eth_d_addr,&eth_hdr->s_addr);
-							ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
 							#ifdef __DEBUG_LV1
-							printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+							printf("nf: tcp_syn new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							#endif
 							if (rte_eth_tx_burst(port, nf_info->tx_queue_id, &bufs[i], 1) != 1){
 								rte_pktmbuf_free(bufs[i]);
 								//printf("nf: error in tx packets\n");
 							}
+							//rte_pktmbuf_free(bufs[i]);
 							nf_tx_pkts[nf_info->nf_id] += 1;
 							nf_tx_bytes[nf_info->nf_id] += bufs[i]->data_len;
+							flow_counts ++;
+							//if (flow_counts >= 73000){
+								//rte_exit(EXIT_FAILURE, "this is just a test\n");
+							//}
+
 						}
 						else{
-							rte_pktmbuf_free(bufs[i]);
-							malicious_packet_counts ++;
-							#ifdef __DEBUG_LV1
-							printf("nf: state not found!%d %d\n",flow_counts ,malicious_packet_counts);
-							#endif
+							//printf("%x\n", state);
+							//printf("the value of states is %u XXXXXXXXXXXXXXXXXXXXx\n", state->ipserver);
+							// if (ret >= 0){
+								ip_hdr->dst_addr = rte_cpu_to_be_32(state->ipserver);
+								ip_hdr->hdr_checksum = 0;
+								ether_addr_copy(&eth_s_addr,&eth_hdr->d_addr);
+								ether_addr_copy(&eth_d_addr,&eth_hdr->s_addr);
+								ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
+								#ifdef __DEBUG_LV1
+								printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
+								#endif
+								if (rte_eth_tx_burst(port, nf_info->tx_queue_id, &bufs[i], 1) != 1){
+									rte_pktmbuf_free(bufs[i]);
+									//printf("nf: error in tx packets\n");
+								}
+								nf_tx_pkts[nf_info->nf_id] += 1;
+								nf_tx_bytes[nf_info->nf_id] += bufs[i]->data_len;
+							// }
+
 						}
+						#ifdef __DEBUG_LV1
+						printf("nf: this is very important! port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
+						#endif
+						break;
 					}
-					#ifdef __DEBUG_LV1
-					printf("nf: this is very important! port_src and port_dst is %u and %u\n", ip_5tuples.port_src, ip_5tuples.port_dst);
-					#endif
+					default:
+					{
+						printf("nf: not tcp and udp packets!\n");
+						rte_pktmbuf_free(bufs[i]);
+					}
 				}
-				else{
-					printf("nf: not tcp and udp packets!\n");
-					rte_pktmbuf_free(bufs[i]);
-				}
-				#ifdef __DEBUG_LV1
-				printf("\n");
-				#endif
+			#ifdef __DEBUG_LV1
+			printf("\n");
+			#endif
 			}
 
 		}

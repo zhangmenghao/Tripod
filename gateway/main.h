@@ -37,7 +37,7 @@
 #define TIMER_RESOLUTION_CYCLES 2399987461ULL
 
 // core distribution
-#define NF_CORE_COUNT 3
+#define NF_CORE_COUNT 9
 #define MANAGER_CORE 1
 #define MANAGER_SLAVE_CORE 3
 
@@ -52,6 +52,12 @@
 #define MANAGER_SLAVE_TX_QUEUE (RX_QUEUE_COUNT - 2)
 
 #define FOR_EACH_NF_CORE for(i = 0;i < NF_CORE_COUNT;i++)
+
+#define IP_PROTO_TCP 6
+#define IP_PROTO_UDP 17
+#define TCP_FLAG_SYN 0x02
+#define TCP_FLAG_ACK 0x10
+#define TCP_FLAG_SA (TCP_FLAG_SYN | TCP_FLAG_ACK)
 
 /*
  * Configure debug output level

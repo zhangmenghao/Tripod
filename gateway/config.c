@@ -533,4 +533,23 @@ lcore_main_loop(__attribute__((unused)) void *arg)
         setup_hash(lcore, 0);/*manager always uses hash_table[0]*/
         lcore_manager(NULL);
     }
+
+    // // testing...
+    // lcore = rte_lcore_id();
+    // // nfs, manager and manager-slave all use cores on NUMA 1
+    // // by default,  manager uses core 1
+    // //              manager-slave uses core 3
+    // //              nfs use odd cores larger than or equal to 5
+    // if (lcore == 1 || lcore == 13){
+    //     setup_hash(lcore, nf_insts[lcore == 1 ? 0 : 1].hash_table_index);
+    //     // lcore is supposed to be MANAGER_CORE + 1 ~ MANAGER_CORE + NF_CORE_COUNT
+    //     lcore_nf(/*NULL, */&nf_insts[lcore == 1 ? 0 : 1]);
+    // }
+    // else if (lcore == 5){
+    //     lcore_manager_slave(NULL);
+    // }
+    // else if (lcore == 3){
+    //     setup_hash(lcore, 0);/*manager always uses hash_table[0]*/
+    //     lcore_manager(NULL);
+    // }
 }
