@@ -37,9 +37,9 @@
 #define TIMER_RESOLUTION_CYCLES 2399987461ULL
 
 // core distribution
-#define NF_CORE_COUNT 2
-#define MANAGER_CORE NF_CORE_COUNT
-#define MANAGER_SLAVE_CORE (MANAGER_CORE + 1)
+#define NF_CORE_COUNT 9
+#define MANAGER_CORE 1
+#define MANAGER_SLAVE_CORE 3
 
 // queue on each port of a NIC
 #define RX_QUEUE_COUNT (NF_CORE_COUNT + 1)
@@ -50,6 +50,14 @@
 #define MANAGER_RX_QUEUE (RX_QUEUE_COUNT - 1)
 #define MANAGER_TX_QUEUE (RX_QUEUE_COUNT - 1)
 #define MANAGER_SLAVE_TX_QUEUE (RX_QUEUE_COUNT - 2)
+
+#define FOR_EACH_NF_CORE for(i = 0;i < NF_CORE_COUNT;i++)
+
+#define IP_PROTO_TCP 6
+#define IP_PROTO_UDP 17
+#define TCP_FLAG_SYN 0x02
+#define TCP_FLAG_ACK 0x10
+#define TCP_FLAG_SA (TCP_FLAG_SYN | TCP_FLAG_ACK)
 
 /*
  * Configure debug output level
@@ -111,7 +119,14 @@ struct nf_inst_info {
     uint8_t nf_id;
     uint16_t rx_queue_id;
     uint16_t tx_queue_id;
+    unsigned hash_table_index;
 };
+
+#include <rte_rwlock.h>
+extern rte_rwlock_t numa_hash_lock;
+
+// nf instance infos
+extern struct nf_inst_info nf_insts[NF_CORE_COUNT];
 
 extern struct port_param single_port_param;
 
@@ -138,26 +153,26 @@ extern uint32_t flow_counts;
 extern uint32_t last_flow_counts;
 extern uint32_t malicious_packet_counts;
 /* Data nf received statistics */
-extern unsigned long long nf_rx_bytes;
-extern unsigned long long last_nf_rx_bytes;
-extern unsigned long long nf_rx_pkts;
-extern unsigned long long last_nf_rx_pkts;
+extern unsigned long long nf_rx_bytes[NF_CORE_COUNT];
+extern unsigned long long last_nf_rx_bytes[NF_CORE_COUNT];
+extern unsigned long long nf_rx_pkts[NF_CORE_COUNT];
+extern unsigned long long last_nf_rx_pkts[NF_CORE_COUNT];
 /* Data nf transmitted statistics */
-extern unsigned long long nf_tx_bytes;
-extern unsigned long long last_nf_tx_bytes;
-extern unsigned long long nf_tx_pkts;
-extern unsigned long long last_nf_tx_pkts;
+extern unsigned long long nf_tx_bytes[NF_CORE_COUNT];
+extern unsigned long long last_nf_tx_bytes[NF_CORE_COUNT];
+extern unsigned long long nf_tx_pkts[NF_CORE_COUNT];
+extern unsigned long long last_nf_tx_pkts[NF_CORE_COUNT];
 
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
-void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state);
-int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state);
+void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state, unsigned hash_table_index);
+int getStates(struct ipv4_5tuple *ip_5tuple, struct nf_states ** state, unsigned own_hash_table_index);
 void setIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs *index);
 int getIndexs(struct ipv4_5tuple *ip_5tuple, struct nf_indexs **index);
 int pullState(uint16_t nf_id, uint8_t port, struct ipv4_5tuple* ip_5tuple,
           struct nf_indexs* target_indexs, struct nf_states** target_states);
 int port_init(uint8_t port, struct rte_mempool *mbuf_pool, struct rte_mempool *manager_mbuf_pool);
 int parse_args(int argc, char **argv);
-void setup_hash(const int socketid);
+void setup_hash(const int socketid, const unsigned hash_table_index);
 void check_all_ports_link_status(uint8_t port_num, uint32_t port_mask);
 
 struct rte_mbuf* build_probe_packet(struct ipv4_5tuple* ip_5tuple);

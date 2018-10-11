@@ -51,6 +51,7 @@
 
 #include "main.h"
 
+struct nf_inst_info nf_insts[NF_CORE_COUNT];
 /*
  * The main function, which does initialization and calls the per-lcore
  * functions.
@@ -62,6 +63,31 @@ main(int argc, char *argv[])
     struct rte_mempool *manager_mbuf_pool;
     unsigned nb_ports, lcore_id;
     uint8_t portid;
+    int i;
+
+
+    // /* Initialize NF statistics data */
+    // FOR_EACH_NF_CORE{
+    //     nf_rx_bytes[i] = 0;
+    //     last_nf_rx_bytes[i] = 0;
+    //     nf_rx_pkts[i] = 0;
+    //     last_nf_rx_pkts[i] = 0;
+    //     nf_tx_bytes[i] = 0;
+    //     last_nf_tx_bytes[i] = 0;
+    //     nf_tx_pkts[i] = 0;
+    //     last_nf_tx_pkts[i] = 0;
+    // }
+
+    /* Initialize nf_insts */
+    for(i = 0;i < NF_CORE_COUNT;i++){
+        nf_insts[i].nf_id = i;
+        nf_insts[i].rx_queue_id = i;
+        nf_insts[i].tx_queue_id = i;
+        nf_insts[i].hash_table_index = i + 1;
+    }
+
+    /* Initialize numa wr lock */
+    rte_rwlock_init(&numa_hash_lock);
 
     /* Initialize the Environment Abstraction Layer (EAL). */
     int ret = rte_eal_init(argc, argv);
