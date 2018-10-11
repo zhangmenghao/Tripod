@@ -37,7 +37,8 @@
 #define TIMER_RESOLUTION_CYCLES 2399987461ULL
 
 // core distribution
-#define NF_CORE_COUNT 2 
+#define CPU_SOCKET_COUNT 1
+#define NF_CORE_COUNT 2
 #define MANAGER_CORE 1
 #define MANAGER_SLAVE_CORE 3
 

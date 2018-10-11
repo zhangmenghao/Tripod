@@ -204,8 +204,7 @@ ipv4_hash_crc(const void *data, __rte_unused uint32_t data_len,
 void
 setup_hash(const int lcore, const unsigned hash_table_index)
 {
-    int socketid = lcore % 2;
-    // int socketid = 0;
+    int socketid = lcore % CPU_SOCKET_COUNT;
     struct rte_hash_parameters hash_params = {
         .name = NULL,
         .entries = HASH_ENTRIES,
