@@ -33,28 +33,28 @@ static const struct rte_eth_conf port_conf_default = {
             // .rss_hf = I40E_FILTER_PCTYPE_NONF_IPV4_TCP,
         }
     },
-    .fdir_conf = {
-        .mode = RTE_FDIR_MODE_PERFECT,
-        .pballoc = RTE_FDIR_PBALLOC_64K,
-        .status = RTE_FDIR_REPORT_STATUS,
-        .mask = {
-            .vlan_tci_mask = 0x0,
-            .ipv4_mask = {
-                // .src_ip = 0x0000FFFF,
-                .dst_ip = 0x0000FFFF,
-            },
-            // .ipv6_mask = {
-                // .src_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
-                // .dst_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
-            // },
-            // .src_port_mask = 0xFFFF,
-            // .dst_port_mask = 0xFFFF,
-            // .mac_addr_byte_mask = 0xFF,
-            // .tunnel_type_mask = 1,
-            // .tunnel_id_mask = 0xFFFFFFFF,
-        },
-        .drop_queue = 127,
-    },
+    // .fdir_conf = {
+    //     .mode = RTE_FDIR_MODE_PERFECT,
+    //     .pballoc = RTE_FDIR_PBALLOC_64K,
+    //     .status = RTE_FDIR_REPORT_STATUS,
+    //     .mask = {
+    //         .vlan_tci_mask = 0x0,
+    //         .ipv4_mask = {
+    //             // .src_ip = 0x0000FFFF,
+    //             .dst_ip = 0x0000FFFF,
+    //         },
+    //         // .ipv6_mask = {
+    //             // .src_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
+    //             // .dst_ip = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
+    //         // },
+    //         // .src_port_mask = 0xFFFF,
+    //         // .dst_port_mask = 0xFFFF,
+    //         // .mac_addr_byte_mask = 0xFF,
+    //         // .tunnel_type_mask = 1,
+    //         // .tunnel_id_mask = 0xFFFFFFFF,
+    //     },
+    //     .drop_queue = 127,
+    // },
 };
 
 static struct rte_eth_fdir_filter fdir_filter_state = {
@@ -333,30 +333,30 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
     if (retval < 0)
         return retval;
 
-    /* Set FlowDirector flow filter on port */
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
-                                       RTE_ETH_FILTER_ADD, &fdir_filter_state);
-    if (retval < 0)
-        return retval;
-    // fdir_filter_ecmp.input.flow.tcp4_flow.src_port = rte_cpu_to_be_16(0),
-    // fdir_filter_ecmp.input.flow.tcp4_flow.dst_port = rte_cpu_to_be_16(0),
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
-                                        RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_tcp);
-    if (retval < 0)
-        return retval;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
-                                        RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_udp);
-    if (retval < 0)
-        return retval;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
-                                     RTE_ETH_FILTER_ADD, &fdir_filter_arp);
-    if (retval < 0)
-        return retval;
-    struct rte_eth_fdir_info fdir_info;
-    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
-                                     RTE_ETH_FILTER_INFO, &fdir_info);
-    if (retval < 0)
-        return retval;
+    // /* Set FlowDirector flow filter on port */
+    // retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
+    //                                    RTE_ETH_FILTER_ADD, &fdir_filter_state);
+    // if (retval < 0)
+    //     return retval;
+    // // fdir_filter_ecmp.input.flow.tcp4_flow.src_port = rte_cpu_to_be_16(0),
+    // // fdir_filter_ecmp.input.flow.tcp4_flow.dst_port = rte_cpu_to_be_16(0),
+    // retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
+    //                                     RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_tcp);
+    // if (retval < 0)
+    //     return retval;
+    // retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
+    //                                     RTE_ETH_FILTER_ADD, &fdir_filter_ecmp_udp);
+    // if (retval < 0)
+    //     return retval;
+    // retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
+    //                                  RTE_ETH_FILTER_ADD, &fdir_filter_arp);
+    // if (retval < 0)
+    //     return retval;
+    // struct rte_eth_fdir_info fdir_info;
+    // retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR,
+    //                                  RTE_ETH_FILTER_INFO, &fdir_info);
+    // if (retval < 0)
+    //     return retval;
     unsigned int j;
     for (j = 0; j < RTE_FLOW_MASK_ARRAY_SIZE; j++)
         printf("flow_types_mask[%d]: %08x\n", j, fdir_info.flow_types_mask[j]);
