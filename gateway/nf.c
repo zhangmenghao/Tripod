@@ -40,6 +40,7 @@ unsigned long long nf_tx_bytes[NF_CORE_COUNT];
 unsigned long long last_nf_tx_bytes[NF_CORE_COUNT];
 unsigned long long nf_tx_pkts[NF_CORE_COUNT];
 unsigned long long last_nf_tx_pkts[NF_CORE_COUNT];
+unsigned long long nf_rx[NF_CORE_COUNT];
 
 rte_rwlock_t numa_hash_lock;
 
@@ -262,23 +263,23 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 	for (;;) {
 		for (port = 0; port < nb_ports; port++) {
 			if ((enabled_port_mask & (1 << port)) == 0) {
-				//printf("Skipping %u\n", port);
 				continue;
 			}
 
 			struct rte_mbuf *bufs[BURST_SIZE];
-			const uint16_t nb_rx = rte_eth_rx_burst(port, nf_info->rx_queue_id,
+			const uint16_t nb_rx_l = rte_eth_rx_burst(port, nf_info->rx_queue_id,
 					bufs, BURST_SIZE);
 
-			if (unlikely(nb_rx == 0)){
+            nf_rx[nf_info->nf_id] = nb_rx_l;
+			if (unlikely(nb_rx_l == 0)){
 				continue;
 			}
 
-
-			for (i = 0; i < nb_rx; i ++){
+			for (i = 0; i < nb_rx_l; i ++){
 				//*************************/
 				/* extract ethernet       */
 				//*************************/
+				// printf("DEBUG...%d\n", bufs[i]->hash.rss);
 				struct ether_hdr *eth_hdr;
 				eth_hdr = rte_pktmbuf_mtod(bufs[i], struct ether_hdr *);
 				struct ether_addr eth_s_addr;
@@ -355,8 +356,8 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 						else {
 							// SYN bit is 0
 							// not SYN nor SYN+ACK
-							struct nf_states *state;
-							int ret =  getStates(&ip_5tuples, &state, nf_info->hash_table_index);
+                            int ret = 1;
+							ret =  getStates(&ip_5tuples, &state, nf_info->hash_table_index);
 							if (ret < 0) {
 								rte_pktmbuf_free(bufs[i]);
 								malicious_packet_counts ++;
@@ -396,6 +397,7 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 							#ifdef __DEBUG_LV1
 							printf("nf: tcp_syn new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 							#endif
+                            /*
 							if (rte_eth_tx_burst(port, nf_info->tx_queue_id, &bufs[i], 1) != 1){
 								rte_pktmbuf_free(bufs[i]);
 								//printf("nf: error in tx packets\n");
@@ -403,6 +405,7 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 							//rte_pktmbuf_free(bufs[i]);
 							nf_tx_pkts[nf_info->nf_id] += 1;
 							nf_tx_bytes[nf_info->nf_id] += bufs[i]->data_len;
+                            */
 							flow_counts ++;
 							//if (flow_counts >= 73000){
 								//rte_exit(EXIT_FAILURE, "this is just a test\n");
@@ -421,12 +424,14 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 								#ifdef __DEBUG_LV1
 								printf("nf: tcp new_ip_dst is "IPv4_BYTES_FMT " \n", IPv4_BYTES(rte_be_to_cpu_32(ip_hdr->dst_addr)));
 								#endif
+                            /*
 								if (rte_eth_tx_burst(port, nf_info->tx_queue_id, &bufs[i], 1) != 1){
 									rte_pktmbuf_free(bufs[i]);
 									//printf("nf: error in tx packets\n");
 								}
 								nf_tx_pkts[nf_info->nf_id] += 1;
 								nf_tx_bytes[nf_info->nf_id] += bufs[i]->data_len;
+                                */
 							// }
 
 						}
@@ -445,7 +450,11 @@ lcore_nf(/*__attribute__((unused)) void *arg, */const struct nf_inst_info* nf_in
 			printf("\n");
 			#endif
 			}
+            // tx batch
+            //
 
+			const uint16_t nb_tx_l = rte_eth_tx_burst(port, nf_info->rx_queue_id,
+					bufs, nb_rx_l);
 		}
 	}
 	return 0;

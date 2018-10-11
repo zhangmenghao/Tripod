@@ -37,9 +37,13 @@
 #define TIMER_RESOLUTION_CYCLES 2399987461ULL
 
 // core distribution
-#define NF_CORE_COUNT 9
+#define NF_CORE_COUNT 2 
 #define MANAGER_CORE 1
 #define MANAGER_SLAVE_CORE 3
+
+// rss reta parameter
+#define RSS_RETA_COUNT 8
+#define RSS_RETA_SIZE 512
 
 // queue on each port of a NIC
 #define RX_QUEUE_COUNT (NF_CORE_COUNT + 1)
@@ -162,6 +166,7 @@ extern unsigned long long nf_tx_bytes[NF_CORE_COUNT];
 extern unsigned long long last_nf_tx_bytes[NF_CORE_COUNT];
 extern unsigned long long nf_tx_pkts[NF_CORE_COUNT];
 extern unsigned long long last_nf_tx_pkts[NF_CORE_COUNT];
+extern unsigned long long nf_rx[NF_CORE_COUNT];
 
 void convert_ipv4_5tuple(struct ipv4_5tuple *key1, union ipv4_5tuple_host *key2);
 void setStates(struct ipv4_5tuple *ip_5tuple, struct nf_states *state, unsigned hash_table_index);

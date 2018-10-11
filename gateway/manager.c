@@ -94,6 +94,7 @@ manager_timer_cb(__attribute__((unused)) struct rte_timer *tim,
     printf("NF Statistics\n");
     FOR_EACH_NF_CORE{
             printf("NF core No.%d\n", i);
+            printf("NF rx: %llu\n", nf_rx[i]);
             printf("nf_rx_throughput: %llu Mbps, nf_tx_throughput: %llu Mbps\n",
                 (nf_rx_bytes[i] - last_nf_rx_bytes[i]) * 8 / 1024 / 1024,
                 (nf_tx_bytes[i] - last_nf_tx_bytes[i]) * 8 / 1024 / 1024);

@@ -29,6 +29,8 @@ static const struct rte_eth_conf port_conf_default = {
         .rss_conf = {
             .rss_key = NULL,
             .rss_hf = ETH_RSS_IP | ETH_RSS_UDP | ETH_RSS_TCP | ETH_RSS_SCTP,
+            // .rss_hf = ETH_RSS_FRAG_IPV4 | ETH_RSS_NONFRAG_IPV4_TCP,
+            // .rss_hf = I40E_FILTER_PCTYPE_NONF_IPV4_TCP,
         }
     },
     .fdir_conf = {
@@ -143,8 +145,6 @@ uint32_t dip_pool[DIP_POOL_SIZE] = {
     IPv4(100,10,0,4),
 };
 
-// nf instance infos
-static struct nf_inst_info nf_insts[NF_CORE_COUNT];
 
 struct rte_ring* nf_manager_ring;
 struct rte_ring* nf_pull_wait_ring;
@@ -153,7 +153,7 @@ struct port_param single_port_param;
 
 int enabled_port_mask = 0;
 
-static struct rte_eth_rss_reta_entry64 reta_conf[2];
+static struct rte_eth_rss_reta_entry64 reta_conf[RSS_RETA_COUNT];
 
 static uint32_t manager_rx_queue_mask = 0x2;
 
@@ -205,6 +205,7 @@ void
 setup_hash(const int lcore, const unsigned hash_table_index)
 {
     int socketid = lcore % 2;
+    // int socketid = 0;
     struct rte_hash_parameters hash_params = {
         .name = NULL,
         .entries = HASH_ENTRIES,
@@ -221,7 +222,6 @@ setup_hash(const int lcore, const unsigned hash_table_index)
     state_hash_table[hash_table_index] =
         rte_hash_create(&hash_params);
     
-
 
     if (state_hash_table[hash_table_index] == NULL){
         rte_exit(EXIT_FAILURE,
@@ -258,7 +258,7 @@ rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
 {
     unsigned int idx, i, j = 0;
     int retval;
-    for (idx = 0; idx < 2; idx++) {
+    for (idx = 0; idx < RSS_RETA_COUNT ; idx++) {
         reta_conf[idx].mask = ~0ULL;
         for (i = 0; i < RTE_RETA_GROUP_SIZE; i++, j++) {
             if (j == nb_nf_lcore)
@@ -266,7 +266,7 @@ rss_hash_set(uint32_t nb_nf_lcore, uint8_t port)
             reta_conf[idx].reta[i] = j;
         }
     }
-    retval = rte_eth_dev_rss_reta_update(port, reta_conf, 128);
+    retval = rte_eth_dev_rss_reta_update(port, reta_conf, RSS_RETA_SIZE);
     return retval;
 }
 
@@ -305,9 +305,14 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 
     /* Allocate and set up 2 RX queue per Ethernet port. */
     for (q = 0; q < rx_rings; q++) {
-        if (((manager_rx_queue_mask >> q) & 1) == 1)
+        if (q < rx_rings-1){
+        char name[30];
+        snprintf(name, sizeof(name),"MBUF_POOL_Q_%u",q);
+
+        struct rte_mempool *mbuf_pool = rte_pktmbuf_pool_create(name, NUM_MBUFS,MBUF_CACHE_SIZE, 0, RTE_MBUF_DEFAULT_BUF_SIZE, rte_socket_id());
             retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
                     rte_eth_dev_socket_id(port), NULL, mbuf_pool);
+    }
         else
             retval = rte_eth_rx_queue_setup(port, q, nb_rxd,
                     rte_eth_dev_socket_id(port), NULL, manager_mbuf_pool);
@@ -359,8 +364,23 @@ port_init(uint8_t port, struct rte_mempool *mbuf_pool,
 
     /* Set hash array of RSS */
     retval = rss_hash_set(NF_CORE_COUNT, port);
-    if (retval < 0)
+    if (retval < 0) {
+        printf("Why?\n");
         return retval;
+    }
+    else {
+        int idx, i;
+        retval = rte_eth_dev_rss_reta_query(port, reta_conf, RSS_RETA_SIZE);
+        if (retval < 0) {
+            printf("Why?\n");
+        }
+        for (idx = 0; idx < RSS_RETA_COUNT; idx++) {
+            for (i = 0; i < RTE_RETA_GROUP_SIZE; i++) {
+                printf("%d ", reta_conf[idx].reta[i]);
+            }
+        }
+        printf("\n");
+    }
 
     /* Display the port MAC address. */
     struct ether_addr addr;
