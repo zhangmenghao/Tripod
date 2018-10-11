@@ -15,6 +15,7 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 #include <rte_hash.h>
+#include <rte_errno.h>
 
 #include "main.h"
 
@@ -143,7 +144,6 @@ uint32_t dip_pool[DIP_POOL_SIZE] = {
 };
 
 // nf instance infos
-// TODO: initialize the structs below
 static struct nf_inst_info nf_insts[NF_CORE_COUNT];
 
 struct rte_ring* nf_manager_ring;
@@ -205,6 +205,7 @@ setup_hash(const int socketid)
     hash_params.socket_id = socketid;
     state_hash_table[socketid] =
         rte_hash_create(&hash_params);
+    
 
     struct rte_hash_parameters hash_paramss = {
         .name = NULL,
@@ -217,6 +218,9 @@ setup_hash(const int socketid)
     snprintf(ss, sizeof(ss), "ipv4_index_hash_%d", socketid);
     hash_paramss.name = ss;
     hash_paramss.socket_id = socketid;
+    hash_paramss.extra_flag = RTE_HASH_EXTRA_FLAGS_MULTI_WRITER_ADD |
+        RTE_HASH_EXTRA_FLAGS_RW_CONCURRENCY |
+        RTE_HASH_EXTRA_FLAGS_TRANS_MEM_SUPPORT;
     index_hash_table[socketid] =
         rte_hash_create(&hash_paramss);
 
@@ -515,6 +519,5 @@ lcore_main_loop(__attribute__((unused)) void *arg)
     else if (lcore == MANAGER_SLAVE_CORE){
         setup_hash(lcore);
         lcore_manager(NULL);
-
     }
 }

@@ -46,12 +46,15 @@
 #include <rte_byteorder.h>
 #include <rte_cycles.h>
 #include <rte_timer.h>
+#include <rte_errno.h>
 #define RX_RING_SIZE 512
 #define TX_RING_SIZE 512
 
 #define NUM_MBUFS 8191
 #define MBUF_CACHE_SIZE 250
 #define BURST_SIZE 32
+
+#define PKTGEN_CORE_COUNT 4
 
 
 #define RTE_BE_TO_CPU_16(be_16_v)  rte_be_to_cpu_16((be_16_v))
@@ -74,15 +77,15 @@ static const struct rte_eth_conf port_conf_default = {
 		    .hw_ip_checksum = 0 }
 };
 
-unsigned long long rx_byte = 0;
-unsigned long long tx_byte = 0;
-unsigned long long last_rx_byte = 0;
-unsigned long long last_tx_byte = 0;
+unsigned long long rx_byte[PKTGEN_CORE_COUNT];
+unsigned long long tx_byte[PKTGEN_CORE_COUNT];
+unsigned long long last_rx_byte[PKTGEN_CORE_COUNT];
+unsigned long long last_tx_byte[PKTGEN_CORE_COUNT];
 
-unsigned long long rx_pkts = 0;
-unsigned long long tx_pkts = 0;
-unsigned long long last_rx_pkts = 0;
-unsigned long long last_tx_pkts = 0;
+unsigned long long rx_pkts[PKTGEN_CORE_COUNT];
+unsigned long long tx_pkts[PKTGEN_CORE_COUNT];
+unsigned long long last_rx_pkts[PKTGEN_CORE_COUNT];
+unsigned long long last_tx_pkts[PKTGEN_CORE_COUNT];
 
 static struct rte_timer timer;
 
@@ -97,27 +100,47 @@ struct ether_addr interface_MAC = {
     .addr_bytes[5] = 0xDB,
 };
 
-struct rte_mbuf* syn_pkts[N_TEST_FLOWS];
-struct rte_mbuf* data_pkts[N_TEST_FLOWS];
+struct rte_mbuf* syn_pkts[PKTGEN_CORE_COUNT][N_TEST_FLOWS];
+struct rte_mbuf* data_pkts[PKTGEN_CORE_COUNT][N_TEST_FLOWS];
 
 
 static void
 timer_cb( __attribute__((unused)) struct rte_timer *tim, __attribute__((unused)) void *arg)
 {
-
-	printf("rx_throughput: %llu Mbps, tx_throughput: %llu Mbps\n",(rx_byte - last_rx_byte)*8/1024/1024,
-		(tx_byte-last_tx_byte)*8/1024/1024);	
-	printf("rx_byte: %llu, tx_byte: %llu\n",rx_byte ,tx_byte);	
-	printf("rx_pkts_sec: %llu, tx_pkt_sec: %llu\n",rx_pkts - last_rx_pkts,tx_pkts-last_tx_pkts);	
-	printf("rx_byte: %llu, tx_byte: %llu\n\n",rx_pkts ,tx_pkts);	
-	last_rx_byte = rx_byte;
-	last_tx_byte = tx_byte;
-	last_rx_pkts = rx_pkts;
-	last_tx_pkts = tx_pkts;
+	int i;
+	unsigned long long total_rx_byte = 0, total_tx_byte = 0, total_rx_pkts = 0, total_tx_pkts = 0,
+		total_last_rx_byte = 0, total_last_tx_byte = 0, total_last_rx_pkts = 0, total_last_tx_pkts = 0;
+	for(i = 0;i < PKTGEN_CORE_COUNT;i++){
+		total_rx_byte += rx_byte[i];
+		total_tx_byte += tx_byte[i];
+		total_rx_pkts += rx_pkts[i];
+		total_tx_pkts += tx_pkts[i];
+		total_last_rx_byte += last_rx_byte[i];
+		total_last_tx_byte += last_tx_byte[i];
+		total_last_rx_pkts += last_rx_pkts[i];
+		total_last_tx_pkts += last_tx_pkts[i];
+	}
+	for(i = 0;i < PKTGEN_CORE_COUNT;i++){
+		printf("Core %d\n", i);
+		printf("rx_throughput: %llu Mbps, tx_throughput: %llu Mbps\n",(rx_byte[i] - last_rx_byte[i])*8/1024/1024,
+			(tx_byte[i]-last_tx_byte[i])*8/1024/1024);
+		printf("rx_pkts_sec: %llu, tx_pkt_sec: %llu\n",rx_pkts[i] - last_rx_pkts[i], tx_pkts[i] - last_tx_pkts[i]);
+	}
+	printf("rx_throughput: %llu Mbps, tx_throughput: %llu Mbps\n",(total_rx_byte - total_last_rx_byte)*8/1024/1024,
+		(total_tx_byte-total_last_tx_byte)*8/1024/1024);
+	// printf("rx_byte: %llu, tx_byte: %llu\n",total_rx_byte ,total_tx_byte);
+	printf("rx_pkts_sec: %llu, tx_pkt_sec: %llu\n",total_rx_pkts - total_last_rx_pkts, total_tx_pkts - total_last_tx_pkts);
+	// printf("rx_byte: %llu, tx_byte: %llu\n\n",total_rx_pkts ,total_tx_pkts);
+	for(i = 0;i < PKTGEN_CORE_COUNT;i++){
+		last_rx_byte[i] = rx_byte[i];
+		last_tx_byte[i] = tx_byte[i];
+		last_rx_pkts[i] = rx_pkts[i];
+		last_tx_pkts[i] = tx_pkts[i];
+	}
 }
 
 
-static inline 
+static inline
 void recompute_cksum(struct rte_mbuf* mbuf){
 	struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
    	struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
@@ -126,7 +149,7 @@ void recompute_cksum(struct rte_mbuf* mbuf){
 }
 
 
-static inline 
+static inline
 struct ipv4_hdr* get_ip_hdr(struct rte_mbuf* mbuf){
 	struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
    	struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
@@ -134,7 +157,7 @@ struct ipv4_hdr* get_ip_hdr(struct rte_mbuf* mbuf){
 }
 
 
-static inline 
+static inline
 struct tcp_hdr* get_tcp_hdr(struct rte_mbuf* mbuf){
 	struct ether_hdr* eth_h = (struct ether_hdr*)rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
    	struct ipv4_hdr *ip_hdr = (struct ipv4_hdr*)((char*)eth_h + sizeof(struct ether_hdr));
@@ -143,7 +166,7 @@ struct tcp_hdr* get_tcp_hdr(struct rte_mbuf* mbuf){
 }
 
 
-static inline 
+static inline
 void init_pkts(struct rte_mbuf* mbuf,int flags){
     struct rte_mbuf* probing_packet;
     struct ether_hdr *eth_hdr;
@@ -155,7 +178,7 @@ void init_pkts(struct rte_mbuf* mbuf,int flags){
     iph = (struct ipv4_hdr *)rte_pktmbuf_append(probing_packet, sizeof(struct ipv4_hdr));
     tcp_h = (struct tcp_hdr *) rte_pktmbuf_append(probing_packet,sizeof(struct tcp_hdr));
     //a packet has minimum size 64B
-    payload = (char*) rte_pktmbuf_append(probing_packet,256);
+    payload = (char*) rte_pktmbuf_append(probing_packet, 64-54);
     eth_hdr->ether_type =  rte_cpu_to_be_16(ETHER_TYPE_IPv4);
     ether_addr_copy(&interface_MAC, &eth_hdr->d_addr);
     struct ether_addr addr;
@@ -163,7 +186,7 @@ void init_pkts(struct rte_mbuf* mbuf,int flags){
     ether_addr_copy(&addr, &eth_hdr->s_addr);
     memset((char *)iph, 0, sizeof(struct ipv4_hdr));
     iph->src_addr=rte_cpu_to_be_32(IPv4(192,168,0,1));
-    iph->dst_addr=rte_cpu_to_be_32(IPv4(172,17,17,2));
+    iph->dst_addr=rte_cpu_to_be_32(IPv4(173,0,0,2));
     iph->version_ihl = (4 << 4) | 5;
     iph->total_length = rte_cpu_to_be_16(52);
     iph->packet_id= 0xd84c;/* NO USE */
@@ -178,25 +201,25 @@ void init_pkts(struct rte_mbuf* mbuf,int flags){
 }
 
 
-static inline 
-void pktgen_init(struct rte_mempool* mbuf_pool){
+static inline
+void pktgen_init(unsigned pktgen_core, struct rte_mempool* mbuf_pool){
 	printf("initing pkts\n");
 	int i;
 	for(i = 0;i < N_TEST_FLOWS;i++){
-		syn_pkts[i] = rte_pktmbuf_alloc(mbuf_pool);
-		data_pkts[i] = rte_pktmbuf_alloc(mbuf_pool);
-		init_pkts(syn_pkts[i],2);
-		init_pkts(data_pkts[i],0);
+		syn_pkts[pktgen_core][i] = rte_pktmbuf_alloc(mbuf_pool);
+		data_pkts[pktgen_core][i] = rte_pktmbuf_alloc(mbuf_pool);
+		init_pkts(syn_pkts[pktgen_core][i],2);
+		init_pkts(data_pkts[pktgen_core][i],0);
 
-		get_ip_hdr(syn_pkts[i])->src_addr = rte_cpu_to_be_32(IPv4(172,17,17, 3));
-		get_tcp_hdr(syn_pkts[i])->dst_port = rte_cpu_to_be_16(i);
-		get_tcp_hdr(syn_pkts[i])->src_port = rte_cpu_to_be_16(i);
-		recompute_cksum(syn_pkts[i]);
+		get_ip_hdr(syn_pkts[pktgen_core][i])->src_addr = rte_cpu_to_be_32(IPv4(172,17,17, 3));
+		get_tcp_hdr(syn_pkts[pktgen_core][i])->dst_port = rte_cpu_to_be_16(i);
+		get_tcp_hdr(syn_pkts[pktgen_core][i])->src_port = rte_cpu_to_be_16(i);
+		recompute_cksum(syn_pkts[pktgen_core][i]);
 
-		get_ip_hdr(data_pkts[i])->src_addr = rte_cpu_to_be_32(IPv4(172,17,17,3));
-		get_tcp_hdr(data_pkts[i])->dst_port = rte_cpu_to_be_16(i);
-		get_tcp_hdr(data_pkts[i])->src_port = rte_cpu_to_be_16(i);
-		recompute_cksum(data_pkts[i]);
+		get_ip_hdr(data_pkts[pktgen_core][i])->src_addr = rte_cpu_to_be_32(IPv4(172,17,17,3));
+		get_tcp_hdr(data_pkts[pktgen_core][i])->dst_port = rte_cpu_to_be_16(i);
+		get_tcp_hdr(data_pkts[pktgen_core][i])->src_port = rte_cpu_to_be_16(i);
+		recompute_cksum(data_pkts[pktgen_core][i]);
 	}
 	printf("initing pkts finished\n");
 }
@@ -206,7 +229,7 @@ static inline int
 port_init(uint16_t port, struct rte_mempool *mbuf_pool)
 {
 	struct rte_eth_conf port_conf = port_conf_default;
-	const uint16_t rx_rings = 1, tx_rings = 1;
+	const uint16_t rx_rings = PKTGEN_CORE_COUNT, tx_rings = PKTGEN_CORE_COUNT;
 	uint16_t nb_rxd = RX_RING_SIZE;
 	uint16_t nb_txd = TX_RING_SIZE;
 	int retval;
@@ -263,10 +286,13 @@ port_init(uint16_t port, struct rte_mempool *mbuf_pool)
 
 
 static __attribute__((noreturn)) void
-lcore_main(void)
+lcore_main(uint16_t lcore)
 {
 	const uint16_t nb_ports = rte_eth_dev_count();
 	uint16_t port;
+
+	uint16_t tx_queue_id = lcore, rx_queue_id = lcore;
+	uint16_t core_array_index = lcore;
 
 	/*
 	 * Check that the port is on the same NUMA node as the polling thread
@@ -291,30 +317,31 @@ lcore_main(void)
 			rte_timer_manage();
 			prev_tsc = cur_tsc;
 		}
-		if(arped == 1 && count < 1){
+		//printf("arped?:%d", arped == 1);
+		if(count < 1){
 			//printf("attempting to send a packet\n");
 			int j;
 			for(j = 0;j < N_TEST_FLOWS;j++){
-	 			rte_eth_tx_burst(0, 0, &syn_pkts[j], 1);
-				tx_pkts ++;
+	 			rte_eth_tx_burst(0, tx_queue_id, &syn_pkts[core_array_index][j], 1);
+				tx_pkts[core_array_index] ++;
 				usleep(100);
-				tx_byte += syn_pkts[j]->data_len;
+				tx_byte[core_array_index] += syn_pkts[core_array_index][j]->data_len;
 			}
 			count++;
 		}
-		if(arped == 1 && count >=1){
-			
-			rte_eth_tx_burst(0, 0, &data_pkts[count % N_TEST_FLOWS], 1);
-			tx_pkts ++;
-			tx_byte += data_pkts[count%N_TEST_FLOWS]->data_len;
+		if(count >=1){
+
+			rte_eth_tx_burst(0, tx_queue_id, &data_pkts[core_array_index][count % N_TEST_FLOWS],1);
+			tx_pkts[core_array_index] ++;
+			tx_byte[core_array_index] += data_pkts[core_array_index][count%N_TEST_FLOWS]->data_len;
 			count++;
-			
+
 		}
 		for (port = 0; port < 1; port++) {
 
 			/* Get burst of RX packets, from first port of pair. */
 			struct rte_mbuf *bufs[BURST_SIZE];
-			const uint16_t nb_rx = rte_eth_rx_burst(0, 0,
+			const uint16_t nb_rx = rte_eth_rx_burst(0, rx_queue_id,
 					bufs, BURST_SIZE);
 
 			if (unlikely(nb_rx == 0))
@@ -323,19 +350,20 @@ lcore_main(void)
             struct ether_hdr* eth_h;
 			int i;
 			for (i = 0;i < nb_rx;i++){
+						printf("receiving packets\n");
 				struct rte_mbuf *mbuf = bufs[i];
 				//rte_pktmbuf_dump(stdout,bufs[i],100);
 				//printf("data len: %d\n",mbuf->data_len);
 	            eth_h = rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
-			
+
 				if(eth_h->ether_type == rte_cpu_to_be_16(ETHER_TYPE_IPv4)){
-					rx_pkts ++;
-					rx_byte += mbuf->data_len;
-				}	
+					rx_pkts[core_array_index] ++;
+					rx_byte[core_array_index] += mbuf->data_len;
+				}
 	            if(eth_h->ether_type == 1544){
-			    	if(arped == 0){
+			    	if(/*arped == */0){
 						arped = 1;
-				   
+
 						printf("processing arp request\n");
 						struct arp_hdr * arp_h = (struct arp_hdr *)((char*)eth_h + sizeof(struct ether_hdr));
 
@@ -372,12 +400,12 @@ lcore_main(void)
 	                                (ipv4_addr >> 16) & 0xFF, (ipv4_addr >> 8) & 0xFF,
 	                                ipv4_addr & 0xFF);
 
-		                const uint16_t nb_tx = rte_eth_tx_burst(0, 0,
+		                const uint16_t nb_tx = rte_eth_tx_burst(0, tx_queue_id,
 	                                           bufs, nb_rx);
 	                    printf("end processing arp: %d\n",nb_tx);
 					}
 				}
-			}                
+			}
 			int kk = 0;
 			for (kk = 0; kk< nb_rx; kk ++){
 				rte_pktmbuf_free(bufs[kk]);
@@ -388,10 +416,29 @@ lcore_main(void)
 
 
 int
+lcore_main_loop(__attribute__((unused)) void *arg)
+{
+    unsigned lcore;
+    lcore = rte_lcore_id();
+
+	struct rte_mempool *mbuf_pool_pkts;
+	char pool_name[30];
+	snprintf(pool_name, sizeof(pool_name), "MBUF_POOL_%u", lcore + 1);
+	printf("DEBUG: pool_name=%s\n", pool_name);
+	mbuf_pool_pkts = rte_pktmbuf_pool_create(pool_name, 20480,
+		MBUF_CACHE_SIZE, 0, RTE_MBUF_DEFAULT_BUF_SIZE, rte_socket_id());
+	if (mbuf_pool_pkts == NULL)
+		rte_exit(EXIT_FAILURE, "Cannot create mbuf pool: %s - %s\n", pool_name, rte_strerror(rte_errno));
+
+	pktgen_init(lcore, mbuf_pool_pkts);
+    lcore_main(lcore);
+}
+
+
+int
 main(int argc, char *argv[])
 {
 	struct rte_mempool *mbuf_pool;
-	struct rte_mempool *mbuf_pool2;
 	unsigned nb_ports;
 	uint16_t portid;
 
@@ -412,14 +459,10 @@ main(int argc, char *argv[])
 	mbuf_pool = rte_pktmbuf_pool_create("MBUF_POOL", NUM_MBUFS * nb_ports,
 		MBUF_CACHE_SIZE, 0, RTE_MBUF_DEFAULT_BUF_SIZE, rte_socket_id());
 
-	mbuf_pool2 = rte_pktmbuf_pool_create("MBUF_POOL2", 2000,
-		MBUF_CACHE_SIZE, 0, RTE_MBUF_DEFAULT_BUF_SIZE, rte_socket_id());
 
 
 	if (mbuf_pool == NULL)
 		rte_exit(EXIT_FAILURE, "Cannot create mbuf pool\n");
-	if (mbuf_pool2 == NULL)
-		rte_exit(EXIT_FAILURE, "Cannot create mbuf pool2\n");
 
 	/* Initialize all ports. */
 	for (portid = 0; portid < nb_ports; portid++)
@@ -428,18 +471,25 @@ main(int argc, char *argv[])
 					portid);
 	rte_timer_subsystem_init();
 	rte_timer_init(&timer);
-	uint64_t hz;	
+	uint64_t hz;
 	unsigned lcore_id;
 	hz = rte_get_timer_hz();
 	lcore_id = rte_lcore_id();
-	printf("hz: %llu, lcore: %u\n",hz,lcore_id);
+	printf("hz: %lu, lcore: %u\n",hz,lcore_id);
 	rte_timer_reset(&timer,hz,PERIODICAL,lcore_id,timer_cb,NULL);
-	pktgen_init(mbuf_pool2);
-	if (rte_lcore_count() > 1)
-		printf("\nWARNING: Too many lcores enabled. Only 1 used.\n");
+	// if (rte_lcore_count() > 1)
+	// 	printf("\nWARNING: Too many lcores enabled. Only 1 used.\n");
 
-	/* Call lcore_main on the master core only. */
-	lcore_main();
+	// /* Call lcore_main on the master core only. */
+	// lcore_main();
+
+	/* Launch per-lcore init on every lcore */
+    rte_eal_mp_remote_launch(lcore_main_loop, NULL, CALL_MASTER);
+    RTE_LCORE_FOREACH_SLAVE(lcore_id) {
+        if (rte_eal_wait_lcore(lcore_id) < 0) {
+            return -1;
+        }
+    }
 
 	return 0;
 }

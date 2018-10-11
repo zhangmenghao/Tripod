@@ -1,3 +1,3 @@
 #!/bin/bash
-make; sudo ./build/pktgen -l 5 -n 3 -b 81:00.0 --proc-type auto --socket-mem 512,512 --file-prefix bf -- -p 0x1
+make; sudo ./build/pktgen -l 0-2 -n 3 -b 04:00.0 --proc-type auto --socket-mem 4096 --file-prefix bf -- -p 0x1
 
